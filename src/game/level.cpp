@@ -20,24 +20,29 @@ bool Level::load(int level)
     if (!config)
         return false;
     tiles.resize(config("width").toInt(), config("height").toInt());
-    tiles.useLayer(1);
+    config.useSection("Layers");
 
     // Load layer data
-    config.useSection("Layers");
-    int y = 0;
-    for (auto& visualTiles: config("visual"))
+    int layerNum = 1;
+    for (auto& layerName: {"layer1", "layer2"})
     {
-        int x = 0;
-        std::istringstream data(visualTiles.toString());
-        int tileId = 0;
-        while (data >> tileId)
+        int y = 0;
+        tiles.useLayer(layerNum++);
+        for (auto& visualTiles: config(layerName))
         {
-            tiles.set(x, y, tileId);
-            ++x;
+            int x = 0;
+            std::istringstream data(visualTiles.toString());
+            int tileId = 0;
+            while (data >> tileId)
+            {
+                tiles.set(x, y, tileId);
+                ++x;
+            }
+            ++y;
         }
-        ++y;
     }
 
+    tiles.useLayer(1);
     currentLevel = level;
 
     return true;

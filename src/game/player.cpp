@@ -2,7 +2,6 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "player.h"
-#include "tilemap.h"
 
 Player::Player()
 {
@@ -12,6 +11,8 @@ Player::Player()
     //rect.setFillColor(sf::Color::Transparent);
     //rect.setOutlineColor(sf::Color::Red);
     //rect.setOutlineThickness(4);
+    position = sf::Vector2f(128, 128);
+    sprite.setPosition(position);
 }
 
 const sf::Vector2f Player::getPosition() const
@@ -71,6 +72,7 @@ void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 void Player::handleEdgeCollision()
 {
+    // TODO: Move this to the physics system
     if (position.x < 0)
         position.x = 0;
     if (position.y < 0)

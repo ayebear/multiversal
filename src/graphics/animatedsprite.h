@@ -19,13 +19,11 @@ It automatically calculates the sub-rectangles to use.
     The frames are the tiles in the row
 
 TODO:
-    Handle flips (vertical and horizontal)
-        Maybe make functions called flipX and flipY
-        Basically a simple transformation that handles changing the origin and stuff
     Use ranges of image sequences instead of row numbers
         This would reduce the wasted space and allow for more frames because of the texture size limit
+        Could also use coordinates to the frames
     Store textures in a map as a resource cache
-    Figure out how to handle looping
+    Figure out how to handle looping (currently it is always looping)
         Always loop? Only play once?
         What to show when stopped/paused?
 */

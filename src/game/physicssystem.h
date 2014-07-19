@@ -5,7 +5,9 @@
 #define PHYSICSSYSTEM_H
 
 #include "entity.h"
-#include "tilemap.h"
+
+class TileMap;
+class MagicWindow;
 
 /*
 This class handles applying the velocity to all of the entities' positions.
@@ -14,7 +16,7 @@ It also detects and handles collision.
 class PhysicsSystem
 {
     public:
-        PhysicsSystem(EntityList& entities, TileMap& tiles);
+        PhysicsSystem(EntityList& entities, TileMap& tiles, MagicWindow& magicWindow);
         void update(float deltaTime);
 
     private:
@@ -27,6 +29,7 @@ class PhysicsSystem
 
         EntityList& entities;
         TileMap& tiles;
+        MagicWindow& magicWindow;
         Entity* ent;
         float dt;
 

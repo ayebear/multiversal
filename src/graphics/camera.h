@@ -10,6 +10,7 @@
 /*
 This class manages a container of sf::View objects.
 It can apply transformations to all of the views in the container, based on the specified scale amount.
+This can be used for parallax scrolling and GUIs.
 
 Example:
     Foreground (1.0 scale, moves like normal)
@@ -22,6 +23,7 @@ class Camera
         Camera();
         void setView(const std::string& name, const sf::View& view, float scale = 1.0f);
         const sf::View& getView(const std::string& name);
+        sf::View& accessView(const std::string& name);
         void setCenter(const sf::Vector2f& center);
 
     private:

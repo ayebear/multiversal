@@ -1,7 +1,7 @@
 PuzzleGame
 ==========
 
-This is a puzzle platformer game, where the goal is to get to the end of each level by transferring energy between different objects on the map. The main character has a special laser device which you can use to do this.
+This is a puzzle platformer game, where the goal is to get to the end of each level. Your main tool is a magic window which shows an alternate version of the level. Everything seen through the window is applied to the real world.
 
 Gameplay
 --------

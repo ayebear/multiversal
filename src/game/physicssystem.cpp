@@ -2,10 +2,13 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "physicssystem.h"
+#include "tilemap.h"
+#include "magicwindow.h"
 
-PhysicsSystem::PhysicsSystem(EntityList& entities, TileMap& tiles):
+PhysicsSystem::PhysicsSystem(EntityList& entities, TileMap& tiles, MagicWindow& magicWindow):
     entities(entities),
-    tiles(tiles)
+    tiles(tiles),
+    magicWindow(magicWindow)
 {
 }
 
@@ -57,7 +60,8 @@ void PhysicsSystem::handleYCollision()
     {
         for (int x = start.x; x <= end.x && !collided; ++x)
         {
-            if (tiles(x, y) >= 1)
+            int layer = magicWindow.isWithin(tiles.getCenterPoint(x, y)) + 1;
+            if (tiles(layer, x, y) >= 1)
             {
                 auto tileBox = tiles.getBoundingBox(x, y);
                 //printRect(tileBox);
@@ -100,7 +104,8 @@ void PhysicsSystem::handleXCollision()
     {
         for (int x = start.x; x <= end.x && !collided; ++x)
         {
-            if (tiles(x, y) >= 1)
+            int layer = magicWindow.isWithin(tiles.getCenterPoint(x, y)) + 1;
+            if (tiles(layer, x, y) >= 1)
             {
                 auto tileBox = tiles.getBoundingBox(x, y);
                 //printRect(tileBox);

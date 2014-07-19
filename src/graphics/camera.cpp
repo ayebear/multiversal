@@ -18,6 +18,11 @@ const sf::View& Camera::getView(const std::string& name)
     return views[name].view;
 }
 
+sf::View& Camera::accessView(const std::string& name)
+{
+    return views[name].view;
+}
+
 void Camera::setCenter(const sf::Vector2f& center)
 {
     for (auto& view: views)

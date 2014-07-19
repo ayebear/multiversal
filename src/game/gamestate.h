@@ -10,6 +10,7 @@
 #include "level.h"
 #include "entity.h"
 #include "physicssystem.h"
+#include "magicwindow.h"
 
 class GameObjects;
 
@@ -29,6 +30,8 @@ class GameState: public BaseState
 
     private:
 
+        void handleInput();
+
         GameObjects& objects;
         bool hasFocus;
 
@@ -37,10 +40,18 @@ class GameState: public BaseState
         Level level;
         EntityList entities;
         PhysicsSystem physics;
+        MagicWindow magicWindow;
 
         // TODO: Move this to the level loader
         sf::Texture bgTexture; // Should use some kind of resource/texture manager
+        sf::Texture bgTexture2; // Should use some kind of resource/texture manager
         sf::Sprite bgSprite;
+        sf::Sprite bgSprite2;
+
+        sf::Vector2f gameMousePos;
+        sf::Vector2f bgMousePos;
+
+        sf::View defaultView;
 };
 
 #endif

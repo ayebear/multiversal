@@ -9,7 +9,7 @@
 GameState::GameState(GameObjects& objects):
     objects(objects),
     level("data/levels/", tiles),
-    physics(entities, tiles)
+    physics(entities, tiles, magicWindow)
 {
     hasFocus = true;
 
@@ -21,19 +21,29 @@ GameState::GameState(GameObjects& objects):
     level.load(1);
 
     // Setup the views
-    auto defaultView = objects.window.getDefaultView();
+    defaultView = objects.window.getDefaultView();
     camera.setView("game", defaultView);
     camera.setView("background", defaultView, 0.5f);
     //camera.setView("menu", defaultView);
 
     // Load the background image
     bgTexture.loadFromFile("data/images/background.png");
+    bgTexture2.loadFromFile("data/images/background2.png");
     bgSprite.setTexture(bgTexture);
+    bgSprite2.setTexture(bgTexture2);
     bgSprite.setOrigin(bgTexture.getSize().x / 4, bgTexture.getSize().y / 4);
+    bgSprite2.setOrigin(bgTexture.getSize().x / 4, bgTexture.getSize().y / 4);
     // (Half for image to be centered, and half for the scaling)
 
     // Add player entity
     entities.emplace_back(new Player());
+
+    // Setup the magic window
+    static const unsigned magicWindowSize = 5;
+    magicWindow.setSize(sf::Vector2f(tiles.getTileSize().x * magicWindowSize, tiles.getTileSize().y * magicWindowSize));
+    auto magicWindowView = magicWindow.getTexture().getDefaultView();
+    camera.setView("game2", magicWindowView);
+    camera.setView("background2", magicWindowView, 0.5f);
 }
 
 GameState::~GameState()
@@ -73,7 +83,7 @@ void GameState::handleEvents()
                 break;
         }
     }
-    //handleInput();
+    handleInput();
 }
 
 void GameState::update()
@@ -103,12 +113,44 @@ void GameState::update()
 
 void GameState::draw()
 {
-    objects.window.clear();
-    objects.window.setView(camera.getView("background"));
-    objects.window.draw(bgSprite);
-    objects.window.setView(camera.getView("game"));
-    objects.window.draw(tiles);
+    auto& window = objects.window;
+    window.clear();
+
+    // Draw the real world
+    window.setView(camera.getView("background"));
+    window.draw(bgSprite);
+    window.setView(camera.getView("game"));
+    tiles.drawLayer(window, 1);
+    //window.draw(tiles);
+
+    // Draw the magic window
+    auto& texture = magicWindow.getTexture();
+    texture.clear(sf::Color::Transparent);
+    //texture.clear();
+    auto& bgView = camera.accessView("background2");
+    bgView.setCenter(bgMousePos);
+    texture.setView(bgView);
+    texture.draw(bgSprite2);
+
+    auto& gameView = camera.accessView("game2");
+    gameView.setCenter(gameMousePos);
+    texture.setView(gameView);
+    tiles.drawLayer(texture, 2);
+    texture.display();
+    window.draw(magicWindow);
+
+    // Draw the entities
     for (auto& ent: entities)
-        objects.window.draw(*ent);
-    objects.window.display();
+        window.draw(*ent);
+
+    window.display();
+}
+
+void GameState::handleInput()
+{
+    // Get mouse position
+    auto actualMousePos = sf::Mouse::getPosition(objects.window);
+    gameMousePos = objects.window.mapPixelToCoords(actualMousePos, camera.getView("game"));
+    bgMousePos = objects.window.mapPixelToCoords(actualMousePos, camera.getView("background"));
+    magicWindow.setCenter(gameMousePos);
 }
