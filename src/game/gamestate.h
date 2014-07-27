@@ -48,8 +48,10 @@ class GameState: public BaseState
         sf::Sprite bgSprite;
         sf::Sprite bgSprite2;
 
+        sf::Vector2i actualMousePos;
         sf::Vector2f gameMousePos;
         sf::Vector2f bgMousePos;
+        bool mouseButtonDown;
 
         sf::View defaultView;
 };

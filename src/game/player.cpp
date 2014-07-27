@@ -13,6 +13,7 @@ Player::Player()
     //rect.setOutlineThickness(4);
     position = sf::Vector2f(128, 128);
     sprite.setPosition(position);
+    sprite.play("StandRight");
 }
 
 const sf::Vector2f Player::getPosition() const
@@ -34,14 +35,16 @@ void Player::jump()
 void Player::handleEvents()
 {
     // TODO: Take in events from an input system
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+    bool leftPressed = (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A));
+    bool rightPressed = (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D));
+    if (leftPressed && !rightPressed)
     {
         velocity.x = -maxVelocity.x;
         sprite.play("MoveLeft");
         wasRight = false;
 
     }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+    else if (rightPressed && !leftPressed)
     {
         velocity.x = maxVelocity.x;
         sprite.play("MoveRight");

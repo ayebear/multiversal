@@ -2,9 +2,10 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "gamestate.h"
+#include <iostream>
 #include "gameobjects.h"
 #include "player.h"
-#include <iostream>
+#include "views.h"
 
 GameState::GameState(GameObjects& objects):
     objects(objects),
@@ -12,6 +13,7 @@ GameState::GameState(GameObjects& objects):
     physics(entities, tiles, magicWindow)
 {
     hasFocus = true;
+    mouseButtonDown = false;
 
     // Load the tileset
     cfg::File tilesConfig("data/config/tiles.cfg", cfg::File::Warnings | cfg::File::Errors);
@@ -31,9 +33,6 @@ GameState::GameState(GameObjects& objects):
     bgTexture2.loadFromFile("data/images/background2.png");
     bgSprite.setTexture(bgTexture);
     bgSprite2.setTexture(bgTexture2);
-    bgSprite.setOrigin(bgTexture.getSize().x / 4, bgTexture.getSize().y / 4);
-    bgSprite2.setOrigin(bgTexture.getSize().x / 4, bgTexture.getSize().y / 4);
-    // (Half for image to be centered, and half for the scaling)
 
     // Add player entity
     entities.emplace_back(new Player());
@@ -77,6 +76,24 @@ void GameState::handleEvents()
             case sf::Event::KeyPressed:
                 if (event.key.code == sf::Keyboard::Space)
                     ((Player*)(entities.front().get()))->jump();
+                break;
+
+            case sf::Event::MouseButtonPressed:
+                if (event.mouseButton.button == sf::Mouse::Left)
+                {
+                    mouseButtonDown = true;
+                    magicWindow.show(true);
+                }
+                else if (event.mouseButton.button == sf::Mouse::Right)
+                {
+                    mouseButtonDown = false;
+                    magicWindow.show(false);
+                }
+                break;
+
+            case sf::Event::MouseButtonReleased:
+                if (event.mouseButton.button == sf::Mouse::Left)
+                    mouseButtonDown = false;
                 break;
 
             default:
@@ -126,15 +143,10 @@ void GameState::draw()
     // Draw the magic window
     auto& texture = magicWindow.getTexture();
     texture.clear(sf::Color::Transparent);
-    //texture.clear();
-    auto& bgView = camera.accessView("background2");
-    bgView.setCenter(bgMousePos);
-    texture.setView(bgView);
+    auto windowViewPos = getViewPos(camera.getView("game"));
+    magicWindow.setView(camera.accessView("background"), windowViewPos);
     texture.draw(bgSprite2);
-
-    auto& gameView = camera.accessView("game2");
-    gameView.setCenter(gameMousePos);
-    texture.setView(gameView);
+    magicWindow.setView(camera.accessView("game"), windowViewPos);
     tiles.drawLayer(texture, 2);
     texture.display();
     window.draw(magicWindow);
@@ -149,8 +161,12 @@ void GameState::draw()
 void GameState::handleInput()
 {
     // Get mouse position
-    auto actualMousePos = sf::Mouse::getPosition(objects.window);
-    gameMousePos = objects.window.mapPixelToCoords(actualMousePos, camera.getView("game"));
-    bgMousePos = objects.window.mapPixelToCoords(actualMousePos, camera.getView("background"));
-    magicWindow.setCenter(gameMousePos);
+    if (mouseButtonDown)
+    {
+        actualMousePos = sf::Mouse::getPosition(objects.window);
+        gameMousePos = objects.window.mapPixelToCoords(actualMousePos, camera.getView("game"));
+        bgMousePos = objects.window.mapPixelToCoords(actualMousePos, camera.getView("background"));
+    }
+    if (magicWindow.isVisible())
+        magicWindow.setCenter(gameMousePos);
 }

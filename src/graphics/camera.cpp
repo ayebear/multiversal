@@ -27,7 +27,16 @@ void Camera::setCenter(const sf::Vector2f& center)
 {
     for (auto& view: views)
     {
-        // Multiply by the scale
-        view.second.view.setCenter(center.x * view.second.scale, center.y * view.second.scale);
+        // Multiply by the scale, and add a constant offset based on the size of the view
+        auto offset = view.second.view.getSize();
+        float scale = view.second.scale;
+        if (scale >= 1.0f)
+            offset = sf::Vector2f(0, 0);
+        else
+        {
+            offset.x *= 0.5 * scale;
+            offset.y *= 0.5 * scale;
+        }
+        view.second.view.setCenter(center.x * scale + offset.x, center.y * scale + offset.y);
     }
 }
