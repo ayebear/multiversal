@@ -1,3 +1,6 @@
+// Copyright (C) 2014 Eric Hebert (ayebear)
+// This code is licensed under GPLv3, see LICENSE.txt for details.
+
 #include "magicwindow.h"
 #include <iostream>
 #include "views.h"
@@ -16,8 +19,8 @@ void MagicWindow::setCenter(const sf::Vector2f& center)
     sf::Vector2f newPosition;
     newPosition.x = center.x - (size.x / 2);
     newPosition.y = center.y - (size.y / 2);
-	changed = (newPosition != position);
-	if (changed)
+    changed = (newPosition != position);
+    if (changed)
     {
         position = newPosition;
         this->center = center;
@@ -28,8 +31,8 @@ void MagicWindow::setCenter(const sf::Vector2f& center)
 
 void MagicWindow::setSize(const sf::Vector2f& newSize)
 {
-	changed = (size != newSize);
-	if (changed)
+    changed = (size != newSize);
+    if (changed)
     {
         size = newSize;
         border.setSize(size);
@@ -40,7 +43,7 @@ void MagicWindow::setSize(const sf::Vector2f& newSize)
 
 bool MagicWindow::hasChanged() const
 {
-	return changed;
+    return changed;
 }
 
 sf::RenderTexture& MagicWindow::getTexture()

@@ -1,3 +1,6 @@
+// Copyright (C) 2014 Eric Hebert (ayebear)
+// This code is licensed under GPLv3, see LICENSE.txt for details.
+
 #ifndef VIEWS_H
 #define VIEWS_H
 

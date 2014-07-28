@@ -1,3 +1,6 @@
+// Copyright (C) 2014 Eric Hebert (ayebear)
+// This code is licensed under GPLv3, see LICENSE.txt for details.
+
 #include "views.h"
 
 sf::Vector2f getViewPos(const sf::Vector2f& center, const sf::Vector2f& size)
