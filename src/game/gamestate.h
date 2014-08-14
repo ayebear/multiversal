@@ -8,9 +8,13 @@
 #include "tilemap.h"
 #include "camera.h"
 #include "level.h"
-#include "entity.h"
-#include "physicssystem.h"
 #include "magicwindow.h"
+#include "inputsystem.h"
+#include "playersystem.h"
+#include "physicssystem.h"
+#include "camerasystem.h"
+#include "rendersystem.h"
+#include "OCS/Objects.hpp"
 
 class GameObjects;
 
@@ -21,9 +25,7 @@ class GameState: public BaseState
 {
     public:
         GameState(GameObjects& objects);
-        ~GameState();
 
-        void onStart();
         void handleEvents();
         void update();
         void draw();
@@ -35,25 +37,21 @@ class GameState: public BaseState
         GameObjects& objects;
         bool hasFocus;
 
+        // Maybe move these to a world class?
         TileMap tiles;
         Camera camera;
         Level level;
-        EntityList entities;
-        PhysicsSystem physics;
         MagicWindow magicWindow;
 
-        // TODO: Move this to the level loader
-        sf::Texture bgTexture; // Should use some kind of resource/texture manager
-        sf::Texture bgTexture2; // Should use some kind of resource/texture manager
-        sf::Sprite bgSprite;
-        sf::Sprite bgSprite2;
+        // Entities
+        ocs::ObjectManager entities;
 
-        sf::Vector2i actualMousePos;
-        sf::Vector2f gameMousePos;
-        sf::Vector2f bgMousePos;
-        bool mouseButtonDown;
-
-        sf::View defaultView;
+        // Systems
+        InputSystem input;
+        PlayerSystem player;
+        PhysicsSystem physics;
+        CameraSystem cameraSystem;
+        RenderSystem render;
 };
 
 #endif

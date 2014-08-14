@@ -4,16 +4,26 @@
 #include "gamestate.h"
 #include <iostream>
 #include "gameobjects.h"
-#include "player.h"
-#include "views.h"
+#include "events.h"
+#include "broadcasts.h"
+#include "components.h"
+#include "gameevents.h"
 
 GameState::GameState(GameObjects& objects):
     objects(objects),
     level("data/levels/", tiles),
-    physics(entities, tiles, magicWindow)
+    input(objects.window),
+    player(entities),
+    physics(entities, tiles, magicWindow),
+    cameraSystem(camera),
+    render(entities, tiles, objects.window, camera, magicWindow)
 {
     hasFocus = true;
-    mouseButtonDown = false;
+
+    // TODO: Load the object prototypes from a file
+    // For now, add them manually (still need to add deserialize methods)
+    entities.addComponentsToPrototype("Player", Components::Position(), Components::Velocity(), Components::Size(), Components::AABB(),
+    Components::Input(), Components::AnimSprite(), Components::PlayerState(), Components::CameraUpdater());
 
     // Load the tileset
     cfg::File tilesConfig("data/config/tiles.cfg", cfg::File::Warnings | cfg::File::Errors);
@@ -23,19 +33,26 @@ GameState::GameState(GameObjects& objects):
     level.load(1);
 
     // Setup the views
-    defaultView = objects.window.getDefaultView();
+    auto defaultView = objects.window.getDefaultView();
     camera.setView("game", defaultView);
     camera.setView("background", defaultView, 0.5f);
     //camera.setView("menu", defaultView);
 
-    // Load the background image
-    bgTexture.loadFromFile("data/images/background.png");
-    bgTexture2.loadFromFile("data/images/background2.png");
-    bgSprite.setTexture(bgTexture);
-    bgSprite2.setTexture(bgTexture2);
-
     // Add player entity
-    entities.emplace_back(new Player());
+    auto playerId = entities.createObject("Player");
+    auto animSprite = entities.getComponent<Components::AnimSprite>(playerId);
+    if (animSprite)
+    {
+        animSprite->sprite.loadFromConfig("data/config/player.cfg");
+        animSprite->sprite.play("StandRight");
+        auto size = entities.getComponent<Components::Size>(playerId);
+        if (size)
+        {
+            auto spriteSize = animSprite->sprite.getTileSize();
+            size->x = spriteSize.x;
+            size->y = spriteSize.y;
+        }
+    }
 
     // Setup the magic window
     static const unsigned magicWindowSize = 5;
@@ -43,21 +60,15 @@ GameState::GameState(GameObjects& objects):
     auto magicWindowView = magicWindow.getTexture().getDefaultView();
     camera.setView("game2", magicWindowView);
     camera.setView("background2", magicWindowView, 0.5f);
-}
 
-GameState::~GameState()
-{
-}
-
-void GameState::onStart()
-{
-    //objects.music.start("game");
+    // Set the map size for the camera system
+    cameraSystem.setMapSize(tiles.getPixelSize());
 }
 
 void GameState::handleEvents()
 {
-    sf::Event event;
-    while (objects.window.pollEvent(event))
+    input.update(camera.getView("game"));
+    for (auto& event: Broadcasts::get<sf::Event>())
     {
         switch (event.type)
         {
@@ -73,100 +84,21 @@ void GameState::handleEvents()
                 hasFocus = true;
                 break;
 
-            case sf::Event::KeyPressed:
-                if (event.key.code == sf::Keyboard::Space)
-                    ((Player*)(entities.front().get()))->jump();
-                break;
-
-            case sf::Event::MouseButtonPressed:
-                if (event.mouseButton.button == sf::Mouse::Left)
-                {
-                    mouseButtonDown = true;
-                    magicWindow.show(true);
-                }
-                else if (event.mouseButton.button == sf::Mouse::Right)
-                {
-                    mouseButtonDown = false;
-                    magicWindow.show(false);
-                }
-                break;
-
-            case sf::Event::MouseButtonReleased:
-                if (event.mouseButton.button == sf::Mouse::Left)
-                    mouseButtonDown = false;
-                break;
-
             default:
                 break;
         }
     }
-    handleInput();
 }
 
 void GameState::update()
 {
+    magicWindow.update();
+    player.update(dt);
     physics.update(dt);
-
-    // Set view's center based on player's position
-    auto playerPos = entities.front()->position;
-    auto playerSize = entities.front()->size;
-    playerPos.x += playerSize.x / 2;
-    playerPos.y += playerSize.y / 2;
-    sf::Vector2f viewCenter(playerPos.x, playerPos.y);
-    sf::Vector2f viewSize(camera.getView("game").getSize());
-
-    // Make sure view isn't off the map
-    if (viewCenter.x - (viewSize.x / 2) < 0)
-        viewCenter.x = viewSize.x / 2;
-    if (viewCenter.y - (viewSize.y / 2) < 0)
-        viewCenter.y = viewSize.y / 2;
-    if (viewCenter.x >= tiles.getPixelSize().x - (viewSize.x / 2))
-        viewCenter.x = tiles.getPixelSize().x - (viewSize.x / 2);
-    if (viewCenter.y >= tiles.getPixelSize().y - (viewSize.y / 2))
-        viewCenter.y = tiles.getPixelSize().y - (viewSize.y / 2);
-
-    camera.setCenter(viewCenter);
+    cameraSystem.update();
 }
 
 void GameState::draw()
 {
-    auto& window = objects.window;
-    window.clear();
-
-    // Draw the real world
-    window.setView(camera.getView("background"));
-    window.draw(bgSprite);
-    window.setView(camera.getView("game"));
-    tiles.drawLayer(window, 1);
-    //window.draw(tiles);
-
-    // Draw the magic window
-    auto& texture = magicWindow.getTexture();
-    texture.clear(sf::Color::Transparent);
-    auto windowViewPos = getViewPos(camera.getView("game"));
-    magicWindow.setView(camera.accessView("background"), windowViewPos);
-    texture.draw(bgSprite2);
-    magicWindow.setView(camera.accessView("game"), windowViewPos);
-    tiles.drawLayer(texture, 2);
-    texture.display();
-    window.draw(magicWindow);
-
-    // Draw the entities
-    for (auto& ent: entities)
-        window.draw(*ent);
-
-    window.display();
-}
-
-void GameState::handleInput()
-{
-    // Get mouse position
-    if (mouseButtonDown)
-    {
-        actualMousePos = sf::Mouse::getPosition(objects.window);
-        gameMousePos = objects.window.mapPixelToCoords(actualMousePos, camera.getView("game"));
-        bgMousePos = objects.window.mapPixelToCoords(actualMousePos, camera.getView("background"));
-    }
-    if (magicWindow.isVisible())
-        magicWindow.setCenter(gameMousePos);
+    render.update();
 }

@@ -7,7 +7,7 @@
 
 int main()
 {
-    GameObjects objects("Puzzle Game v0.0.3 Dev");
+    GameObjects objects("Puzzle Game v0.0.4 Dev");
     StateManager states;
     states.addState("Game", new GameState(objects));
     states.startLoop("Game");

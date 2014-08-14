@@ -1,3 +1,6 @@
 [submodule "src/configfile"]
 	path = src/configfile
 	url = https://github.com/ayebear/ConfigFile.git
+[submodule "src/ocs"]
+	path = src/ocs
+	url = git://git.code.sf.net/p/objectcomponentsystem/code

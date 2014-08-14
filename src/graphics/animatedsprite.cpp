@@ -11,6 +11,12 @@ AnimatedSprite::AnimatedSprite()
     totalTime = 0;
 }
 
+AnimatedSprite::AnimatedSprite(const std::string& configFilename):
+    AnimatedSprite()
+{
+    loadFromConfig(configFilename);
+}
+
 bool AnimatedSprite::loadTexture(const std::string& textureFilename)
 {
     bool status = texture.loadFromFile(textureFilename);

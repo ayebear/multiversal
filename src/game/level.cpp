@@ -4,6 +4,7 @@
 #include "level.h"
 #include <sstream>
 #include "configfile.h"
+#include "events.h"
 
 Level::Level(const std::string& levelDir, TileMap& tiles):
     levelDir(levelDir),
@@ -20,6 +21,8 @@ bool Level::load(int level)
     if (!config)
         return false;
     tiles.resize(config("width").toInt(), config("height").toInt());
+    sf::Vector2f startPos(config("startX").toInt() * tiles.getTileSize().x, config("startY").toInt() * tiles.getTileSize().y);
+    Events::send("PlayerPosition", startPos);
     config.useSection("Layers");
 
     // Load layer data

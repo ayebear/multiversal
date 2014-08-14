@@ -4,6 +4,8 @@
 #include "magicwindow.h"
 #include <iostream>
 #include "views.h"
+#include "broadcasts.h"
+#include "gameevents.h"
 
 MagicWindow::MagicWindow()
 {
@@ -14,18 +16,49 @@ MagicWindow::MagicWindow()
     border.setOutlineThickness(4);
 }
 
-void MagicWindow::setCenter(const sf::Vector2f& center)
+void MagicWindow::update()
 {
-    sf::Vector2f newPosition;
-    newPosition.x = center.x - (size.x / 2);
-    newPosition.y = center.y - (size.y / 2);
-    changed = (newPosition != position);
-    if (changed)
+    // Check SFML events
+    for (auto& event: Broadcasts::get<sf::Event>())
     {
-        position = newPosition;
-        this->center = center;
-        setPosition(position);
-        textureView.setCenter(center);
+        if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left)
+            active = false;
+    }
+    // Check real-time mouse input
+    for (auto& event: Broadcasts::get<MousePosEvent>())
+        setCenter(event.mousePos);
+    // Check mouse-clicked events
+    for (auto& event: Broadcasts::get<MouseClickedEvent>())
+    {
+        if (event.button == sf::Mouse::Left)
+        {
+            active = true;
+            visible = true;
+            setCenter(event.mousePos);
+        }
+        else if (event.button == sf::Mouse::Right)
+        {
+            active = false;
+            visible = false;
+        }
+    }
+}
+
+void MagicWindow::setCenter(const sf::Vector2f& center, bool force)
+{
+    if (force || active)
+    {
+        sf::Vector2f newPosition;
+        newPosition.x = center.x - (size.x / 2);
+        newPosition.y = center.y - (size.y / 2);
+        changed = (newPosition != position);
+        if (changed)
+        {
+            position = newPosition;
+            this->center = center;
+            setPosition(position);
+            textureView.setCenter(center);
+        }
     }
 }
 

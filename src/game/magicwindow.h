@@ -10,7 +10,8 @@ class MagicWindow: public sf::Drawable, public sf::Transformable
 {
     public:
         MagicWindow();
-        void setCenter(const sf::Vector2f& center);
+        void update();
+        void setCenter(const sf::Vector2f& center, bool force = false);
         void setSize(const sf::Vector2f& newSize);
         bool hasChanged() const;
         sf::RenderTexture& getTexture();
@@ -23,6 +24,7 @@ class MagicWindow: public sf::Drawable, public sf::Transformable
     private:
         bool changed;
         bool visible;
+        bool active; // If mouse input should take effect
         sf::Vector2f size;
         sf::Vector2f position;
         sf::Vector2f center;

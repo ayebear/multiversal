@@ -32,6 +32,7 @@ class AnimatedSprite: public sf::Drawable, public sf::Transformable
     public:
         // Setup
         AnimatedSprite();
+        AnimatedSprite(const std::string& configFilename);
         //void setTexture(sf::Texture& texture);
         bool loadTexture(const std::string& textureFilename);
         void setTileSize(const sf::Vector2u& size);
