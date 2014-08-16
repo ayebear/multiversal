@@ -19,24 +19,40 @@ struct Position: public ocs::Component<Position>
 {
     //sf::Vector2f position;
     float x, y;
+    void deSerialize(const std::string& str)
+    {
+        serializer.deSerialize("% %", str, x, y);
+    }
 };
 
 struct Velocity: public ocs::Component<Velocity>
 {
     //sf::Vector2f velocity;
     float x, y;
+    void deSerialize(const std::string& str)
+    {
+        serializer.deSerialize("% %", str, x, y);
+    }
 };
 
 struct Size: public ocs::Component<Size>
 {
     //sf::Vector2u size;
     unsigned x, y;
+    void deSerialize(const std::string& str)
+    {
+        serializer.deSerialize("% %", str, x, y);
+    }
 };
 
 // The axis-aligned bounding box, used for collisions
 struct AABB: public ocs::Component<AABB>
 {
     sf::FloatRect rect;
+    void deSerialize(const std::string& str)
+    {
+        serializer.deSerialize("% % % %", str, rect.left, rect.top, rect.width, rect.height);
+    }
 };
 
 // Flag for if an entity should accept user input
@@ -50,6 +66,12 @@ struct Sprite: public ocs::Component<Sprite>
 struct AnimSprite: public ocs::Component<AnimSprite>
 {
     AnimatedSprite sprite;
+    void deSerialize(const std::string& str)
+    {
+        std::string filename;
+        serializer.deSerialize("%", str, filename);
+        sprite.loadFromConfig(filename);
+    }
 };
 
 struct PlayerState: public ocs::Component<PlayerState>
@@ -63,6 +85,7 @@ struct PlayerState: public ocs::Component<PlayerState>
 
     // This could be moved elsewhere...
     static const int jumpSpeed = -800;
+    // Probably a "Jumpable" component, or maybe Input
 
     PlayerState(): state(OnPlatform), wasRight(false) {}
     int state;

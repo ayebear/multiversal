@@ -33,7 +33,6 @@ class AnimatedSprite: public sf::Drawable, public sf::Transformable
         // Setup
         AnimatedSprite();
         AnimatedSprite(const std::string& configFilename);
-        //void setTexture(sf::Texture& texture);
         bool loadTexture(const std::string& textureFilename);
         void setTileSize(const sf::Vector2u& size);
         const sf::Vector2u& getTileSize() const;
@@ -62,7 +61,6 @@ class AnimatedSprite: public sf::Drawable, public sf::Transformable
         std::map<std::string, Animation> animations;
 
         sf::Vector2u tileSize;
-        sf::Texture texture;
         sf::Sprite sprite;
 
         // For playing

@@ -8,6 +8,7 @@
 #include "broadcasts.h"
 #include "components.h"
 #include "gameevents.h"
+#include "entityprototypeloader.h"
 
 GameState::GameState(GameObjects& objects):
     objects(objects),
@@ -20,10 +21,9 @@ GameState::GameState(GameObjects& objects):
 {
     hasFocus = true;
 
-    // TODO: Load the object prototypes from a file
-    // For now, add them manually (still need to add deserialize methods)
-    entities.addComponentsToPrototype("Player", Components::Position(), Components::Velocity(), Components::Size(), Components::AABB(),
-    Components::Input(), Components::AnimSprite(), Components::PlayerState(), Components::CameraUpdater());
+    // Load entity prototypes
+    bindStringsToComponents();
+    EntityPrototypeLoader::load(entities, "data/config/entities.cfg");
 
     // Load the tileset
     cfg::File tilesConfig("data/config/tiles.cfg", cfg::File::Warnings | cfg::File::Errors);
@@ -39,20 +39,7 @@ GameState::GameState(GameObjects& objects):
     //camera.setView("menu", defaultView);
 
     // Add player entity
-    auto playerId = entities.createObject("Player");
-    auto animSprite = entities.getComponent<Components::AnimSprite>(playerId);
-    if (animSprite)
-    {
-        animSprite->sprite.loadFromConfig("data/config/player.cfg");
-        animSprite->sprite.play("StandRight");
-        auto size = entities.getComponent<Components::Size>(playerId);
-        if (size)
-        {
-            auto spriteSize = animSprite->sprite.getTileSize();
-            size->x = spriteSize.x;
-            size->y = spriteSize.y;
-        }
-    }
+    entities.createObject("Player");
 
     // Setup the magic window
     static const unsigned magicWindowSize = 5;
@@ -63,6 +50,18 @@ GameState::GameState(GameObjects& objects):
 
     // Set the map size for the camera system
     cameraSystem.setMapSize(tiles.getPixelSize());
+}
+
+void GameState::bindStringsToComponents()
+{
+    entities.bindStringToComponent<Components::Position>("Position");
+    entities.bindStringToComponent<Components::Velocity>("Velocity");
+    entities.bindStringToComponent<Components::Size>("Size");
+    entities.bindStringToComponent<Components::AABB>("AABB");
+    entities.bindStringToComponent<Components::Input>("Input");
+    entities.bindStringToComponent<Components::AnimSprite>("AnimSprite");
+    entities.bindStringToComponent<Components::PlayerState>("PlayerState");
+    entities.bindStringToComponent<Components::CameraUpdater>("CameraUpdater");
 }
 
 void GameState::handleEvents()

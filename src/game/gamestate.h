@@ -32,7 +32,7 @@ class GameState: public BaseState
 
     private:
 
-        void handleInput();
+        void bindStringsToComponents();
 
         GameObjects& objects;
         bool hasFocus;

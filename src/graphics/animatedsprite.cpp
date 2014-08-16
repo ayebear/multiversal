@@ -3,6 +3,7 @@
 
 #include "animatedsprite.h"
 #include <iostream>
+#include "spriteloader.h"
 
 AnimatedSprite::AnimatedSprite()
 {
@@ -19,10 +20,7 @@ AnimatedSprite::AnimatedSprite(const std::string& configFilename):
 
 bool AnimatedSprite::loadTexture(const std::string& textureFilename)
 {
-    bool status = texture.loadFromFile(textureFilename);
-    if (status)
-        sprite.setTexture(texture, true);
-    return status;
+    return SpriteLoader::load(sprite, textureFilename, true);
 }
 
 void AnimatedSprite::setTileSize(const sf::Vector2u& size)
@@ -54,6 +52,11 @@ void AnimatedSprite::loadFromConfig(cfg::File& config)
                     config("frames").toInt(), config("flipX").toBool(), config("flipY").toBool());
         }
     }
+    // Play an initial animation if one is specified
+    config.useSection("");
+    const std::string& startAnim = config("start").toString();
+    if (!startAnim.empty())
+        play(startAnim);
 }
 
 sf::FloatRect AnimatedSprite::getGlobalBounds() const

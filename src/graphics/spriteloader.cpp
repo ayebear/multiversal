@@ -3,6 +3,9 @@
 
 #include "spriteloader.h"
 #include "configfile.h"
+#include <iostream>
+
+std::map<std::string, sf::Texture> SpriteLoader::textures;
 
 SpriteLoader::SpriteLoader()
 {
@@ -13,12 +16,21 @@ SpriteLoader::SpriteLoader(const std::string& configFilename)
     loadFromConfig(configFilename);
 }
 
-bool SpriteLoader::load(const std::string& name, const std::string& textureFilename)
+bool SpriteLoader::load(const std::string& name, const std::string& textureFilename, bool resetRect)
 {
-    auto& texture = textures[textureFilename];
-    bool status = texture.loadFromFile(textureFilename);
+    bool status;
+    auto& texture = loadTexture(textureFilename, status);
     if (status)
-        sprites[name].setTexture(texture, true);
+        sprites[name].setTexture(texture, resetRect);
+    return status;
+}
+
+bool SpriteLoader::load(sf::Sprite& sprite, const std::string& textureFilename, bool resetRect)
+{
+    bool status;
+    auto& texture = loadTexture(textureFilename, status);
+    if (status)
+        sprite.setTexture(texture, resetRect);
     return status;
 }
 
@@ -36,12 +48,32 @@ sf::Sprite& SpriteLoader::getSprite(const std::string& name)
     return sprites[name];
 }
 
-sf::Texture& SpriteLoader::getTexture(const std::string& textureFilename)
+sf::Texture& SpriteLoader::getTexture(const std::string& filename)
 {
-    return textures[textureFilename];
+    return textures[filename];
 }
 
 sf::Sprite& SpriteLoader::operator()(const std::string& name)
 {
     return sprites[name];
+}
+
+sf::Texture& SpriteLoader::loadTexture(const std::string& filename, bool& status)
+{
+    status = true;
+    // Only load the texture if it hasn't been loaded yet
+    bool notLoaded = (textures.find(filename) == textures.end());
+    auto& texture = textures[filename];
+    if (notLoaded)
+    {
+        std::cout << "Loading new texture: " << filename << "...";
+        status = texture.loadFromFile(filename);
+        if (status)
+            std::cout << " Done.\n";
+        else
+            std::cout << " Error!\n";
+    }
+    else
+        std::cout << "Already loaded, skipping: " << filename << "\n";
+    return texture;
 }
