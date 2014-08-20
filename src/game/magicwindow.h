@@ -16,6 +16,7 @@ class MagicWindow: public sf::Drawable, public sf::Transformable
         bool hasChanged() const;
         sf::RenderTexture& getTexture();
         bool isWithin(const sf::Vector2u& pos) const;
+        bool isWithin(const sf::FloatRect& aabb) const;
         void show(bool state);
         bool isVisible() const;
         void setView(const sf::View& view, const sf::Vector2f& windowViewPos);

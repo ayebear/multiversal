@@ -12,6 +12,7 @@
 #include "inputsystem.h"
 #include "playersystem.h"
 #include "physicssystem.h"
+#include "carrysystem.h"
 #include "camerasystem.h"
 #include "rendersystem.h"
 #include "OCS/Objects.hpp"
@@ -42,14 +43,13 @@ class GameState: public BaseState
         Camera camera;
         Level level;
         MagicWindow magicWindow;
-
-        // Entities
         ocs::ObjectManager entities;
 
         // Systems
         InputSystem input;
         PlayerSystem player;
         PhysicsSystem physics;
+        CarrySystem carrySystem;
         CameraSystem cameraSystem;
         RenderSystem render;
 };

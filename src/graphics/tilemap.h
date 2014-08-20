@@ -14,7 +14,8 @@ TODO:
 */
 
 /*
-This class can draw a map of tiles.
+This class handles storing and drawing a visual map of tiles.
+Tiles are represented with an ID
 The tile size and map size can be set.
     Note: Changing this after setting the tiles will reset everything.
 A tileset (in a single texture) must be specified with the tile size, as well as the

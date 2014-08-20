@@ -32,4 +32,10 @@ struct OnPlatformEvent
     ocs::ID entityId;
 };
 
+struct ActionKeyEvent
+{
+    sf::Vector2i position;
+    ocs::ID entityId;
+};
+
 #endif

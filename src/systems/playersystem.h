@@ -5,6 +5,7 @@
 #define PLAYERSYSTEM_H
 
 #include "components.h"
+#include "OCS/Objects.hpp"
 
 class PlayerSystem
 {
@@ -14,6 +15,7 @@ class PlayerSystem
         void handleJumps(Components::PlayerState& playerState);
         void handleMovement(Components::PlayerState& playerState);
         void handlePosition(Components::PlayerState& playerState);
+        void handleActionKey(Components::PlayerState& playerState);
 
     private:
         ocs::ObjectManager& entities;

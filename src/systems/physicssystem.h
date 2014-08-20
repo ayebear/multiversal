@@ -5,8 +5,8 @@
 #define PHYSICSSYSTEM_H
 
 #include <SFML/Graphics.hpp>
-#include "OCS/Objects.hpp"
 #include "components.h"
+#include "OCS/Objects.hpp"
 
 class TileMap;
 class MagicWindow;
@@ -20,13 +20,14 @@ class PhysicsSystem
     public:
         PhysicsSystem(ocs::ObjectManager& entities, TileMap& tiles, MagicWindow& magicWindow);
         void update(float dt);
+        void updateSpritePositions(float dt);
 
     private:
         void stepPositions(float dt);
-        void handleCollision(const sf::FloatRect& entAABB, float& velocity, float& position, unsigned size, bool vertical, ocs::ID entityId = -1);
+        void handleTileCollision(const sf::FloatRect& entAABB, float& velocity, Components::Position* position, bool vertical, ocs::ID entityId = -1);
         void findTilesToCheck(const sf::FloatRect& entAABB);
         void updateEdgeCases(Components::Position* position, Components::Size* size, float& velocity, ocs::ID entityId);
-        sf::FloatRect getGlobalBounds(const sf::Vector2f& position, const sf::Vector2u& size) const;
+        void checkEntityCollisions();
 
         // These are used for gravity and falling
         static const sf::Vector2i maxVelocity;
@@ -40,7 +41,6 @@ class PhysicsSystem
         sf::Vector2u tileSize;
         sf::Vector2i start;
         sf::Vector2i end;
-
 };
 
 #endif

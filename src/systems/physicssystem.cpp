@@ -21,7 +21,11 @@ PhysicsSystem::PhysicsSystem(ocs::ObjectManager& entities, TileMap& tiles, Magic
 void PhysicsSystem::update(float dt)
 {
     stepPositions(dt);
+    checkEntityCollisions();
+}
 
+void PhysicsSystem::updateSpritePositions(float dt)
+{
     // Update sprite positions
     for (auto& sprite: entities.getComponentArray<Components::Sprite>())
     {
@@ -58,17 +62,18 @@ void PhysicsSystem::stepPositions(float dt)
             if (velocity.y > maxVelocity.y)
                 velocity.y = maxVelocity.y;
 
-            // TODO: Use AABB component
+            // Get the AABB component used for collision detection/handling
+            auto aabb = entities.getComponent<Components::AABB>(entityId);
 
             // Update Y
             position->y += dt * velocity.y;
-            sf::FloatRect entAABB = getGlobalBounds(sf::Vector2f(position->x, position->y), sf::Vector2u(size->x, size->y));
-            handleCollision(entAABB, velocity.y, position->y, size->y, true, entityId);
+            if (aabb)
+                handleTileCollision(aabb->rect, velocity.y, position, true, entityId);
 
             // Update X
             position->x += dt * velocity.x;
-            entAABB = getGlobalBounds(sf::Vector2f(position->x, position->y), sf::Vector2u(size->x, size->y));
-            handleCollision(entAABB, velocity.x, position->x, size->x, false);
+            if (aabb)
+                handleTileCollision(aabb->rect, velocity.x, position, false, entityId);
 
             // Fix edge cases
             updateEdgeCases(position, size, velocity.y, entityId);
@@ -81,13 +86,19 @@ void PhysicsSystem::stepPositions(float dt)
     }
 }
 
-void PhysicsSystem::handleCollision(const sf::FloatRect& entAABB, float& velocity, float& position, unsigned size, bool vertical, ocs::ID entityId)
+void PhysicsSystem::handleTileCollision(const sf::FloatRect& entAABB, float& velocity, Components::Position* position, bool vertical, ocs::ID entityId)
 {
     // Object - tile map collision
     // Need to send an event when this happens so the entity knows which tile it is colliding with
     // And it would send what kind of event: falling off platform, standing on platform, etc.
 
-    findTilesToCheck(entAABB);
+    // Temp computed AABB (position + AABB component)
+    sf::FloatRect tempAABB(entAABB);
+    tempAABB.left += position->x;
+    tempAABB.top += position->y;
+
+    // Get the area of tiles to check collision against
+    findTilesToCheck(tempAABB);
 
     // Check the collision
     bool collided = false;
@@ -101,24 +112,24 @@ void PhysicsSystem::handleCollision(const sf::FloatRect& entAABB, float& velocit
             {
                 auto tileBox = tiles.getBoundingBox(x, y);
                 //printRect(tileBox);
-                if (tileBox.intersects(entAABB))
+                if (tileBox.intersects(tempAABB))
                 {
                     if (vertical) // Use y
                     {
                         if (velocity >= 0) // Standing on platform
                         {
-                            position = y * tileSize.y - size;
+                            tempAABB.top = y * tileSize.y - tempAABB.height;
                             onPlatform = true;
                         }
                         else // Hitting ceiling
-                            position = (y + 1) * tileSize.y;
+                            tempAABB.top = (y + 1) * tileSize.y;
                     }
                     else // Use x
                     {
                         if (velocity >= 0) // Moving to the right
-                            position = x * tileSize.x - size;
+                            tempAABB.left = x * tileSize.x - tempAABB.width;
                         else // Moving to the left
-                            position = (x + 1) * tileSize.x;
+                            tempAABB.left = (x + 1) * tileSize.x;
                     }
                     velocity = 0;
                     collided = true;
@@ -127,8 +138,14 @@ void PhysicsSystem::handleCollision(const sf::FloatRect& entAABB, float& velocit
             }
         }
     }
+
+    // Notify the entity about it being in the air or on a platform
     if (vertical && entityId != ocs::ID(-1))
         Broadcasts::send(OnPlatformEvent{onPlatform, entityId});
+
+    // Update the position from the new AABB
+    position->x = tempAABB.left - entAABB.left;
+    position->y = tempAABB.top - entAABB.top;
 }
 
 void PhysicsSystem::findTilesToCheck(const sf::FloatRect& entAABB)
@@ -173,9 +190,27 @@ void PhysicsSystem::updateEdgeCases(Components::Position* position, Components::
     }
 }
 
-sf::FloatRect PhysicsSystem::getGlobalBounds(const sf::Vector2f& position, const sf::Vector2u& size) const
+void PhysicsSystem::checkEntityCollisions()
 {
-    // TODO: Make this customizable
-    // May not even need this with an AABB component...
-    return sf::FloatRect(position.x, position.y, size.x, size.y);
+    // TODO: Handle collisions between collidable (rigid) components
+    // TODO: Use a quad-tree or some spatial partitioning to improve performance
+
+    // Use an O(n^2) algorithm to detect collisions between entities
+    // Update the collision lists on any colliding components
+    auto& aabbComponents = entities.getComponentArray<Components::AABB>();
+    for (auto& aabb: aabbComponents)
+    {
+        aabb.collisions.clear();
+        for (auto& aabb2: aabbComponents)
+        {
+            if (aabb.getOwnerID() != aabb2.getOwnerID())
+            {
+                auto pos = entities.getComponent<Components::Position>(aabb.getOwnerID());
+                auto pos2 = entities.getComponent<Components::Position>(aabb2.getOwnerID());
+                //bool inAltWorld = entities.hasComponents<Components::AltWorld>(aabb.getOwnerID());
+                if (aabb.getGlobalBounds(pos).intersects(aabb2.getGlobalBounds(pos2)))
+                    aabb.collisions.push_back(aabb2.getOwnerID());
+            }
+        }
+    }
 }

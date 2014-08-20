@@ -89,6 +89,11 @@ bool MagicWindow::isWithin(const sf::Vector2u& pos) const
     return (visible && sf::Rect<unsigned>(position.x, position.y, size.x, size.y).contains(pos));
 }
 
+bool MagicWindow::isWithin(const sf::FloatRect& aabb) const
+{
+    return (visible && sf::FloatRect(position.x, position.y, size.x, size.y).intersects(aabb));
+}
+
 void MagicWindow::show(bool state)
 {
     visible = state;

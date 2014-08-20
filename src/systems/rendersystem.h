@@ -6,6 +6,7 @@
 
 #include <SFML/Graphics.hpp>
 #include "OCS/Objects.hpp"
+#include "components.h"
 #include "spriteloader.h"
 
 class TileMap;
@@ -28,8 +29,22 @@ class RenderSystem
         sf::RenderWindow& window;
         Camera& camera;
         MagicWindow& magicWindow;
+        sf::RenderTexture& texture;
 
         SpriteLoader sprites;
+
+        template <class SpriteType>
+        void drawSprite(const SpriteType& sprite, bool onTop = false)
+        {
+            bool hasOnTop = entities.hasComponents<Components::DrawOnTop>(sprite.getOwnerID());
+            if (hasOnTop == onTop)
+            {
+                if (entities.hasComponents<Components::AltWorld>(sprite.getOwnerID()))
+                    texture.draw(sprite.sprite);
+                else
+                    window.draw(sprite.sprite);
+            }
+        }
 };
 
 #endif

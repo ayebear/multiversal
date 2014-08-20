@@ -4,9 +4,11 @@
 #ifndef COMPONENTS_H
 #define COMPONENTS_H
 
+#include <vector>
 #include <SFML/Graphics.hpp>
 #include "OCS/Components.hpp"
 #include "animatedsprite.h"
+#include "spriteloader.h"
 
 namespace Components
 {
@@ -49,18 +51,33 @@ struct Size: public ocs::Component<Size>
 struct AABB: public ocs::Component<AABB>
 {
     sf::FloatRect rect;
+    std::vector<ocs::ID> collisions; // IDs of currently colliding objects
     void deSerialize(const std::string& str)
     {
         serializer.deSerialize("% % % %", str, rect.left, rect.top, rect.width, rect.height);
     }
+    sf::FloatRect getGlobalBounds(Position* position = nullptr)
+    {
+        if (position)
+        {
+            sf::FloatRect tempAABB(rect);
+            tempAABB.left += position->x;
+            tempAABB.top += position->y;
+            return tempAABB;
+        }
+        return rect;
+    }
 };
-
-// Flag for if an entity should accept user input
-struct Input: public ocs::Component<Input> {};
 
 struct Sprite: public ocs::Component<Sprite>
 {
     sf::Sprite sprite;
+    void deSerialize(const std::string& str)
+    {
+        std::string filename;
+        serializer.deSerialize("%", str, filename);
+        SpriteLoader::load(sprite, filename, true);
+    }
 };
 
 struct AnimSprite: public ocs::Component<AnimSprite>
@@ -92,21 +109,41 @@ struct PlayerState: public ocs::Component<PlayerState>
     bool wasRight;
 };
 
+struct Carrier: public ocs::Component<Carrier>
+{
+    // ID of entity being carried
+    ocs::ID id;
+    sf::Vector2f offset;
+    bool carrying;
+
+    Carrier(): id(0), carrying(false) {}
+
+    void deSerialize(const std::string& str)
+    {
+        serializer.deSerialize("% %", str, offset.x, offset.y);
+    }
+};
+
+// Component flags
+
+// If an entity should accept user input
+// This should be split into movable/jumpable/etc.
+struct Input: public ocs::Component<Input> {};
+
 // Flag for updating the camera
 // Note: Only works if the entity also has a position component
 struct CameraUpdater: public ocs::Component<CameraUpdater> {};
 
-// TODO: Maybe add a gravity component
+// Determines if the entity exists in the alternate world
+struct AltWorld: public ocs::Component<AltWorld> {};
 
-// Various flags and settings for the properties of an entity
-// May split these up into separate components, but for now this is fine.
-/*
-struct Flags: public ocs::Component<Flags>
-{
-    Flags(): acceptInput(false) {}
-    bool acceptInput;
-};
-*/
+// Determines if an entity should be drawn on top of everything
+struct DrawOnTop: public ocs::Component<DrawOnTop> {};
+
+// Determines if an entity can be carried by another entity with a Carrier component
+struct Carryable: public ocs::Component<Carryable> {};
+
+// TODO: Maybe add a gravity component
 
 }
 
