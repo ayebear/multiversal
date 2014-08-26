@@ -12,22 +12,20 @@ StateManager::~StateManager()
     deallocateStates();
 }
 
-void StateManager::addState(const StateId& newId, BaseState* newState)
+void StateManager::add(const std::string& name, std::unique_ptr<BaseState> state)
 {
-    // Using reset() prevents memory leaks
-    statePtrs[newId].reset(newState);
+    statePtrs[name] = std::move(state);
 }
 
-void StateManager::removeState(const StateId& id)
+void StateManager::remove(const std::string& name)
 {
-    statePtrs.erase(id);
+    statePtrs.erase(name);
 }
 
-void StateManager::startLoop(const StateId& firstState)
+void StateManager::start(const std::string& name)
 {
-    StateEvent event;
-    event.pushState(firstState);
-    while (event.isNotExit())
+    StateEvent event(StateEvent::Push, name);
+    while (event.command != StateEvent::Exit)
         handleEvent(event);
 }
 
@@ -45,32 +43,29 @@ void StateManager::deallocateStates()
 
 void StateManager::handleEvent(StateEvent& event)
 {
-    // Do something depending on the command
-    switch (event.getCommand())
-    {
-        case StateEvent::Command::Push:
-            push(event.getId());
-            break;
-        case StateEvent::Command::Pop:
-            pop();
-            break;
-        default:
-            break;
-    }
+    // Take action based on the event
+    if (event.command == StateEvent::Push)
+        push(event.name);
+    else if (event.command == StateEvent::Pop)
+        pop();
 
     // Run the current state (on the top of the stack)
     if (!stateStack.empty())
-        event = statePtrs[stateStack.top()]->start(event.getArgs());
+    {
+        auto& state = statePtrs[stateStack.top()];
+        if (state)
+            event = state->start();
+    }
     else // If the stack is empty
-        event.exitGame(); // Exit the game
+        event.command = StateEvent::Exit; // Exit the game
 }
 
-void StateManager::push(const StateId& id)
+void StateManager::push(const std::string& name)
 {
-    auto found = statePtrs.find(id);
-    if (found != statePtrs.end())
+    auto found = statePtrs.find(name);
+    if (found != statePtrs.end() && found->second)
     {
-        stateStack.push(id);
+        stateStack.push(name);
         found->second->onPush();
     }
     // If this fails due to a bad type, the current state will just start again.
@@ -80,7 +75,9 @@ void StateManager::pop()
 {
     if (!stateStack.empty())
     {
-        statePtrs[stateStack.top()]->onPop();
+        auto& state = statePtrs[stateStack.top()];
+        if (state)
+            state->onPop();
         stateStack.pop();
     }
 }

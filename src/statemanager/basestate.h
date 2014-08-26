@@ -17,13 +17,11 @@ class BaseState
         BaseState() {}
         virtual ~BaseState() {}
 
+        const StateEvent& start(); // Runs the main loop, then returns the action object
+
         // These are totally optional, they don't even need to be implemented by sub classes
-        virtual void processArgs(const StateArgs& args) {} // Arguments passed in from the state that asked for the push
         virtual void onPush() {} // Gets called only when the state has been pushed onto the stack
         virtual void onPop() {} // Gets called only when the state has been popped off of the stack
-        virtual void onStart() {} // Gets called when the state is started
-
-        const StateEvent& start(const StateArgs&); // Calls processArgs, runs the main loop, then returns the action object
 
         // These are the main functions of the state, which are called every loop
         virtual void handleEvents() = 0;

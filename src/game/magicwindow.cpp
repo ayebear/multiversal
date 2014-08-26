@@ -14,6 +14,9 @@ MagicWindow::MagicWindow()
     border.setFillColor(sf::Color::Transparent);
     border.setOutlineColor(sf::Color::Blue);
     border.setOutlineThickness(4);
+    preview.setFillColor(sf::Color::Transparent);
+    preview.setOutlineColor(sf::Color(128, 128, 128, 128));
+    preview.setOutlineThickness(4);
 }
 
 void MagicWindow::update()
@@ -60,6 +63,7 @@ void MagicWindow::setCenter(const sf::Vector2f& center, bool force)
             textureView.setCenter(center);
         }
     }
+    preview.setPosition(center);
 }
 
 void MagicWindow::setSize(const sf::Vector2f& newSize)
@@ -69,6 +73,8 @@ void MagicWindow::setSize(const sf::Vector2f& newSize)
     {
         size = newSize;
         border.setSize(size);
+        preview.setSize(size);
+        preview.setOrigin(size.x / 2, size.y / 2);
         texture.create(size.x, size.y);
         textureView.setSize(size);
     }
@@ -130,4 +136,5 @@ void MagicWindow::draw(sf::RenderTarget& target, sf::RenderStates states) const
         target.draw(sprite, states);
         target.draw(border, states);
     }
+    target.draw(preview);
 }

@@ -36,7 +36,6 @@ class GameState: public BaseState
         void bindStringsToComponents();
 
         GameObjects& objects;
-        bool hasFocus;
 
         // Maybe move these to a world class?
         TileMap tiles;

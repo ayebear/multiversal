@@ -4,24 +4,16 @@
 #include "basestate.h"
 
 // This fuction is used as the main loop in all game states.
-const StateEvent& BaseState::start(const StateArgs& args)
+const StateEvent& BaseState::start()
 {
-    stateEvent.reset(); // Must reset the event in case the state still existed in memory after this returned
-    processArgs(args);
-    onStart();
+    stateEvent.reset();
     handleEvents();
-    while (stateEvent.shouldContinue())
+    while (stateEvent.command == StateEvent::Continue)
     {
         dt = clock.restart().asSeconds();
-
-        // TODO: Make this configurable
-        // Cap at 15 fps
-        //if (dt > 0.25f)
-            //dt = 0.25;
-
         update();
         draw();
-        handleEvents(); // This is last so it doesn't have to update and draw an extra frame if the state is supposed to change
+        handleEvents();
     }
     return stateEvent;
 }

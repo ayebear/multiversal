@@ -30,6 +30,7 @@ class MagicWindow: public sf::Drawable, public sf::Transformable
         sf::Vector2f position;
         sf::Vector2f center;
         sf::RectangleShape border;
+        sf::RectangleShape preview;
         sf::RenderTexture texture;
         sf::View textureView; // Stays the size of the texture
 };

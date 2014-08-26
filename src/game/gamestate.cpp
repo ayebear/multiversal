@@ -9,6 +9,7 @@
 #include "gameevents.h"
 #include "entityprototypeloader.h"
 #include "componentstrings.h"
+#include "windowfocus.h"
 
 GameState::GameState(GameObjects& objects):
     objects(objects),
@@ -20,8 +21,6 @@ GameState::GameState(GameObjects& objects):
     cameraSystem(camera),
     render(entities, tiles, objects.window, camera, magicWindow)
 {
-    hasFocus = true;
-
     // Load entity prototypes
     bindComponentStrings(entities);
     EntityPrototypeLoader::load(entities, "data/config/entities.cfg");
@@ -69,15 +68,15 @@ void GameState::handleEvents()
         switch (event.type)
         {
             case sf::Event::Closed:
-                stateEvent.exitGame();
+                stateEvent.command = StateEvent::Exit;
                 break;
 
             case sf::Event::LostFocus:
-                hasFocus = false;
+                WindowFocus::setFocus(false);
                 break;
 
             case sf::Event::GainedFocus:
-                hasFocus = true;
+                WindowFocus::setFocus(true);
                 break;
 
             default:

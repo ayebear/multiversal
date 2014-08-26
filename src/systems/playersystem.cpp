@@ -5,6 +5,7 @@
 #include "events.h"
 #include "events.h"
 #include "gameevents.h"
+#include "windowfocus.h"
 
 PlayerSystem::PlayerSystem(ocs::ObjectManager& entities):
     entities(entities)
@@ -61,8 +62,8 @@ void PlayerSystem::handleMovement(Components::PlayerState& playerState)
     if (velocity && sprite)
     {
         // TODO: Take in events from a an input system
-        bool leftPressed = (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A));
-        bool rightPressed = (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D));
+        bool leftPressed = (WindowFocus::hasFocus() && (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A)));
+        bool rightPressed = (WindowFocus::hasFocus() && (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D)));
         std::string carryStr;
         if (carrier && carrier->carrying)
             carryStr = "Carry";
