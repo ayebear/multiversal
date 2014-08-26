@@ -24,7 +24,7 @@ class PhysicsSystem
 
     private:
         void stepPositions(float dt);
-        void handleTileCollision(const sf::FloatRect& entAABB, float& velocity, Components::Position* position, bool vertical, ocs::ID entityId = -1);
+        void handleTileCollision(Components::AABB* entAABB, float& velocity, Components::Position* position, bool vertical, ocs::ID entityId = -1);
         void findTilesToCheck(const sf::FloatRect& entAABB);
         void updateEdgeCases(Components::Position* position, Components::Size* size, float& velocity, ocs::ID entityId);
         void checkEntityCollisions();

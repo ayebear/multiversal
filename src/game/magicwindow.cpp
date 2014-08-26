@@ -4,7 +4,7 @@
 #include "magicwindow.h"
 #include <iostream>
 #include "views.h"
-#include "broadcasts.h"
+#include "events.h"
 #include "gameevents.h"
 
 MagicWindow::MagicWindow()
@@ -19,16 +19,16 @@ MagicWindow::MagicWindow()
 void MagicWindow::update()
 {
     // Check SFML events
-    for (auto& event: Broadcasts::get<sf::Event>())
+    for (auto& event: Events::get<sf::Event>())
     {
         if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left)
             active = false;
     }
     // Check real-time mouse input
-    for (auto& event: Broadcasts::get<MousePosEvent>())
+    for (auto& event: Events::get<MousePosEvent>())
         setCenter(event.mousePos);
     // Check mouse-clicked events
-    for (auto& event: Broadcasts::get<MouseClickedEvent>())
+    for (auto& event: Events::get<MouseClickedEvent>())
     {
         if (event.button == sf::Mouse::Left)
         {
@@ -86,7 +86,7 @@ sf::RenderTexture& MagicWindow::getTexture()
 
 bool MagicWindow::isWithin(const sf::Vector2u& pos) const
 {
-    return (visible && sf::Rect<unsigned>(position.x, position.y, size.x, size.y).contains(pos));
+    return (visible && sf::IntRect(position.x, position.y, size.x, size.y).contains(sf::Vector2i(pos.x, pos.y)));
 }
 
 bool MagicWindow::isWithin(const sf::FloatRect& aabb) const

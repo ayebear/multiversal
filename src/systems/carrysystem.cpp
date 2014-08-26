@@ -1,6 +1,6 @@
 #include "carrysystem.h"
 #include "components.h"
-#include "broadcasts.h"
+#include "events.h"
 #include "gameevents.h"
 #include "magicwindow.h"
 #include <iostream>
@@ -14,7 +14,7 @@ CarrySystem::CarrySystem(ocs::ObjectManager& entities, MagicWindow& magicwindow)
 void CarrySystem::update()
 {
     // Process events, and check if anything should be picked up/put down
-    for (auto& event: Broadcasts::get<ActionKeyEvent>())
+    for (auto& event: Events::get<ActionKeyEvent>())
     {
         auto carrier = entities.getComponent<Components::Carrier>(event.entityId);
         auto aabb = entities.getComponent<Components::AABB>(event.entityId);
@@ -53,8 +53,6 @@ void CarrySystem::update()
                 auto carryable = entities.getComponent<Components::Carryable>(id);
                 if (carryable)
                 {
-                    // TODO: Only pickup objects from correct location
-                    // Maybe the physics system could just create the correct collision list
                     carrier->id = id;
                     entities.removeComponents<Components::AltWorld>(id);
                     entities.addComponents(id, Components::DrawOnTop());

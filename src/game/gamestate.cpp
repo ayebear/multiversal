@@ -5,7 +5,6 @@
 #include <iostream>
 #include "gameobjects.h"
 #include "events.h"
-#include "broadcasts.h"
 #include "components.h"
 #include "gameevents.h"
 #include "entityprototypeloader.h"
@@ -49,7 +48,6 @@ GameState::GameState(GameObjects& objects):
         auto pos = entities.getComponent<Components::Position>(boxId);
         if (pos)
             pos->x += box * 96 - 96;
-        entities.addComponents(boxId, Components::AltWorld());
     }
 
     // Setup the magic window
@@ -66,7 +64,7 @@ GameState::GameState(GameObjects& objects):
 void GameState::handleEvents()
 {
     input.update(camera.getView("game"));
-    for (auto& event: Broadcasts::get<sf::Event>())
+    for (auto& event: Events::get<sf::Event>())
     {
         switch (event.type)
         {

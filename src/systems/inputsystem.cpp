@@ -2,7 +2,7 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "inputsystem.h"
-#include "broadcasts.h"
+#include "events.h"
 #include "gameevents.h"
 
 InputSystem::InputSystem(sf::RenderWindow& window):
@@ -20,23 +20,23 @@ void InputSystem::update(const sf::View& view)
 void InputSystem::proxyEvents()
 {
     // Proxy SFML events from window
-    Broadcasts::clear<sf::Event>();
+    Events::clear<sf::Event>();
     sf::Event event;
     while (window.pollEvent(event))
-        Broadcasts::send(event);
+        Events::send(event);
 }
 
 void InputSystem::sendMouseButtonEvents(const sf::View& view)
 {
     // Check for mouse button events, and proxy mapped coordinates
-    Broadcasts::clear<MouseClickedEvent>();
-    for (auto& event: Broadcasts::get<sf::Event>())
+    Events::clear<MouseClickedEvent>();
+    for (auto& event: Events::get<sf::Event>())
     {
         if (event.type == sf::Event::MouseButtonPressed)
         {
             sf::Vector2i mousePos(event.mouseButton.x, event.mouseButton.y);
             sf::Vector2f gameMousePos = window.mapPixelToCoords(mousePos, view);
-            Broadcasts::send(MouseClickedEvent{event.mouseButton.button, gameMousePos});
+            Events::send(MouseClickedEvent{event.mouseButton.button, gameMousePos});
         }
     }
 }
@@ -44,11 +44,11 @@ void InputSystem::sendMouseButtonEvents(const sf::View& view)
 void InputSystem::sendMousePositionEvents(const sf::View& view)
 {
     // Get mouse position - if changed, then broadcast
-    Broadcasts::clear<MousePosEvent>();
+    Events::clear<MousePosEvent>();
     auto newMousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window), view);
     if (currentMousePos != newMousePos)
     {
         currentMousePos = newMousePos;
-        Broadcasts::send(MousePosEvent{currentMousePos});
+        Events::send(MousePosEvent{currentMousePos});
     }
 }

@@ -3,7 +3,7 @@
 
 #include "camerasystem.h"
 #include "camera.h"
-#include "broadcasts.h"
+#include "events.h"
 #include "gameevents.h"
 
 CameraSystem::CameraSystem(Camera& camera):
@@ -18,7 +18,7 @@ void CameraSystem::setMapSize(const sf::Vector2u& size)
 
 void CameraSystem::update()
 {
-    for (auto& event: Broadcasts::get<CameraEvent>())
+    for (auto& event: Events::get<CameraEvent>())
     {
         // Set view's center based on entity's position and size
         auto playerPos = event.position;

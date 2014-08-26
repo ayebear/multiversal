@@ -5,7 +5,7 @@
 #include "tilemap.h"
 #include "magicwindow.h"
 #include "components.h"
-#include "broadcasts.h"
+#include "events.h"
 #include "gameevents.h"
 
 const sf::Vector2i PhysicsSystem::maxVelocity(400, 800);
@@ -46,8 +46,8 @@ void PhysicsSystem::updateSpritePositions(float dt)
 
 void PhysicsSystem::stepPositions(float dt)
 {
-    Broadcasts::clear<CameraEvent>();
-    Broadcasts::clear<OnPlatformEvent>();
+    Events::clear<CameraEvent>();
+    Events::clear<OnPlatformEvent>();
 
     // Apply gravity and handle collisions
     for (auto& velocity: entities.getComponentArray<Components::Velocity>())
@@ -68,34 +68,32 @@ void PhysicsSystem::stepPositions(float dt)
             // Update Y
             position->y += dt * velocity.y;
             if (aabb)
-                handleTileCollision(aabb->rect, velocity.y, position, true, entityId);
+                handleTileCollision(aabb, velocity.y, position, true, entityId);
 
             // Update X
             position->x += dt * velocity.x;
             if (aabb)
-                handleTileCollision(aabb->rect, velocity.x, position, false, entityId);
+                handleTileCollision(aabb, velocity.x, position, false, entityId);
 
             // Fix edge cases
             updateEdgeCases(position, size, velocity.y, entityId);
 
             // Send camera update event
             if (entities.hasComponents<Components::CameraUpdater>(velocity.getOwnerID()))
-                Broadcasts::send(CameraEvent{sf::Vector2f(position->x, position->y),
+                Events::send(CameraEvent{sf::Vector2f(position->x, position->y),
                                              sf::Vector2f(size->x, size->y)});
         }
     }
 }
 
-void PhysicsSystem::handleTileCollision(const sf::FloatRect& entAABB, float& velocity, Components::Position* position, bool vertical, ocs::ID entityId)
+void PhysicsSystem::handleTileCollision(Components::AABB* entAABB, float& velocity, Components::Position* position, bool vertical, ocs::ID entityId)
 {
     // Object - tile map collision
     // Need to send an event when this happens so the entity knows which tile it is colliding with
     // And it would send what kind of event: falling off platform, standing on platform, etc.
 
     // Temp computed AABB (position + AABB component)
-    sf::FloatRect tempAABB(entAABB);
-    tempAABB.left += position->x;
-    tempAABB.top += position->y;
+    auto tempAABB = entAABB->getGlobalBounds(position);
 
     // Get the area of tiles to check collision against
     findTilesToCheck(tempAABB);
@@ -107,7 +105,9 @@ void PhysicsSystem::handleTileCollision(const sf::FloatRect& entAABB, float& vel
     {
         for (int x = start.x; x <= end.x && !collided; ++x)
         {
-            int layer = magicWindow.isWithin(tiles.getCenterPoint(x, y)) + 1;
+            int layer = 1;
+            if (magicWindow.isWithin(tiles.getCenterPoint(x, y)))
+                ++layer;
             if (tiles(layer, x, y) >= 1)
             {
                 auto tileBox = tiles.getBoundingBox(x, y);
@@ -141,11 +141,11 @@ void PhysicsSystem::handleTileCollision(const sf::FloatRect& entAABB, float& vel
 
     // Notify the entity about it being in the air or on a platform
     if (vertical && entityId != ocs::ID(-1))
-        Broadcasts::send(OnPlatformEvent{onPlatform, entityId});
+        Events::send(OnPlatformEvent{onPlatform, entityId});
 
     // Update the position from the new AABB
-    position->x = tempAABB.left - entAABB.left;
-    position->y = tempAABB.top - entAABB.top;
+    position->x = tempAABB.left - entAABB->rect.left;
+    position->y = tempAABB.top - entAABB->rect.top;
 }
 
 void PhysicsSystem::findTilesToCheck(const sf::FloatRect& entAABB)
@@ -172,6 +172,7 @@ void PhysicsSystem::findTilesToCheck(const sf::FloatRect& entAABB)
 
 void PhysicsSystem::updateEdgeCases(Components::Position* position, Components::Size* size, float& velocity, ocs::ID entityId)
 {
+    // Ensure that entities won't move outside of the level
     if (position->x < 0)
         position->x = 0;
     if (position->y < 0)
@@ -186,12 +187,13 @@ void PhysicsSystem::updateEdgeCases(Components::Position* position, Components::
     if (position->y > newPosition.y)
     {
         position->y = newPosition.y;
-        Broadcasts::send(OnPlatformEvent{true, entityId});
+        Events::send(OnPlatformEvent{true, entityId});
     }
 }
 
 void PhysicsSystem::checkEntityCollisions()
 {
+    // TODO: Add "rigid" properties: Completely solid, and collidable only on the top
     // TODO: Handle collisions between collidable (rigid) components
     // TODO: Use a quad-tree or some spatial partitioning to improve performance
 
@@ -205,11 +207,30 @@ void PhysicsSystem::checkEntityCollisions()
         {
             if (aabb.getOwnerID() != aabb2.getOwnerID())
             {
-                auto pos = entities.getComponent<Components::Position>(aabb.getOwnerID());
-                auto pos2 = entities.getComponent<Components::Position>(aabb2.getOwnerID());
-                //bool inAltWorld = entities.hasComponents<Components::AltWorld>(aabb.getOwnerID());
-                if (aabb.getGlobalBounds(pos).intersects(aabb2.getGlobalBounds(pos2)))
-                    aabb.collisions.push_back(aabb2.getOwnerID());
+                // TODO: Dynamically build a new world when moving the window
+                    // This will make things 100% accurate and much simpler (no crazy boolean logic like below)
+                auto id = aabb.getOwnerID();
+                auto id2 = aabb2.getOwnerID();
+                auto pos = entities.getComponent<Components::Position>(id);
+                auto pos2 = entities.getComponent<Components::Position>(id2);
+                bool drawOnTop = entities.hasComponents<Components::DrawOnTop>(id);
+                bool drawOnTop2 = entities.hasComponents<Components::DrawOnTop>(id2);
+                bool inAltWorld = entities.hasComponents<Components::AltWorld>(id);
+                bool inAltWorld2 = entities.hasComponents<Components::AltWorld>(id2);
+                bool inWindow = magicWindow.isWithin(aabb.getGlobalBounds(pos));
+                bool inWindow2 = magicWindow.isWithin(aabb2.getGlobalBounds(pos2));
+                bool case1 = (inAltWorld == inWindow && inAltWorld2 == inWindow2); // "Real world"
+                bool case2 = ((inAltWorld && !inWindow) && (inAltWorld2 && !inWindow2)); // "Alternate world"
+                bool case3 = (!inAltWorld && drawOnTop && inWindow && inAltWorld2 && inWindow2); // An object on top, like the player
+                bool case4 = (!inAltWorld2 && drawOnTop2 && inWindow2 && inAltWorld && inWindow); // Another object on top
+                bool case5 = (!inAltWorld && drawOnTop && inWindow && !inAltWorld2 && drawOnTop2 && inWindow2); // Both objects on top and in window
+                if (case1 || case2 || case3 || case4 || case5)
+                {
+                    if (aabb.getGlobalBounds(pos).intersects(aabb2.getGlobalBounds(pos2)))
+                        aabb.collisions.push_back(aabb2.getOwnerID());
+                }
+                //if (id == 0 && id2 == 1)
+                //    std::cout << "Player cases: " << case1 << ", " << case2 << ", " << case3 << ", " << case4 << ", " << case5 << ", IDs: " << id << ", " << id2 << "\n";
             }
         }
     }

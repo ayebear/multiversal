@@ -5,6 +5,7 @@
 #include <sstream>
 #include "configfile.h"
 #include "events.h"
+#include "gameevents.h"
 
 Level::Level(const std::string& levelDir, TileMap& tiles):
     levelDir(levelDir),
@@ -21,12 +22,11 @@ bool Level::load(int level)
     if (!config)
         return false;
     tiles.resize(config("width").toInt(), config("height").toInt());
-    sf::Vector2f startPos(config("startX").toInt() * tiles.getTileSize().x, config("startY").toInt() * tiles.getTileSize().y);
-    Events::send("PlayerPosition", startPos);
     config.useSection("Layers");
 
     // Load layer data
     int layerNum = 1;
+    sf::Vector2u startTilePos;
     for (auto& layerName: {"layer1", "layer2"})
     {
         int y = 0;
@@ -38,12 +38,25 @@ bool Level::load(int level)
             int tileId = 0;
             while (data >> tileId)
             {
+                // This is for the player starting position
+                // TODO: Add proper logical/visual layers
+                if (tileId == 9)
+                {
+                    startTilePos.x = x;
+                    startTilePos.y = y;
+                    tileId = 0;
+                }
                 tiles.set(x, y, tileId);
                 ++x;
             }
             ++y;
         }
     }
+
+    // Send player starting position event
+    auto tileSize = tiles.getTileSize();
+    sf::Vector2f startPos(startTilePos.x * tileSize.x, startTilePos.y * tileSize.y);
+    Events::send(PlayerPosition{startPos, startTilePos});
 
     tiles.useLayer(1);
     currentLevel = level;

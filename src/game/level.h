@@ -15,6 +15,8 @@ class Level
         bool loadNext();
 
     private:
+        void sendStartPosition(sf::Vector2f& pos);
+
         std::string levelDir;
         TileMap& tiles;
         int currentLevel;

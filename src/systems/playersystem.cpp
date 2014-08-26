@@ -3,7 +3,7 @@
 
 #include "playersystem.h"
 #include "events.h"
-#include "broadcasts.h"
+#include "events.h"
 #include "gameevents.h"
 
 PlayerSystem::PlayerSystem(ocs::ObjectManager& entities):
@@ -20,12 +20,12 @@ void PlayerSystem::update(float dt)
         handlePosition(playerState);
         handleActionKey(playerState);
     }
-    Events::clear<sf::Vector2f>("PlayerPosition");
+    Events::clear<PlayerPosition>();
 }
 
 void PlayerSystem::handleJumps(Components::PlayerState& playerState)
 {
-    for (auto& event: Broadcasts::get<OnPlatformEvent>())
+    for (auto& event: Events::get<OnPlatformEvent>())
     {
         if (event.entityId == playerState.getOwnerID())
         {
@@ -36,7 +36,7 @@ void PlayerSystem::handleJumps(Components::PlayerState& playerState)
                 playerState.state = Components::PlayerState::InAir;
         }
     }
-    for (auto& event: Broadcasts::get<sf::Event>())
+    for (auto& event: Events::get<sf::Event>())
     {
         if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space)
         {
@@ -96,12 +96,12 @@ void PlayerSystem::handlePosition(Components::PlayerState& playerState)
     if (position)
     {
         // This could just be an entity position update, and just have the player entity ID in the event
-        auto& events = Events::get<sf::Vector2f>("PlayerPosition");
+        auto& events = Events::get<PlayerPosition>();
         for (auto& event: events)
         {
-            position->x = event.x;
-            position->y = event.y;
-            std::cout << "Received PlayerPosition event: " << event.x << ", " << event.y << "\n";
+            position->x = event.position.x;
+            position->y = event.position.y;
+            std::cout << "Received PlayerPosition event: " << event.position.x << ", " << event.position.y << "\n";
         }
         //std::cout << "Position: " << position->x << ", " << position->y << "\n";
     }
@@ -110,11 +110,11 @@ void PlayerSystem::handlePosition(Components::PlayerState& playerState)
 void PlayerSystem::handleActionKey(Components::PlayerState& playerState)
 {
     // Handle the input for pressing "up", and proxy the events
-    Broadcasts::clear<ActionKeyEvent>();
+    Events::clear<ActionKeyEvent>();
     auto position = entities.getComponent<Components::Position>(playerState.getOwnerID());
     if (position)
     {
-        for (auto& event: Broadcasts::get<sf::Event>())
+        for (auto& event: Events::get<sf::Event>())
         {
             if (event.type == sf::Event::KeyPressed && (event.key.code == sf::Keyboard::Up || event.key.code == sf::Keyboard::W))
             {
@@ -122,7 +122,7 @@ void PlayerSystem::handleActionKey(Components::PlayerState& playerState)
                 // TODO: Use actual tile size
                 sf::Vector2i tilePos(position->x / 64, (position->y + 64) / 64);
                 std::cout << "Action key pressed at location " << tilePos.x << ", " << tilePos.y << "\n";
-                Broadcasts::send(ActionKeyEvent{tilePos, playerState.getOwnerID()});
+                Events::send(ActionKeyEvent{tilePos, playerState.getOwnerID()});
 
                 // This is for handling object actions (like picking up a box)
                 // May need to use lists of object IDs that are colliding (or close by)

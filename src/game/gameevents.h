@@ -38,4 +38,10 @@ struct ActionKeyEvent
     ocs::ID entityId;
 };
 
+struct PlayerPosition
+{
+    sf::Vector2f position;
+    sf::Vector2u tilePos;
+};
+
 #endif

@@ -1,13 +1,13 @@
 // Copyright (C) 2014 Eric Hebert (ayebear)
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
-#ifndef BROADCASTS_H
-#define BROADCASTS_H
+#ifndef EVENTS_H
+#define EVENTS_H
 
 #include <deque>
 
 // Send global events with types to separate them
-class Broadcasts
+class Events
 {
     public:
         template <class T>
