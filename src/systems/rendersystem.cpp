@@ -7,9 +7,9 @@
 #include "magicwindow.h"
 #include "views.h"
 
-RenderSystem::RenderSystem(ocs::ObjectManager& entities, TileMap& tiles, sf::RenderWindow& window, Camera& camera, MagicWindow& magicWindow):
+RenderSystem::RenderSystem(ocs::ObjectManager& entities, TileMap& tileMap, sf::RenderWindow& window, Camera& camera, MagicWindow& magicWindow):
     entities(entities),
-    tiles(tiles),
+    tileMap(tileMap),
     window(window),
     camera(camera),
     magicWindow(magicWindow),
@@ -27,8 +27,8 @@ void RenderSystem::update()
     window.setView(camera.getView("background"));
     window.draw(sprites("background"));
     window.setView(camera.getView("game"));
-    tiles.drawLayer(window, 1);
-    //window.draw(tiles);
+    tileMap.drawLayer(window, 0);
+    //window.draw(tileMap);
 
     // Draw the magic window
     //auto& texture = magicWindow.getTexture();
@@ -37,7 +37,7 @@ void RenderSystem::update()
     magicWindow.setView(camera.accessView("background"), windowViewPos);
     texture.draw(sprites("background2"));
     magicWindow.setView(camera.accessView("game"), windowViewPos);
-    tiles.drawLayer(texture, 2);
+    tileMap.drawLayer(texture, 1);
 
     // Note: May add real z-index in the future, for now this should work good enough
 

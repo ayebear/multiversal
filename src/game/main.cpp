@@ -7,7 +7,7 @@
 
 int main()
 {
-    GameObjects objects("Puzzle Game v0.0.8 Dev");
+    GameObjects objects("Puzzle Game v0.0.9 Dev");
     StateManager states;
     states.add("Game", makeUnique<GameState>(objects));
     states.start("Game");

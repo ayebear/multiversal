@@ -20,12 +20,12 @@ It will render all of the drawable objects like the tile map, and drawable compo
 class RenderSystem
 {
     public:
-        RenderSystem(ocs::ObjectManager& entities, TileMap& tiles, sf::RenderWindow& window, Camera& camera, MagicWindow& magicWindow);
+        RenderSystem(ocs::ObjectManager& entities, TileMap& tileMap, sf::RenderWindow& window, Camera& camera, MagicWindow& magicWindow);
         void update();
 
     private:
         ocs::ObjectManager& entities;
-        TileMap& tiles;
+        TileMap& tileMap;
         sf::RenderWindow& window;
         Camera& camera;
         MagicWindow& magicWindow;

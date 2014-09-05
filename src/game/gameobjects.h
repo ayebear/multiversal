@@ -28,8 +28,10 @@ class GameObjects: sf::NonCopyable
         //SoundPlayer sound; // The sound effects player
 
     private:
-        void createWindow(const std::string&, int, int, bool, bool); // Create a new window
+        void createWindow(const std::string&, unsigned, unsigned, bool, bool, bool); // Create a new window
 
+        static const sf::Vector2u defaultResolution;
+        static const sf::Vector2u minResolution;
         static const cfg::File::ConfigMap defaultOptions;
 };
 

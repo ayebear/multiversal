@@ -2,6 +2,7 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "physicssystem.h"
+#include "tilemapdata.h"
 #include "tilemap.h"
 #include "magicwindow.h"
 #include "components.h"
@@ -11,9 +12,10 @@
 const sf::Vector2i PhysicsSystem::maxVelocity(400, 800);
 const sf::Vector2i PhysicsSystem::acceleration(1600, 1600);
 
-PhysicsSystem::PhysicsSystem(ocs::ObjectManager& entities, TileMap& tiles, MagicWindow& magicWindow):
+PhysicsSystem::PhysicsSystem(ocs::ObjectManager& entities, TileMapData& tileMapData, TileMap& tileMap, MagicWindow& magicWindow):
     entities(entities),
-    tiles(tiles),
+    tileMapData(tileMapData),
+    tileMap(tileMap),
     magicWindow(magicWindow)
 {
 }
@@ -22,26 +24,6 @@ void PhysicsSystem::update(float dt)
 {
     stepPositions(dt);
     checkEntityCollisions();
-}
-
-void PhysicsSystem::updateSpritePositions(float dt)
-{
-    // Update sprite positions
-    for (auto& sprite: entities.getComponentArray<Components::Sprite>())
-    {
-        auto position = entities.getComponent<Components::Position>(sprite.getOwnerID());
-        if (position)
-            sprite.sprite.setPosition(position->x, position->y);
-    }
-
-    // Update animated sprite components
-    for (auto& animSprite: entities.getComponentArray<Components::AnimSprite>())
-    {
-        auto position = entities.getComponent<Components::Position>(animSprite.getOwnerID());
-        if (position)
-            animSprite.sprite.setPosition(position->x, position->y);
-        animSprite.sprite.update(dt);
-    }
 }
 
 void PhysicsSystem::stepPositions(float dt)
@@ -65,15 +47,18 @@ void PhysicsSystem::stepPositions(float dt)
             // Get the AABB component used for collision detection/handling
             auto aabb = entities.getComponent<Components::AABB>(entityId);
 
+            // See if the entity is in the alternate world!
+            bool inAltWorld = entities.hasComponents<Components::AltWorld>(entityId);
+
             // Update Y
             position->y += dt * velocity.y;
             if (aabb)
-                handleTileCollision(aabb, velocity.y, position, true, entityId);
+                handleTileCollision(aabb, velocity.y, position, true, entityId, inAltWorld);
 
             // Update X
             position->x += dt * velocity.x;
             if (aabb)
-                handleTileCollision(aabb, velocity.x, position, false, entityId);
+                handleTileCollision(aabb, velocity.x, position, false, entityId, inAltWorld);
 
             // Fix edge cases
             updateEdgeCases(position, size, velocity.y, entityId);
@@ -86,7 +71,7 @@ void PhysicsSystem::stepPositions(float dt)
     }
 }
 
-void PhysicsSystem::handleTileCollision(Components::AABB* entAABB, float& velocity, Components::Position* position, bool vertical, ocs::ID entityId)
+void PhysicsSystem::handleTileCollision(Components::AABB* entAABB, float& velocity, Components::Position* position, bool vertical, ocs::ID entityId, bool inAltWorld)
 {
     // Object - tile map collision
     // Need to send an event when this happens so the entity knows which tile it is colliding with
@@ -105,12 +90,14 @@ void PhysicsSystem::handleTileCollision(Components::AABB* entAABB, float& veloci
     {
         for (int x = start.x; x <= end.x && !collided; ++x)
         {
-            int layer = 1;
-            if (magicWindow.isWithin(tiles.getCenterPoint(x, y)))
+            int layer = 0;
+            if (inAltWorld || magicWindow.isWithin(tileMap.getCenterPoint(x, y)))
                 ++layer;
-            if (tiles(layer, x, y) >= 1)
+            tileMapData.useLayer(layer);
+            //tileMap.useLayer(layer);
+            if (tileMapData(x, y).collidable)
             {
-                auto tileBox = tiles.getBoundingBox(x, y);
+                auto tileBox = tileMap.getBoundingBox(x, y);
                 //printRect(tileBox);
                 if (tileBox.intersects(tempAABB))
                 {
@@ -151,7 +138,7 @@ void PhysicsSystem::handleTileCollision(Components::AABB* entAABB, float& veloci
 void PhysicsSystem::findTilesToCheck(const sf::FloatRect& entAABB)
 {
     // Get the area to check collision against
-    tileSize = tiles.getTileSize();
+    tileSize = tileMap.getTileSize();
     start = sf::Vector2i(entAABB.left / tileSize.x, entAABB.top / tileSize.y);
     end = sf::Vector2i((entAABB.left + entAABB.width) / tileSize.x,
                        (entAABB.top + entAABB.height) / tileSize.y);
@@ -159,7 +146,7 @@ void PhysicsSystem::findTilesToCheck(const sf::FloatRect& entAABB)
         start.y = 0;
     if (start.x < 0)
         start.x = 0;
-    auto mapSize = tiles.getMapSize();
+    auto mapSize = tileMap.getMapSize();
     if (end.x > (int)mapSize.x - 1)
         end.x = (int)mapSize.x - 1;
     if (end.y > (int)mapSize.y - 1)
@@ -180,7 +167,7 @@ void PhysicsSystem::updateEdgeCases(Components::Position* position, Components::
         position->y = 0;
         velocity = 0;
     }
-    auto levelSize = tiles.getPixelSize();
+    auto levelSize = tileMap.getPixelSize();
     sf::Vector2i newPosition(levelSize.x - size->x, levelSize.y - size->y);
     if (position->x > newPosition.x)
         position->x = newPosition.x;

@@ -13,21 +13,22 @@
 
 GameState::GameState(GameObjects& objects):
     objects(objects),
-    level("data/levels/", tiles),
-    input(objects.window),
-    player(entities),
-    physics(entities, tiles, magicWindow),
+    level("data/levels/", tileMapData, tileMap, entities),
+    inputSystem(objects.window),
+    playerSystem(entities),
+    physicsSystem(entities, tileMapData, tileMap, magicWindow),
     carrySystem(entities, magicWindow),
+    spritePositionSystem(entities),
     cameraSystem(camera),
-    render(entities, tiles, objects.window, camera, magicWindow)
+    renderSystem(entities, tileMap, objects.window, camera, magicWindow)
 {
     // Load entity prototypes
     bindComponentStrings(entities);
     EntityPrototypeLoader::load(entities, "data/config/entities.cfg");
 
-    // Load the tileset
+    // Load the tiles
     cfg::File tilesConfig("data/config/tiles.cfg", cfg::File::Warnings | cfg::File::Errors);
-    tiles.loadTileset(tilesConfig("texture"), tilesConfig("tileWidth").toInt(), tilesConfig("tileHeight").toInt());
+    tileMap.loadTileset(tilesConfig("texture"), tilesConfig("tileWidth").toInt(), tilesConfig("tileHeight").toInt());
 
     // Load level 1
     level.load(1);
@@ -38,37 +39,31 @@ GameState::GameState(GameObjects& objects):
     camera.setView("background", defaultView, 0.5f);
     //camera.setView("menu", defaultView);
 
-    // Add player entity
-    entities.createObject("Player");
-    entities.createObject("Box");
-    for (int box = 0; box < 3; box += 2)
-    {
-        auto boxId = entities.createObject("Box2");
-        auto pos = entities.getComponent<Components::Position>(boxId);
-        if (pos)
-            pos->x += box * 96 - 96;
-    }
-
     // Setup the magic window
     static const unsigned magicWindowSize = 5;
-    magicWindow.setSize(sf::Vector2f(tiles.getTileSize().x * magicWindowSize, tiles.getTileSize().y * magicWindowSize));
+    magicWindow.setSize(sf::Vector2f(tileMap.getTileSize().x * magicWindowSize, tileMap.getTileSize().y * magicWindowSize));
     auto magicWindowView = magicWindow.getTexture().getDefaultView();
     camera.setView("game2", magicWindowView);
     camera.setView("background2", magicWindowView, 0.5f);
 
     // Set the map size for the camera system
-    cameraSystem.setMapSize(tiles.getPixelSize());
+    cameraSystem.setMapSize(tileMap.getPixelSize());
 }
 
 void GameState::handleEvents()
 {
-    input.update(camera.getView("game"));
+    inputSystem.update(camera.getView("game"));
     for (auto& event: Events::get<sf::Event>())
     {
         switch (event.type)
         {
             case sf::Event::Closed:
                 stateEvent.command = StateEvent::Exit;
+                break;
+
+            case sf::Event::KeyPressed:
+                if (event.key.code == sf::Keyboard::Escape)
+                    stateEvent.command = StateEvent::Exit;
                 break;
 
             case sf::Event::LostFocus:
@@ -88,14 +83,14 @@ void GameState::handleEvents()
 void GameState::update()
 {
     magicWindow.update();
-    player.update(dt);
-    physics.update(dt);
+    playerSystem.update(dt);
+    physicsSystem.update(dt);
     carrySystem.update();
-    physics.updateSpritePositions(dt);
+    spritePositionSystem.update(dt);
     cameraSystem.update();
 }
 
 void GameState::draw()
 {
-    render.update();
+    renderSystem.update();
 }

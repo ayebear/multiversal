@@ -8,6 +8,7 @@
 #include "components.h"
 #include "OCS/Objects.hpp"
 
+class TileMapData;
 class TileMap;
 class MagicWindow;
 
@@ -18,13 +19,13 @@ It also detects and handles collision.
 class PhysicsSystem
 {
     public:
-        PhysicsSystem(ocs::ObjectManager& entities, TileMap& tiles, MagicWindow& magicWindow);
+        PhysicsSystem(ocs::ObjectManager& entities, TileMapData& tileMapData, TileMap& tileMap, MagicWindow& magicWindow);
         void update(float dt);
-        void updateSpritePositions(float dt);
 
     private:
         void stepPositions(float dt);
-        void handleTileCollision(Components::AABB* entAABB, float& velocity, Components::Position* position, bool vertical, ocs::ID entityId = -1);
+        void handleTileCollision(Components::AABB* entAABB, float& velocity, Components::Position* position,
+                bool vertical, ocs::ID entityId, bool inAltWorld);
         void findTilesToCheck(const sf::FloatRect& entAABB);
         void updateEdgeCases(Components::Position* position, Components::Size* size, float& velocity, ocs::ID entityId);
         void checkEntityCollisions();
@@ -34,7 +35,8 @@ class PhysicsSystem
         static const sf::Vector2i acceleration;
 
         ocs::ObjectManager& entities;
-        TileMap& tiles;
+        TileMapData& tileMapData;
+        TileMap& tileMap;
         MagicWindow& magicWindow;
 
         // Area of tiles to check

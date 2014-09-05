@@ -1,3 +1,6 @@
+// Copyright (C) 2014 Eric Hebert (ayebear)
+// This code is licensed under GPLv3, see LICENSE.txt for details.
+
 #ifndef ENTITYPROTOTYPELOADER_H
 #define ENTITYPROTOTYPELOADER_H
 
