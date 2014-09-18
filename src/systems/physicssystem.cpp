@@ -24,6 +24,7 @@ void PhysicsSystem::update(float dt)
 {
     stepPositions(dt);
     checkEntityCollisions();
+    checkTileCollisions();
 }
 
 void PhysicsSystem::stepPositions(float dt)
@@ -81,14 +82,17 @@ void PhysicsSystem::handleTileCollision(Components::AABB* entAABB, float& veloci
     auto tempAABB = entAABB->getGlobalBounds(position);
 
     // Get the area of tiles to check collision against
-    findTilesToCheck(tempAABB);
+    sf::Vector2u start;
+    sf::Vector2u end;
+    tileMap.getCollidingTiles(tempAABB, start, end);
 
     // Check the collision
     bool collided = false;
     bool onPlatform = false;
-    for (int y = start.y; y <= end.y && !collided; ++y)
+    auto tileSize = tileMap.getTileSize();
+    for (unsigned y = start.y; y <= end.y && !collided; ++y)
     {
-        for (int x = start.x; x <= end.x && !collided; ++x)
+        for (unsigned x = start.x; x <= end.x && !collided; ++x)
         {
             int layer = 0;
             if (inAltWorld || magicWindow.isWithin(tileMap.getCenterPoint(x, y)))
@@ -133,28 +137,6 @@ void PhysicsSystem::handleTileCollision(Components::AABB* entAABB, float& veloci
     // Update the position from the new AABB
     position->x = tempAABB.left - entAABB->rect.left;
     position->y = tempAABB.top - entAABB->rect.top;
-}
-
-void PhysicsSystem::findTilesToCheck(const sf::FloatRect& entAABB)
-{
-    // Get the area to check collision against
-    tileSize = tileMap.getTileSize();
-    start = sf::Vector2i(entAABB.left / tileSize.x, entAABB.top / tileSize.y);
-    end = sf::Vector2i((entAABB.left + entAABB.width) / tileSize.x,
-                       (entAABB.top + entAABB.height) / tileSize.y);
-    if (start.y < 0)
-        start.y = 0;
-    if (start.x < 0)
-        start.x = 0;
-    auto mapSize = tileMap.getMapSize();
-    if (end.x > (int)mapSize.x - 1)
-        end.x = (int)mapSize.x - 1;
-    if (end.y > (int)mapSize.y - 1)
-        end.y = (int)mapSize.y - 1;
-    //std::cout << "start = (" << start.x << ", " << start.y << ")\n";
-    //std::cout << "end = (" << end.x << ", " << end.y << ")\n";
-    //rect.setPosition(start.x * tileSize.x, start.y * tileSize.x);
-    //rect.setSize(sf::Vector2f((end.x - start.x + 1) * tileSize.x, (end.y - start.y + 1) * tileSize.y));
 }
 
 void PhysicsSystem::updateEdgeCases(Components::Position* position, Components::Size* size, float& velocity, ocs::ID entityId)
@@ -222,3 +204,29 @@ void PhysicsSystem::checkEntityCollisions()
         }
     }
 }
+
+void PhysicsSystem::checkTileCollisions()
+{
+    // Generate lists of tile coordinates colliding with AABB components
+    // TODO: This may only be useful for the player, so make an optional flag or component to enable it
+    for (auto& aabb: entities.getComponentArray<Components::AABB>())
+    {
+        aabb.tileCollisions.clear();
+        auto position = entities.getComponent<Components::Position>(aabb.getOwnerID());
+        if (position)
+        {
+            sf::Vector2u start, end;
+            tileMap.getCollidingTiles(aabb.getGlobalBounds(position), start, end);
+            for (unsigned y = start.y; y <= end.y; ++y)
+            {
+                for (unsigned x = start.x; x <= end.x; ++x)
+                {
+                    if (tileMapData(x, y).logicalId > 0)
+                        aabb.tileCollisions.push_back(sf::Vector2u(x, y));
+                }
+            }
+        }
+    }
+}
+
+

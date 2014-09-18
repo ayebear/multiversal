@@ -52,6 +52,7 @@ struct AABB: public ocs::Component<AABB>
 {
     sf::FloatRect rect;
     std::vector<ocs::ID> collisions; // IDs of currently colliding objects
+    std::vector<sf::Vector2u> tileCollisions; // Coordinates of currently colliding tiles
     void deSerialize(const std::string& str)
     {
         serializer.deSerialize("% % % %", str, rect.left, rect.top, rect.width, rect.height);

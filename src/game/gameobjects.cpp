@@ -19,8 +19,8 @@ const cfg::File::ConfigMap GameObjects::defaultOptions = {
 };
 
 GameObjects::GameObjects(const std::string& windowTitle):
-    config("data/config/game.cfg", defaultOptions, cfg::File::AllFlags)
-    //music("music.cfg"),
+    config("data/config/game.cfg", defaultOptions, cfg::File::AllFlags),
+    music("data/config/music.cfg")
     //sound("sounds.cfg")
 {
     config.useSection("Window");

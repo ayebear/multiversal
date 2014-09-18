@@ -7,10 +7,16 @@
 #include "components.h"
 #include "OCS/Objects.hpp"
 
+class TileMap;
+
+/*
+This system handles player-related actions.
+TODO: Make this more generic somehow.
+*/
 class PlayerSystem
 {
     public:
-        PlayerSystem(ocs::ObjectManager& entities);
+        PlayerSystem(ocs::ObjectManager& entities, TileMap& tileMap);
         void update(float dt);
         void handleJumps(Components::PlayerState& playerState);
         void handleMovement(Components::PlayerState& playerState);
@@ -19,6 +25,7 @@ class PlayerSystem
 
     private:
         ocs::ObjectManager& entities;
+        TileMap& tileMap;
 };
 
 #endif

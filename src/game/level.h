@@ -19,11 +19,12 @@ class Level
 {
     public:
         Level(const std::string& levelDir, TileMapData& tileMapData, TileMap& tileMap, ocs::ObjectManager& entities);
-        bool load(int level);
+        bool load(int level = -1);
         bool loadNext();
+        void update();
 
     private:
-        void sendStartPosition(sf::Vector2f& pos);
+        void sendStartPosition(sf::Vector2u& pos);
         void loadTileMap(cfg::File& config);
         void loadObjects(cfg::File& config);
 

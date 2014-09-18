@@ -41,6 +41,7 @@ class TileMap: public sf::Drawable, public sf::Transformable
         const sf::Vector2u& getTileSize() const;
         sf::FloatRect getBoundingBox(unsigned x, unsigned y) const;
         sf::Vector2u getCenterPoint(unsigned x, unsigned y) const;
+        void getCollidingTiles(const sf::FloatRect& entAABB, sf::Vector2u& start, sf::Vector2u& end);
         void drawLayer(sf::RenderTarget& target, int layer);
         virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 

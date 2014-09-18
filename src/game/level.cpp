@@ -27,17 +27,43 @@ Level::Level(const std::string& levelDir, TileMapData& tileMapData, TileMap& til
 
 bool Level::load(int level)
 {
+    if (level == -1)
+        level = currentLevel;
+
+    std::cout << "Loading level " << level << "...\n";
+
     // Load configuration
     std::string filename(levelDir + std::to_string(level) + ".cfg");
     cfg::File config(filename, defaultOptions);
     if (!config)
+    {
+        std::cout << "Error loading level.\n";
         return false;
+    }
 
     loadTileMap(config);
     loadObjects(config);
 
     currentLevel = level;
     return true;
+}
+
+bool Level::loadNext()
+{
+    return load(currentLevel + 1);
+}
+
+void Level::update()
+{
+    if (Events::exists<LoadNextLevelEvent>())
+        loadNext();
+}
+
+void Level::sendStartPosition(sf::Vector2u& pos)
+{
+    auto tileSize = tileMap.getTileSize();
+    sf::Vector2f startPos(pos.x * tileSize.x, pos.y * tileSize.y);
+    Events::send(PlayerPosition{startPos, pos});
 }
 
 void Level::loadTileMap(cfg::File& config)
@@ -130,10 +156,7 @@ void Level::loadTileMap(cfg::File& config)
         }
     }
 
-    // Send player starting position event
-    auto tileSize = tileMap.getTileSize();
-    sf::Vector2f startPos(startTilePos.x * tileSize.x, startTilePos.y * tileSize.y);
-    Events::send(PlayerPosition{startPos, startTilePos});
+    sendStartPosition(startTilePos);
 
     tileMap.useLayer(0);
 }
@@ -144,6 +167,7 @@ void Level::loadObjects(cfg::File& config)
     // There could be just the names of the objects, or some IDs that get the names from a mapping file
     // Will need some sort of parameters for the objects, these will need to be hard-coded
     // Another option could be to have the objects in the tile map and set their positions to that
+    entities.destroyAllObjects();
     for (auto& option: config.getSection("Objects"))
     {
         for (auto& object: option.second)
@@ -165,9 +189,4 @@ void Level::loadObjects(cfg::File& config)
             }
         }
     }
-}
-
-bool Level::loadNext()
-{
-    return load(currentLevel + 1);
 }

@@ -15,11 +15,12 @@ GameState::GameState(GameObjects& objects):
     objects(objects),
     level("data/levels/", tileMapData, tileMap, entities),
     inputSystem(objects.window),
-    playerSystem(entities),
+    playerSystem(entities, tileMap),
     physicsSystem(entities, tileMapData, tileMap, magicWindow),
     carrySystem(entities, magicWindow),
     spritePositionSystem(entities),
     cameraSystem(camera),
+    tileSystem(entities, tileMapData),
     renderSystem(entities, tileMap, objects.window, camera, magicWindow)
 {
     // Load entity prototypes
@@ -48,6 +49,9 @@ GameState::GameState(GameObjects& objects):
 
     // Set the map size for the camera system
     cameraSystem.setMapSize(tileMap.getPixelSize());
+
+    // Start the game music
+    objects.music.play("game");
 }
 
 void GameState::handleEvents()
@@ -64,6 +68,8 @@ void GameState::handleEvents()
             case sf::Event::KeyPressed:
                 if (event.key.code == sf::Keyboard::Escape)
                     stateEvent.command = StateEvent::Exit;
+                else if (event.key.code == sf::Keyboard::R)
+                    level.load(); // Reload the current level
                 break;
 
             case sf::Event::LostFocus:
@@ -86,8 +92,11 @@ void GameState::update()
     playerSystem.update(dt);
     physicsSystem.update(dt);
     carrySystem.update();
+    tileSystem.update(dt);
+    level.update();
     spritePositionSystem.update(dt);
     cameraSystem.update();
+    objects.music.update();
 }
 
 void GameState::draw()

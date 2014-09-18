@@ -6,9 +6,11 @@
 #include "events.h"
 #include "gameevents.h"
 #include "windowfocus.h"
+#include "tilemap.h"
 
-PlayerSystem::PlayerSystem(ocs::ObjectManager& entities):
-    entities(entities)
+PlayerSystem::PlayerSystem(ocs::ObjectManager& entities, TileMap& tileMap):
+    entities(entities),
+    tileMap(tileMap)
 {
 }
 
@@ -113,21 +115,22 @@ void PlayerSystem::handleActionKey(Components::PlayerState& playerState)
     // Handle the input for pressing "up", and proxy the events
     Events::clear<ActionKeyEvent>();
     auto position = entities.getComponent<Components::Position>(playerState.getOwnerID());
+    auto aabb = entities.getComponent<Components::AABB>(playerState.getOwnerID());
     if (position)
     {
         for (auto& event: Events::get<sf::Event>())
         {
             if (event.type == sf::Event::KeyPressed && (event.key.code == sf::Keyboard::Up || event.key.code == sf::Keyboard::W))
             {
-                // This is just for handling any tile actions (like going through exit)
-                // TODO: Use actual tile size
-                sf::Vector2i tilePos(position->x / 64, (position->y + 64) / 64);
-                std::cout << "Action key pressed at location " << tilePos.x << ", " << tilePos.y << "\n";
-                Events::send(ActionKeyEvent{tilePos, playerState.getOwnerID()});
-
-                // This is for handling object actions (like picking up a box)
-                // May need to use lists of object IDs that are colliding (or close by)
-                // Update: May not need any extra info, just the event should be enough
+                //auto tileSize = tileMap.getTileSize();
+                //sf::Vector2i tilePos(position->x / tileSize.x, (position->y + tileSize.y) / tileSize.y);
+                // Note: All of the colliding tiles are stored in the tileCollisions vector in the AABB component
+                //std::cout << "Action key pressed at location " << tilePos.x << ", " << tilePos.y << "\n";
+                std::cout << "Action key was pressed. Locations: ";
+                for (auto& location: aabb->tileCollisions)
+                    std::cout << location.x << ", " << location.y << "\n";
+                std::cout << "\n";
+                Events::send(ActionKeyEvent{playerState.getOwnerID()});
             }
         }
     }

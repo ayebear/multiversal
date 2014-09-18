@@ -104,6 +104,31 @@ sf::Vector2u TileMap::getCenterPoint(unsigned x, unsigned y) const
     return sf::Vector2u(x * tileSize.x + (tileSize.x / 2), y * tileSize.y + (tileSize.y / 2));
 }
 
+void TileMap::getCollidingTiles(const sf::FloatRect& entAABB, sf::Vector2u& start, sf::Vector2u& end)
+{
+    // Get the area to check collision against
+    auto startTemp = sf::Vector2i(entAABB.left / tileSize.x, entAABB.top / tileSize.y);
+    end = sf::Vector2u((entAABB.left + entAABB.width) / tileSize.x,
+                       (entAABB.top + entAABB.height) / tileSize.y);
+
+    // Make sure this is within bounds
+    if (startTemp.y < 0)
+        startTemp.y = 0;
+    if (startTemp.x < 0)
+        startTemp.x = 0;
+    if (end.x > mapSize.x - 1)
+        end.x = mapSize.x - 1;
+    if (end.y > mapSize.y - 1)
+        end.y = mapSize.y - 1;
+
+    start = sf::Vector2u(startTemp.x, startTemp.y);
+
+    //std::cout << "start = (" << start.x << ", " << start.y << ")\n";
+    //std::cout << "end = (" << end.x << ", " << end.y << ")\n";
+    //rect.setPosition(start.x * tileSize.x, start.y * tileSize.x);
+    //rect.setSize(sf::Vector2f((end.x - start.x + 1) * tileSize.x, (end.y - start.y + 1) * tileSize.y));
+}
+
 void TileMap::drawLayer(sf::RenderTarget& target, int layer)
 {
     sf::RenderStates states;

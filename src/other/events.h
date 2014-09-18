@@ -37,6 +37,13 @@ class Events
             get<T>().emplace_back(std::forward<Args>(args)...);
         }
 
+        // Returns true if there are any events of a certain type
+        template <class T>
+        static bool exists()
+        {
+            return !get<T>().empty();
+        }
+
         template <class T>
         static void clear()
         {

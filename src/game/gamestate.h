@@ -16,6 +16,7 @@
 #include "carrysystem.h"
 #include "spritepositionsystem.h"
 #include "camerasystem.h"
+#include "tilesystem.h"
 #include "rendersystem.h"
 #include "OCS/Objects.hpp"
 #include "matrix.h"
@@ -55,6 +56,7 @@ class GameState: public BaseState
         CarrySystem carrySystem;
         SpritePositionSystem spritePositionSystem;
         CameraSystem cameraSystem;
+        TileSystem tileSystem;
         RenderSystem renderSystem;
 };
 

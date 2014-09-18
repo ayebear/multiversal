@@ -26,23 +26,19 @@ class PhysicsSystem
         void stepPositions(float dt);
         void handleTileCollision(Components::AABB* entAABB, float& velocity, Components::Position* position,
                 bool vertical, ocs::ID entityId, bool inAltWorld);
-        void findTilesToCheck(const sf::FloatRect& entAABB);
         void updateEdgeCases(Components::Position* position, Components::Size* size, float& velocity, ocs::ID entityId);
         void checkEntityCollisions();
+        void checkTileCollisions();
 
         // These are used for gravity and falling
         static const sf::Vector2i maxVelocity;
         static const sf::Vector2i acceleration;
 
+        // References
         ocs::ObjectManager& entities;
         TileMapData& tileMapData;
         TileMap& tileMap;
         MagicWindow& magicWindow;
-
-        // Area of tiles to check
-        sf::Vector2u tileSize;
-        sf::Vector2i start;
-        sf::Vector2i end;
 };
 
 #endif

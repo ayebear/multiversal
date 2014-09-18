@@ -24,7 +24,7 @@ class GameObjects: sf::NonCopyable
         sf::Vector2u windowSize; // The current window size (if we decide to make the game resizable, this will need to be a function)
         sf::RenderWindow window; // The main window
         cfg::File config; // The main configuration file
-        //MusicPlayer music; // The music player
+        MusicPlayer music; // The music player
         //SoundPlayer sound; // The sound effects player
 
     private:

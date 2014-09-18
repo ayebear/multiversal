@@ -3,9 +3,9 @@
 
 #include "tilemapdata.h"
 
-TileMapData::TileMapData()
+TileMapData::TileMapData():
+    currentLayer(0)
 {
-    currentLayer = 0;
 }
 
 Tile& TileMapData::operator()(int layer, unsigned x, unsigned y)

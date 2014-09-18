@@ -34,7 +34,7 @@ struct OnPlatformEvent
 
 struct ActionKeyEvent
 {
-    sf::Vector2i position;
+    //sf::Vector2i position;
     ocs::ID entityId;
 };
 
@@ -43,5 +43,7 @@ struct PlayerPosition
     sf::Vector2f position;
     sf::Vector2u tilePos;
 };
+
+struct LoadNextLevelEvent {};
 
 #endif

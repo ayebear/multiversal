@@ -11,9 +11,10 @@ const cfg::File::ConfigMap MusicPlayer::defaultOptions = {
     {"shuffle", cfg::makeOption(true)}
 }}};
 
-MusicPlayer::MusicPlayer(const std::string& configPath)
+MusicPlayer::MusicPlayer(const std::string& configPath):
+    noMusic(true),
+    state(Stopped)
 {
-    noMusic = true;
     music.setLoop(false);
     if (!configPath.empty())
         loadListFromConfig(configPath);
@@ -33,7 +34,24 @@ void MusicPlayer::loadListFromConfig(const std::string& configPath)
     }
 }
 
-void MusicPlayer::start(const std::string& songSetName)
+void MusicPlayer::setVolume(float volume)
+{
+    music.setVolume(volume);
+}
+
+void MusicPlayer::setShuffle(bool setting)
+{
+    shuffle = setting;
+}
+
+void MusicPlayer::update()
+{
+    // Continues playing more music when the current music ends
+    if (!noMusic && music.getStatus() != sf::Music::Playing)
+        skip();
+}
+
+void MusicPlayer::play(const std::string& songSetName)
 {
     // Start playing the specified music set
     if (songSetName != currentSongSet)
@@ -41,11 +59,22 @@ void MusicPlayer::start(const std::string& songSetName)
         currentSongSet = songSetName;
         currentSongId = 0;
         shuffleSongs();
-        playCurrent();
+        // Plays the song with the current song ID
+        if (!checkNoMusic())
+        {
+            checkSongId();
+            play(currentSongId);
+        }
     }
 }
 
-void MusicPlayer::playNext()
+void MusicPlayer::play()
+{
+    state = Playing;
+    music.play();
+}
+
+void MusicPlayer::skip()
 {
     // Plays the next song in the list
     if (!checkNoMusic())
@@ -55,36 +84,15 @@ void MusicPlayer::playNext()
     }
 }
 
-void MusicPlayer::playCurrent()
+void MusicPlayer::pause()
 {
-    // Plays the song with the current song ID
-    if (!checkNoMusic())
-    {
-        checkSongId();
-        play(currentSongId);
-    }
-}
-
-void MusicPlayer::update()
-{
-    // Continues playing more music when the current music ends
-    if (!noMusic && music.getStatus() != sf::Music::Playing)
-        playNext();
+    state = Paused;
 }
 
 void MusicPlayer::stop()
 {
+    state = Stopped;
     music.stop();
-}
-
-void MusicPlayer::setVolume(float volume)
-{
-    music.setVolume(volume);
-}
-
-void MusicPlayer::setShuffle(bool setting)
-{
-    shuffle = setting;
 }
 
 bool MusicPlayer::play(unsigned int songId)
@@ -139,6 +147,7 @@ void MusicPlayer::shuffleSongs()
 {
     if (shuffle)
     {
+        // TODO: Use a real random number generator with a seed...
         auto& songSet = songs[currentSongSet];
         if (songSet.size() > 2)
         {

@@ -64,7 +64,7 @@ void CarrySystem::update()
                 }
             }
             else
-                std::cout << "No collisions?\n";
+                std::cout << "No object collisions?\n";
         }
     }
 
