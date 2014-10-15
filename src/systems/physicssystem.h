@@ -7,6 +7,7 @@
 #include <SFML/Graphics.hpp>
 #include "components.h"
 #include "OCS/Objects.hpp"
+#include "system.h"
 
 class TileMapData;
 class TileMap;
@@ -16,7 +17,7 @@ class MagicWindow;
 This class handles applying the velocity to all of the entities' positions.
 It also detects and handles collision.
 */
-class PhysicsSystem
+class PhysicsSystem: public es::System
 {
     public:
         PhysicsSystem(ocs::ObjectManager& entities, TileMapData& tileMapData, TileMap& tileMap, MagicWindow& magicWindow);

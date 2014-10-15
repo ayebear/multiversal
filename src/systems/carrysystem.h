@@ -5,6 +5,7 @@
 #define CARRYSYSTEM_H
 
 #include "OCS/Objects.hpp"
+#include "system.h"
 
 class MagicWindow;
 
@@ -12,11 +13,11 @@ class MagicWindow;
 This class handles entities that can "carry" other entities.
 TODO: Make this more generic to have an "attacher" that overrides positions.
 */
-class CarrySystem
+class CarrySystem: public es::System
 {
     public:
         CarrySystem(ocs::ObjectManager& entities, MagicWindow& magicwindow);
-        void update();
+        void update(float dt);
 
     private:
         ocs::ObjectManager& entities;

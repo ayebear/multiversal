@@ -15,8 +15,6 @@ namespace Components
 
 // Note: Using one file for now, but may split this up later.
 
-// Might not need some of these if I can use any type for a component
-
 struct Position: public ocs::Component<Position>
 {
     //sf::Vector2f position;
@@ -50,22 +48,30 @@ struct Size: public ocs::Component<Size>
 // The axis-aligned bounding box, used for collisions
 struct AABB: public ocs::Component<AABB>
 {
-    sf::FloatRect rect;
+    sf::FloatRect rect; // The actual AABB. Note: This has the relative position of the AABB,
+        // which is (0, 0) in a lot of cases. You need to add the object's position to get
+        // a bounding box with its global position. The reason for this is so the AABB
+        // component does not change when the object moves around.
     std::vector<ocs::ID> collisions; // IDs of currently colliding objects
     std::vector<sf::Vector2u> tileCollisions; // Coordinates of currently colliding tiles
     void deSerialize(const std::string& str)
     {
         serializer.deSerialize("% % % %", str, rect.left, rect.top, rect.width, rect.height);
     }
+
+    // Returns a global AABB based on a position
     sf::FloatRect getGlobalBounds(Position* position = nullptr)
     {
         if (position)
         {
+            // Add the position to the position of the AABB
             sf::FloatRect tempAABB(rect);
             tempAABB.left += position->x;
             tempAABB.top += position->y;
             return tempAABB;
         }
+
+        // When the position component is not specified, the original AABB will be returned.
         return rect;
     }
 };
@@ -92,6 +98,11 @@ struct AnimSprite: public ocs::Component<AnimSprite>
     }
 };
 
+/*
+TODO: Remove this component, and split it into generic components.
+    This will be neccessary in the future, when objects and boxes need to know
+    if they are on a platform or in the air, for example.
+*/
 struct PlayerState: public ocs::Component<PlayerState>
 {
     enum State
@@ -114,7 +125,11 @@ struct Carrier: public ocs::Component<Carrier>
 {
     // ID of entity being carried
     ocs::ID id;
+
+    // Where to position the object being carried
     sf::Vector2f offset;
+
+    // If the carriable component is currently being carried
     bool carrying;
 
     Carrier(): id(0), carrying(false) {}

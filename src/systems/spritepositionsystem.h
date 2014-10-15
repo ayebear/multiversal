@@ -5,11 +5,12 @@
 #define SPRITEPOSITIONSYSTEM_H
 
 #include "OCS/Objects.hpp"
+#include "system.h"
 
 /*
 This class handles updating the sprite positions from the position components.
 */
-class SpritePositionSystem
+class SpritePositionSystem: public es::System
 {
     public:
         SpritePositionSystem(ocs::ObjectManager& entities);

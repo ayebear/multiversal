@@ -5,6 +5,7 @@
 #define INPUTSYSTEM_H
 
 #include <SFML/Graphics.hpp>
+#include "system.h"
 
 /*
 This class handles the processing of all inputs, and sends out global input events with all of the needed information.
@@ -18,11 +19,11 @@ Also, have states that can be "watched" for realtime input, like sf::Keyboard::i
     These would have to be setup by some kind of configuration or code, so that it can loop through and update these.
     Benefit of this would be everything wouldn't need to access sf::Keyboard or input, it would just check the states.
 */
-class InputSystem
+class InputSystem: public es::System
 {
     public:
         InputSystem(sf::RenderWindow& window);
-        void update(const sf::View& view); // View is used for calculating mouse position
+        void update(float dt);
         void proxyEvents();
         void sendMouseButtonEvents(const sf::View& view);
         void sendMousePositionEvents(const sf::View& view);

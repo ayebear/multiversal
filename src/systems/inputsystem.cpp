@@ -10,11 +10,16 @@ InputSystem::InputSystem(sf::RenderWindow& window):
 {
 }
 
-void InputSystem::update(const sf::View& view)
+void InputSystem::update(float dt)
 {
     proxyEvents();
-    sendMouseButtonEvents(view);
-    sendMousePositionEvents(view);
+    if (Events::exists<GameViewEvent>())
+    {
+        // Get the game's view from an event
+        auto view = Events::get<GameViewEvent>().back().gameView;
+        sendMouseButtonEvents(view);
+        sendMousePositionEvents(view);
+    }
 }
 
 void InputSystem::proxyEvents()
@@ -34,6 +39,7 @@ void InputSystem::sendMouseButtonEvents(const sf::View& view)
     {
         if (event.type == sf::Event::MouseButtonPressed)
         {
+            // Map coordinates to game view coordinates
             sf::Vector2i mousePos(event.mouseButton.x, event.mouseButton.y);
             sf::Vector2f gameMousePos = window.mapPixelToCoords(mousePos, view);
             Events::send(MouseClickedEvent{event.mouseButton.button, gameMousePos});

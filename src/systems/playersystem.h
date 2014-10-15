@@ -6,14 +6,21 @@
 
 #include "components.h"
 #include "OCS/Objects.hpp"
+#include "system.h"
 
 class TileMap;
 
 /*
 This system handles player-related actions.
 TODO: Make this more generic somehow.
+    Maybe have different components that determine if something can jump, move, etc.
+    Basically, get rid of the PlayerState component.
+    Then, make different systems for handling these actions:
+        JumpSystem
+        MovementSystem
+        etc.
 */
-class PlayerSystem
+class PlayerSystem: public es::System
 {
     public:
         PlayerSystem(ocs::ObjectManager& entities, TileMap& tileMap);

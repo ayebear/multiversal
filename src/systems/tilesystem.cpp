@@ -14,6 +14,7 @@ TileSystem::TileSystem(ocs::ObjectManager& entities, TileMapData& tileMapData):
 
 void TileSystem::update(float dt)
 {
+    // Handle action key events (when the player presses "up") on different tiles
     Events::clear<LoadNextLevelEvent>();
     for (auto& event: Events::get<ActionKeyEvent>())
     {

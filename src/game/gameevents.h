@@ -6,6 +6,7 @@
 
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Mouse.hpp>
+#include <SFML/Graphics/View.hpp>
 #include "OCS/Misc/Config.hpp"
 
 struct MousePosEvent
@@ -45,5 +46,15 @@ struct PlayerPosition
 };
 
 struct LoadNextLevelEvent {};
+
+struct MapSizeEvent
+{
+    sf::Vector2u mapSize;
+};
+
+struct GameViewEvent
+{
+    sf::View gameView;
+};
 
 #endif

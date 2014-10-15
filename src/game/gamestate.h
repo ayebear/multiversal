@@ -10,21 +10,16 @@
 #include "camera.h"
 #include "level.h"
 #include "magicwindow.h"
-#include "inputsystem.h"
-#include "playersystem.h"
-#include "physicssystem.h"
-#include "carrysystem.h"
-#include "spritepositionsystem.h"
-#include "camerasystem.h"
-#include "tilesystem.h"
-#include "rendersystem.h"
 #include "OCS/Objects.hpp"
 #include "matrix.h"
+#include "systemcontainer.h"
 
 class GameObjects;
 
 /*
-This class manages the window and input for the game
+The state for the playable game.
+Handles input, updating, and drawing.
+Currently has all of the game objects, systems, and level.
 */
 class GameState: public BaseState
 {
@@ -33,7 +28,7 @@ class GameState: public BaseState
 
         void handleEvents();
         void update();
-        void draw();
+        void draw() {} // Update() calls the render system to draw
 
     private:
         void bindStringsToComponents();
@@ -49,15 +44,7 @@ class GameState: public BaseState
         ocs::ObjectManager entities;
 
         // Systems
-        // TODO: Use a system manager
-        InputSystem inputSystem;
-        PlayerSystem playerSystem;
-        PhysicsSystem physicsSystem;
-        CarrySystem carrySystem;
-        SpritePositionSystem spritePositionSystem;
-        CameraSystem cameraSystem;
-        TileSystem tileSystem;
-        RenderSystem renderSystem;
+        es::SystemContainer systems;
 };
 
 #endif

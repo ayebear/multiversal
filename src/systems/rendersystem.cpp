@@ -19,7 +19,7 @@ RenderSystem::RenderSystem(ocs::ObjectManager& entities, TileMap& tileMap, sf::R
     sprites.loadFromConfig("data/config/sprites.cfg");
 }
 
-void RenderSystem::update()
+void RenderSystem::update(float dt)
 {
     window.clear();
 

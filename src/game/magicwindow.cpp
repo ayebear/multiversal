@@ -49,6 +49,8 @@ void MagicWindow::update()
 
 void MagicWindow::setCenter(const sf::Vector2f& center, bool force)
 {
+    // Only set the position if the player is holding the mouse button down
+    // Or, if the code calling it forces it to set the position
     if (force || active)
     {
         sf::Vector2f newPosition;
@@ -57,12 +59,15 @@ void MagicWindow::setCenter(const sf::Vector2f& center, bool force)
         changed = (newPosition != position);
         if (changed)
         {
+            // Update the window's position if it changed
             position = newPosition;
             this->center = center;
             setPosition(position);
             textureView.setCenter(center);
         }
     }
+
+    // Update the preview box position, which hovers under the player's mouse pointer
     preview.setPosition(center);
 }
 
@@ -71,6 +76,7 @@ void MagicWindow::setSize(const sf::Vector2f& newSize)
     changed = (size != newSize);
     if (changed)
     {
+        // Update the size if it changed
         size = newSize;
         border.setSize(size);
         preview.setSize(size);
@@ -92,11 +98,13 @@ sf::RenderTexture& MagicWindow::getTexture()
 
 bool MagicWindow::isWithin(const sf::Vector2u& pos) const
 {
+    // Checks if a point is within the visible window
     return (visible && sf::IntRect(position.x, position.y, size.x, size.y).contains(sf::Vector2i(pos.x, pos.y)));
 }
 
 bool MagicWindow::isWithin(const sf::FloatRect& aabb) const
 {
+    // Checks if a rectangle is within the visible window
     return (visible && sf::FloatRect(position.x, position.y, size.x, size.y).intersects(aabb));
 }
 
@@ -132,6 +140,7 @@ void MagicWindow::draw(sf::RenderTarget& target, sf::RenderStates states) const
     states.transform *= getTransform();
     if (visible)
     {
+        // Draw the contents of the window if visible
         sf::Sprite sprite(texture.getTexture());
         target.draw(sprite, states);
         target.draw(border, states);

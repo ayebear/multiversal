@@ -14,7 +14,7 @@ CarrySystem::CarrySystem(ocs::ObjectManager& entities, MagicWindow& magicwindow)
 {
 }
 
-void CarrySystem::update()
+void CarrySystem::update(float dt)
 {
     // Process events, and check if anything should be picked up/put down
     for (auto& event: Events::get<ActionKeyEvent>())

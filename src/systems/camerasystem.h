@@ -5,18 +5,18 @@
 #define CAMERASYSTEM_H
 
 #include <SFML/Graphics.hpp>
+#include "system.h"
 
 class Camera;
 
 /*
 This class handles updating the camera (which contains all of the views).
 */
-class CameraSystem
+class CameraSystem: public es::System
 {
     public:
         CameraSystem(Camera& camera);
-        void setMapSize(const sf::Vector2u& size);
-        void update();
+        void update(float dt);
 
     private:
         Camera& camera;

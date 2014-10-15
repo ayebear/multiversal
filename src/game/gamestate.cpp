@@ -11,18 +11,30 @@
 #include "componentstrings.h"
 #include "windowfocus.h"
 
+// Include systems
+#include "inputsystem.h"
+#include "playersystem.h"
+#include "physicssystem.h"
+#include "carrysystem.h"
+#include "spritepositionsystem.h"
+#include "camerasystem.h"
+#include "tilesystem.h"
+#include "rendersystem.h"
+
 GameState::GameState(GameObjects& objects):
     objects(objects),
-    level("data/levels/", tileMapData, tileMap, entities),
-    inputSystem(objects.window),
-    playerSystem(entities, tileMap),
-    physicsSystem(entities, tileMapData, tileMap, magicWindow),
-    carrySystem(entities, magicWindow),
-    spritePositionSystem(entities),
-    cameraSystem(camera),
-    tileSystem(entities, tileMapData),
-    renderSystem(entities, tileMap, objects.window, camera, magicWindow)
+    level("data/levels/", tileMapData, tileMap, entities)
 {
+    // Setup systems
+    systems.add<InputSystem>(objects.window);
+    systems.add<PlayerSystem>(entities, tileMap);
+    systems.add<PhysicsSystem>(entities, tileMapData, tileMap, magicWindow);
+    systems.add<CarrySystem>(entities, magicWindow);
+    systems.add<SpritePositionSystem>(entities);
+    systems.add<CameraSystem>(camera);
+    systems.add<TileSystem>(entities, tileMapData);
+    systems.add<RenderSystem>(entities, tileMap, objects.window, camera, magicWindow);
+
     // Load entity prototypes
     bindComponentStrings(entities);
     EntityPrototypeLoader::load(entities, "data/config/entities.cfg");
@@ -47,8 +59,9 @@ GameState::GameState(GameObjects& objects):
     camera.setView("game2", magicWindowView);
     camera.setView("background2", magicWindowView, 0.5f);
 
-    // Set the map size for the camera system
-    cameraSystem.setMapSize(tileMap.getPixelSize());
+    // Send the map size to the camera system
+    // TODO: Move this to the level loading code, so when the map changes size, the camera will know
+    Events::send(MapSizeEvent{tileMap.getPixelSize()});
 
     // Start the game music
     objects.music.play("game");
@@ -56,7 +69,11 @@ GameState::GameState(GameObjects& objects):
 
 void GameState::handleEvents()
 {
-    inputSystem.update(camera.getView("game"));
+    // The input system needs the game view
+    Events::clear<GameViewEvent>();
+    Events::send(GameViewEvent{camera.getView("game")});
+
+    // TODO: Will need to update the input system here, or these events will be a frame behind
     for (auto& event: Events::get<sf::Event>())
     {
         switch (event.type)
@@ -89,17 +106,9 @@ void GameState::handleEvents()
 void GameState::update()
 {
     magicWindow.update();
-    playerSystem.update(dt);
-    physicsSystem.update(dt);
-    carrySystem.update();
-    tileSystem.update(dt);
     level.update();
-    spritePositionSystem.update(dt);
-    cameraSystem.update();
     objects.music.update();
-}
 
-void GameState::draw()
-{
-    renderSystem.update();
+    // Update all of the systems
+    systems.update(dt);
 }

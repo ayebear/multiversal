@@ -5,6 +5,7 @@
 #define TILESYSTEM_H
 
 #include "OCS/Objects.hpp"
+#include "system.h"
 
 class TileMapData;
 
@@ -12,7 +13,7 @@ class TileMapData;
 This class handles the action key presses for the special tiles.
 It then proxies the events so other things can handle what happened.
 */
-class TileSystem
+class TileSystem: public es::System
 {
     public:
         TileSystem(ocs::ObjectManager& entities, TileMapData& tileMapData);

@@ -11,13 +11,14 @@ CameraSystem::CameraSystem(Camera& camera):
 {
 }
 
-void CameraSystem::setMapSize(const sf::Vector2u& size)
+void CameraSystem::update(float dt)
 {
-    mapSize = size;
-}
+    // Receive map size events
+    for (auto& event: Events::get<MapSizeEvent>())
+        mapSize = event.mapSize;
+    Events::clear<MapSizeEvent>();
 
-void CameraSystem::update()
-{
+    // Receive camera events
     for (auto& event: Events::get<CameraEvent>())
     {
         // Set view's center based on entity's position and size
