@@ -7,6 +7,7 @@
 #include "gameevents.h"
 #include "windowfocus.h"
 #include "tilemap.h"
+#include <iostream>
 
 PlayerSystem::PlayerSystem(ocs::ObjectManager& entities, TileMap& tileMap):
     entities(entities),
@@ -23,12 +24,12 @@ void PlayerSystem::update(float dt)
         handlePosition(playerState);
         handleActionKey(playerState);
     }
-    Events::clear<PlayerPosition>();
+    es::Events::clear<PlayerPosition>();
 }
 
 void PlayerSystem::handleJumps(Components::PlayerState& playerState)
 {
-    for (auto& event: Events::get<OnPlatformEvent>())
+    for (auto& event: es::Events::get<OnPlatformEvent>())
     {
         if (event.entityId == playerState.getOwnerID())
         {
@@ -39,7 +40,7 @@ void PlayerSystem::handleJumps(Components::PlayerState& playerState)
                 playerState.state = Components::PlayerState::InAir;
         }
     }
-    for (auto& event: Events::get<sf::Event>())
+    for (auto& event: es::Events::get<sf::Event>())
     {
         if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space)
         {
@@ -99,7 +100,7 @@ void PlayerSystem::handlePosition(Components::PlayerState& playerState)
     if (position)
     {
         // This could just be an entity position update, and just have the player entity ID in the event
-        auto& events = Events::get<PlayerPosition>();
+        auto& events = es::Events::get<PlayerPosition>();
         for (auto& event: events)
         {
             position->x = event.position.x;
@@ -113,12 +114,12 @@ void PlayerSystem::handlePosition(Components::PlayerState& playerState)
 void PlayerSystem::handleActionKey(Components::PlayerState& playerState)
 {
     // Handle the input for pressing "up", and proxy the events
-    Events::clear<ActionKeyEvent>();
+    es::Events::clear<ActionKeyEvent>();
     auto position = entities.getComponent<Components::Position>(playerState.getOwnerID());
     auto aabb = entities.getComponent<Components::AABB>(playerState.getOwnerID());
     if (position)
     {
-        for (auto& event: Events::get<sf::Event>())
+        for (auto& event: es::Events::get<sf::Event>())
         {
             if (event.type == sf::Event::KeyPressed && (event.key.code == sf::Keyboard::Up || event.key.code == sf::Keyboard::W))
             {
@@ -130,7 +131,7 @@ void PlayerSystem::handleActionKey(Components::PlayerState& playerState)
                 for (auto& location: aabb->tileCollisions)
                     std::cout << location.x << ", " << location.y << "\n";
                 std::cout << "\n";
-                Events::send(ActionKeyEvent{playerState.getOwnerID()});
+                es::Events::send(ActionKeyEvent{playerState.getOwnerID()});
             }
         }
     }

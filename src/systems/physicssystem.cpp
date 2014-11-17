@@ -29,9 +29,8 @@ void PhysicsSystem::update(float dt)
 
 void PhysicsSystem::stepPositions(float dt)
 {
-    Events::clear<CameraEvent>();
-    Events::clear<OnPlatformEvent>();
-
+    es::Events::clear<CameraEvent>();
+    es::Events::clear<OnPlatformEvent>();
     // Apply gravity and handle collisions
     for (auto& velocity: entities.getComponentArray<Components::Velocity>())
     {
@@ -66,7 +65,7 @@ void PhysicsSystem::stepPositions(float dt)
 
             // Send camera update event
             if (entities.hasComponents<Components::CameraUpdater>(velocity.getOwnerID()))
-                Events::send(CameraEvent{sf::Vector2f(position->x, position->y),
+                es::Events::send(CameraEvent{sf::Vector2f(position->x, position->y),
                                              sf::Vector2f(size->x, size->y)});
         }
     }
@@ -132,7 +131,7 @@ void PhysicsSystem::handleTileCollision(Components::AABB* entAABB, float& veloci
 
     // Notify the entity about it being in the air or on a platform
     if (vertical && entityId != ocs::ID(-1))
-        Events::send(OnPlatformEvent{onPlatform, entityId});
+        es::Events::send(OnPlatformEvent{onPlatform, entityId});
 
     // Update the position from the new AABB
     position->x = tempAABB.left - entAABB->rect.left;
@@ -156,7 +155,7 @@ void PhysicsSystem::updateEdgeCases(Components::Position* position, Components::
     if (position->y > newPosition.y)
     {
         position->y = newPosition.y;
-        Events::send(OnPlatformEvent{true, entityId});
+        es::Events::send(OnPlatformEvent{true, entityId});
     }
 }
 

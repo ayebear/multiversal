@@ -13,10 +13,10 @@ InputSystem::InputSystem(sf::RenderWindow& window):
 void InputSystem::update(float dt)
 {
     proxyEvents();
-    if (Events::exists<GameViewEvent>())
+    if (es::Events::exists<GameViewEvent>())
     {
         // Get the game's view from an event
-        auto view = Events::get<GameViewEvent>().back().gameView;
+        auto view = es::Events::get<GameViewEvent>().back().gameView;
         sendMouseButtonEvents(view);
         sendMousePositionEvents(view);
     }
@@ -25,24 +25,24 @@ void InputSystem::update(float dt)
 void InputSystem::proxyEvents()
 {
     // Proxy SFML events from window
-    Events::clear<sf::Event>();
+    es::Events::clear<sf::Event>();
     sf::Event event;
     while (window.pollEvent(event))
-        Events::send(event);
+        es::Events::send(event);
 }
 
 void InputSystem::sendMouseButtonEvents(const sf::View& view)
 {
     // Check for mouse button events, and proxy mapped coordinates
-    Events::clear<MouseClickedEvent>();
-    for (auto& event: Events::get<sf::Event>())
+    es::Events::clear<MouseClickedEvent>();
+    for (auto& event: es::Events::get<sf::Event>())
     {
         if (event.type == sf::Event::MouseButtonPressed)
         {
             // Map coordinates to game view coordinates
             sf::Vector2i mousePos(event.mouseButton.x, event.mouseButton.y);
             sf::Vector2f gameMousePos = window.mapPixelToCoords(mousePos, view);
-            Events::send(MouseClickedEvent{event.mouseButton.button, gameMousePos});
+            es::Events::send(MouseClickedEvent{event.mouseButton.button, gameMousePos});
         }
     }
 }
@@ -50,11 +50,11 @@ void InputSystem::sendMouseButtonEvents(const sf::View& view)
 void InputSystem::sendMousePositionEvents(const sf::View& view)
 {
     // Get mouse position - if changed, then broadcast
-    Events::clear<MousePosEvent>();
+    es::Events::clear<MousePosEvent>();
     auto newMousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window), view);
     if (currentMousePos != newMousePos)
     {
         currentMousePos = newMousePos;
-        Events::send(MousePosEvent{currentMousePos});
+        es::Events::send(MousePosEvent{currentMousePos});
     }
 }

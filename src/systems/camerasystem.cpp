@@ -14,12 +14,11 @@ CameraSystem::CameraSystem(Camera& camera):
 void CameraSystem::update(float dt)
 {
     // Receive map size events
-    for (auto& event: Events::get<MapSizeEvent>())
+    for (auto& event: es::Events::get<MapSizeEvent>())
         mapSize = event.mapSize;
-    Events::clear<MapSizeEvent>();
 
     // Receive camera events
-    for (auto& event: Events::get<CameraEvent>())
+    for (auto& event: es::Events::get<CameraEvent>())
     {
         // Set view's center based on entity's position and size
         auto playerPos = event.position;

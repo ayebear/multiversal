@@ -15,8 +15,8 @@ TileSystem::TileSystem(ocs::ObjectManager& entities, TileMapData& tileMapData):
 void TileSystem::update(float dt)
 {
     // Handle action key events (when the player presses "up") on different tiles
-    Events::clear<LoadNextLevelEvent>();
-    for (auto& event: Events::get<ActionKeyEvent>())
+    es::Events::clear<LoadNextLevelEvent>();
+    for (auto& event: es::Events::get<ActionKeyEvent>())
     {
         auto aabb = entities.getComponent<Components::AABB>(event.entityId);
         if (aabb)
@@ -33,10 +33,9 @@ void TileSystem::update(float dt)
 
 void TileSystem::handleExitTile()
 {
-    if (!Events::exists<LoadNextLevelEvent>())
+    if (!es::Events::exists<LoadNextLevelEvent>())
     {
         std::cout << "Sent LoadNextLevelEvent\n";
-        Events::send(LoadNextLevelEvent());
+        es::Events::send(LoadNextLevelEvent());
     }
-
 }

@@ -22,16 +22,16 @@ MagicWindow::MagicWindow()
 void MagicWindow::update()
 {
     // Check SFML events
-    for (auto& event: Events::get<sf::Event>())
+    for (auto& event: es::Events::get<sf::Event>())
     {
         if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left)
             active = false;
     }
     // Check real-time mouse input
-    for (auto& event: Events::get<MousePosEvent>())
+    for (auto& event: es::Events::get<MousePosEvent>())
         setCenter(event.mousePos);
     // Check mouse-clicked events
-    for (auto& event: Events::get<MouseClickedEvent>())
+    for (auto& event: es::Events::get<MouseClickedEvent>())
     {
         if (event.button == sf::Mouse::Left)
         {

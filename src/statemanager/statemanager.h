@@ -11,13 +11,6 @@
 #include "basestate.h"
 #include "stateevent.h"
 
-// This is provided for C++11 users (won't be needed when C++14 is more supported)
-template<typename Type, typename... Args>
-std::unique_ptr<Type> makeUnique(Args&&... args)
-{
-    return std::unique_ptr<Type>(new Type(std::forward<Args>(args)...));
-}
-
 /*
 This class handles the deallocation/starting/changing of BaseState sub-classes.
 This class is also generic, but depends on having the BaseState class and StateEvent class.
@@ -28,7 +21,10 @@ class StateManager
         StateManager();
         ~StateManager();
 
-        void add(const std::string& name, std::unique_ptr<BaseState> state); // Adds a state pointer to the map (Note that this takes ownership of the state object)
+        // Adds a new state (forwards the constructor arguments)
+        template <typename T, typename... Args>
+        void add(const std::string& name, Args&&... args);
+
         void remove(const std::string& name); // Removes and deallocates a state from the map
         void start(const std::string& name); // The main loop that runs until a state returns an exit event
 
@@ -43,5 +39,11 @@ class StateManager
         using StatePtr = std::unique_ptr<BaseState>; // Unique pointer to a state
         std::map<std::string, StatePtr> statePtrs; // Pointers to instances of the state types, accessed by the std::string
 };
+
+template <typename T, typename... Args>
+void StateManager::add(const std::string& name, Args&&... args)
+{
+    statePtrs[name].reset(new T(std::forward<Args>(args)...));
+}
 
 #endif

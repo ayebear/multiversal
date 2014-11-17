@@ -27,8 +27,8 @@ GameState::GameState(GameObjects& objects):
 {
     // Setup systems
     systems.add<InputSystem>(objects.window);
-    systems.add<PlayerSystem>(entities, tileMap);
     systems.add<PhysicsSystem>(entities, tileMapData, tileMap, magicWindow);
+    systems.add<PlayerSystem>(entities, tileMap);
     systems.add<CarrySystem>(entities, magicWindow);
     systems.add<SpritePositionSystem>(entities);
     systems.add<CameraSystem>(camera);
@@ -59,22 +59,14 @@ GameState::GameState(GameObjects& objects):
     camera.setView("game2", magicWindowView);
     camera.setView("background2", magicWindowView, 0.5f);
 
-    // Send the map size to the camera system
-    // TODO: Move this to the level loading code, so when the map changes size, the camera will know
-    Events::send(MapSizeEvent{tileMap.getPixelSize()});
-
     // Start the game music
     objects.music.play("game");
 }
 
 void GameState::handleEvents()
 {
-    // The input system needs the game view
-    Events::clear<GameViewEvent>();
-    Events::send(GameViewEvent{camera.getView("game")});
-
     // TODO: Will need to update the input system here, or these events will be a frame behind
-    for (auto& event: Events::get<sf::Event>())
+    for (auto& event: es::Events::get<sf::Event>())
     {
         switch (event.type)
         {
@@ -105,10 +97,15 @@ void GameState::handleEvents()
 
 void GameState::update()
 {
-    magicWindow.update();
+    // The input system needs the game view
+    es::Events::clear<GameViewEvent>();
+    es::Events::send(GameViewEvent{camera.getView("game")});
+
     level.update();
-    objects.music.update();
 
     // Update all of the systems
     systems.update(dt);
+
+    magicWindow.update();
+    objects.music.update();
 }

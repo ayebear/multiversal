@@ -45,6 +45,7 @@ bool Level::load(int level)
     loadObjects(config);
 
     currentLevel = level;
+
     return true;
 }
 
@@ -55,15 +56,19 @@ bool Level::loadNext()
 
 void Level::update()
 {
-    if (Events::exists<LoadNextLevelEvent>())
+    if (es::Events::exists<LoadNextLevelEvent>())
         loadNext();
+
+    // Send the map size to the camera system
+    es::Events::clear<MapSizeEvent>();
+    es::Events::send(MapSizeEvent{tileMap.getPixelSize()});
 }
 
 void Level::sendStartPosition(sf::Vector2u& pos)
 {
     auto tileSize = tileMap.getTileSize();
     sf::Vector2f startPos(pos.x * tileSize.x, pos.y * tileSize.y);
-    Events::send(PlayerPosition{startPos, pos});
+    es::Events::send(PlayerPosition{startPos, pos});
 }
 
 void Level::loadTileMap(cfg::File& config)

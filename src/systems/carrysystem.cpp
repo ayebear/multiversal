@@ -17,7 +17,7 @@ CarrySystem::CarrySystem(ocs::ObjectManager& entities, MagicWindow& magicwindow)
 void CarrySystem::update(float dt)
 {
     // Process events, and check if anything should be picked up/put down
-    for (auto& event: Events::get<ActionKeyEvent>())
+    for (auto& event: es::Events::get<ActionKeyEvent>())
     {
         auto carrier = entities.getComponent<Components::Carrier>(event.entityId);
         auto aabb = entities.getComponent<Components::AABB>(event.entityId);

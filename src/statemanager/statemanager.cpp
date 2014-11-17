@@ -12,11 +12,6 @@ StateManager::~StateManager()
     deallocateStates();
 }
 
-void StateManager::add(const std::string& name, std::unique_ptr<BaseState> state)
-{
-    statePtrs[name] = std::move(state);
-}
-
 void StateManager::remove(const std::string& name)
 {
     statePtrs.erase(name);
