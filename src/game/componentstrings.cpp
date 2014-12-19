@@ -8,6 +8,7 @@ void bindComponentStrings(ocs::ObjectManager& entities)
 {
     entities.bindStringToComponent<Components::Position>("Position");
     entities.bindStringToComponent<Components::Velocity>("Velocity");
+    entities.bindStringToComponent<Components::Gravity>("Gravity");
     entities.bindStringToComponent<Components::Size>("Size");
     entities.bindStringToComponent<Components::AABB>("AABB");
     entities.bindStringToComponent<Components::Sprite>("Sprite");

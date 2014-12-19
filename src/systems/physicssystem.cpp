@@ -10,7 +10,7 @@
 #include "gameevents.h"
 
 const sf::Vector2i PhysicsSystem::maxVelocity(400, 800);
-const sf::Vector2i PhysicsSystem::acceleration(1600, 1600);
+const sf::Vector2i PhysicsSystem::gravityConstant(160, 160);
 
 PhysicsSystem::PhysicsSystem(ocs::ObjectManager& entities, TileMapData& tileMapData, TileMap& tileMap, MagicWindow& magicWindow):
     entities(entities),
@@ -39,10 +39,17 @@ void PhysicsSystem::stepPositions(float dt)
         auto size = entities.getComponent<Components::Size>(entityId);
         if (position && size)
         {
-            // Apply gravity
-            velocity.y += dt * acceleration.y;
-            if (velocity.y > maxVelocity.y)
-                velocity.y = maxVelocity.y;
+            // Apply gravity from the gravity component (if it exists)
+            auto gravity = entities.getComponent<Components::Gravity>(entityId);
+            if (gravity)
+            {
+                velocity.x += dt * gravity->acceleration.x * gravityConstant.x;
+                velocity.y += dt * gravity->acceleration.y * gravityConstant.y;
+                if (velocity.x > maxVelocity.x)
+                    velocity.x = maxVelocity.x;
+                if (velocity.y > maxVelocity.y)
+                    velocity.y = maxVelocity.y;
+            }
 
             // Get the AABB component used for collision detection/handling
             auto aabb = entities.getComponent<Components::AABB>(entityId);

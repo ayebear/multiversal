@@ -140,6 +140,16 @@ struct Carrier: public ocs::Component<Carrier>
     }
 };
 
+struct Gravity: public ocs::Component<Gravity>
+{
+    sf::Vector2f acceleration;
+
+    void deSerialize(const std::string& str)
+    {
+        serializer.deSerialize("% %", str, acceleration.x, acceleration.y);
+    }
+};
+
 // Component flags
 
 // If an entity should accept user input

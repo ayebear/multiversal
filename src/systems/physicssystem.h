@@ -33,7 +33,7 @@ class PhysicsSystem: public es::System
 
         // These are used for gravity and falling
         static const sf::Vector2i maxVelocity;
-        static const sf::Vector2i acceleration;
+        static const sf::Vector2i gravityConstant;
 
         // References
         ocs::ObjectManager& entities;
