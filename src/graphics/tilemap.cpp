@@ -2,6 +2,7 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "tilemap.h"
+#include <iostream>
 
 TileMap::TileMap()
 {
@@ -123,7 +124,7 @@ void TileMap::getCollidingTiles(const sf::FloatRect& entAABB, sf::Vector2u& star
 
     start = sf::Vector2u(startTemp.x, startTemp.y);
 
-    //std::cout << "start = (" << start.x << ", " << start.y << ")\n";
+    //std::cout << "start = (" << start.x << ", " << start.y << "); ";
     //std::cout << "end = (" << end.x << ", " << end.y << ")\n";
     //rect.setPosition(start.x * tileSize.x, start.y * tileSize.x);
     //rect.setSize(sf::Vector2f((end.x - start.x + 1) * tileSize.x, (end.y - start.y + 1) * tileSize.y));

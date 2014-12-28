@@ -53,7 +53,7 @@ struct AABB: public ocs::Component<AABB>
         // a bounding box with its global position. The reason for this is so the AABB
         // component does not change when the object moves around.
     std::vector<ocs::ID> collisions; // IDs of currently colliding objects
-    std::vector<sf::Vector2u> tileCollisions; // Coordinates of currently colliding tiles
+    std::vector<int> tileCollisions; // Tile IDs of currently colliding tiles (could be in alternate world)
     void deSerialize(const std::string& str)
     {
         serializer.deSerialize("% % % %", str, rect.left, rect.top, rect.width, rect.height);

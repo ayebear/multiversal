@@ -19,11 +19,14 @@
 #include "spritepositionsystem.h"
 #include "camerasystem.h"
 #include "tilesystem.h"
+#include "switchsystem.h"
+#include "forcefieldsystem.h"
 #include "rendersystem.h"
 
 GameState::GameState(GameObjects& objects):
     objects(objects),
-    level("data/levels/", tileMapData, tileMap, entities)
+    tileMapChanger(tileMapData, tileMap),
+    level("data/levels/", tileMapData, tileMap, tileMapChanger, entities)
 {
     // Setup systems
     systems.add<InputSystem>(objects.window);
@@ -33,6 +36,8 @@ GameState::GameState(GameObjects& objects):
     systems.add<SpritePositionSystem>(entities);
     systems.add<CameraSystem>(camera);
     systems.add<TileSystem>(entities, tileMapData);
+    systems.add<SwitchSystem>(tileMapData, tileMapChanger);
+    systems.add<ForceFieldSystem>(tileMapChanger);
     systems.add<RenderSystem>(entities, tileMap, objects.window, camera, magicWindow);
 
     // Load entity prototypes
@@ -40,7 +45,7 @@ GameState::GameState(GameObjects& objects):
     EntityPrototypeLoader::load(entities, "data/config/entities.cfg");
 
     // Load the tiles
-    cfg::File tilesConfig("data/config/tiles.cfg", cfg::File::Warnings | cfg::File::Errors);
+    cfg::File tilesConfig("data/config/tilemap.cfg", cfg::File::Warnings | cfg::File::Errors);
     tileMap.loadTileset(tilesConfig("texture"), tilesConfig("tileWidth").toInt(), tilesConfig("tileHeight").toInt());
 
     // Load level 1
@@ -79,6 +84,8 @@ void GameState::handleEvents()
                     stateEvent.command = StateEvent::Exit;
                 else if (event.key.code == sf::Keyboard::R)
                     level.load(); // Reload the current level
+                else if (event.key.code == sf::Keyboard::M)
+                    objects.music.setVolume(0); // Mute the music
                 break;
 
             case sf::Event::LostFocus:

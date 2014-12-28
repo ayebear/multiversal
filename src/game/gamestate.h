@@ -7,6 +7,7 @@
 #include "basestate.h"
 #include "tilemapdata.h"
 #include "tilemap.h"
+#include "tilemapchanger.h"
 #include "camera.h"
 #include "level.h"
 #include "magicwindow.h"
@@ -38,6 +39,7 @@ class GameState: public BaseState
         // TODO: Move to a world class
         TileMapData tileMapData;
         TileMap tileMap;
+        TileMapChanger tileMapChanger;
         Camera camera;
         Level level;
         MagicWindow magicWindow;

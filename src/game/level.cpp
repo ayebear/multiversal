@@ -5,8 +5,11 @@
 #include <sstream>
 #include "events.h"
 #include "gameevents.h"
+#include "tilemapdata.h"
 #include "tilemap.h"
+#include "tilemapchanger.h"
 #include "components.h"
+#include "logicaltiles.h"
 
 const cfg::File::ConfigMap Level::defaultOptions = {
     {"",{
@@ -16,10 +19,12 @@ const cfg::File::ConfigMap Level::defaultOptions = {
     }
 };
 
-Level::Level(const std::string& levelDir, TileMapData& tileMapData, TileMap& tileMap, ocs::ObjectManager& entities):
+Level::Level(const std::string& levelDir, TileMapData& tileMapData, TileMap& tileMap,
+        TileMapChanger& tileMapChanger, ocs::ObjectManager& entities):
     levelDir(levelDir),
     tileMapData(tileMapData),
     tileMap(tileMap),
+    tileMapChanger(tileMapChanger),
     entities(entities),
     currentLevel(1)
 {
@@ -67,7 +72,7 @@ void Level::update()
 void Level::sendStartPosition(sf::Vector2u& pos)
 {
     auto tileSize = tileMap.getTileSize();
-    sf::Vector2f startPos(pos.x * tileSize.x, pos.y * tileSize.y);
+    sf::Vector2f startPos(pos.x * tileSize.x + 12, pos.y * tileSize.y - 32);
     es::Events::send(PlayerPosition{startPos, pos});
 }
 
@@ -84,6 +89,7 @@ void Level::loadTileMap(cfg::File& config)
     int currentLayer = 0;
     for (auto& section: config)
     {
+        // Determine which dimension to use
         if (section.first == "Real")
             currentLayer = 0;
         else if (section.first == "Alternate")
@@ -94,11 +100,10 @@ void Level::loadTileMap(cfg::File& config)
         tileMap.useLayer(currentLayer);
         tileMapData.useLayer(currentLayer);
 
-        int y = 0;
         config.useSection(section.first);
 
-        // TODO: Make this less redundant...
-
+        // Load the logical layer
+        int y = 0;
         for (auto& tiles: config("logical"))
         {
             int x = 0;
@@ -107,7 +112,15 @@ void Level::loadTileMap(cfg::File& config)
             while (data >> logicalId)
             {
                 tileMapData(x, y).logicalId = logicalId;
-                if (logicalId == 9)
+
+                // Populate the logical to tile ID map
+                if (logicalId != Tiles::None && logicalId != Tiles::Normal)
+                {
+                    tileMapData[logicalId].push_back(tileMapData.getId(x, y));
+                    std::cout << logicalId << " = " << tileMapData.getId(x, y) << "\n";
+                }
+
+                if (logicalId == Tiles::Start)
                 {
                     startTilePos.x = x;
                     startTilePos.y = y;
@@ -117,6 +130,7 @@ void Level::loadTileMap(cfg::File& config)
             ++y;
         }
 
+        // Load the visual layer
         y = 0;
         for (auto& tiles: config("visual"))
         {
@@ -131,38 +145,26 @@ void Level::loadTileMap(cfg::File& config)
             }
             ++y;
         }
-
-        y = 0;
-        for (auto& tiles: config("collision"))
-        {
-            int x = 0;
-            std::istringstream data(tiles.toString());
-            bool collidable = false;
-            while (data >> collidable)
-            {
-                tileMapData(x, y).collidable = collidable;
-                ++x;
-            }
-            ++y;
-        }
-
-        y = 0;
-        for (auto& tiles: config("state"))
-        {
-            int x = 0;
-            std::istringstream data(tiles.toString());
-            bool state = false;
-            while (data >> state)
-            {
-                tileMapData(x, y).state = state;
-                ++x;
-            }
-            ++y;
-        }
     }
 
+    // Derive the remaining layer data (this basically initializes the layers)
+    tileMapData.deriveTiles();
+
+    // Set any of the tiles' states to true if specified
+    config.useSection();
+    for (auto& option: config("trueStates"))
+    {
+        int tileId = option.toInt();
+        tileMapChanger.changeState(tileId, true);
+    }
+
+    // Load the switch connections
+    loadSwitches(config);
+
+    // Send the player's starting position
     sendStartPosition(startTilePos);
 
+    // Use the real world as the current layer
     tileMap.useLayer(0);
 }
 
@@ -194,4 +196,16 @@ void Level::loadObjects(cfg::File& config)
             }
         }
     }
+}
+
+void Level::loadSwitches(cfg::File& config)
+{
+    SwitchMapEvent event;
+    for (auto& option: config.getSection("Switches"))
+    {
+        int switchTileId = std::stoi(option.first);
+        for (auto& element: option.second)
+            event.switches[switchTileId].push_back(element.toInt());
+    }
+    es::Events::send(event);
 }

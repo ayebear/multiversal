@@ -83,6 +83,18 @@ class Matrix
             return matrixSize;
         }
 
+        using MatrixType = std::vector<Type>;
+
+        typename MatrixType::iterator begin()
+        {
+            return elements.begin();
+        }
+
+        typename MatrixType::iterator end()
+        {
+            return elements.end();
+        }
+
     private:
         void copyMatrix(const std::vector<Type>& source, std::vector<Type>& dest, unsigned sourceWidth, unsigned destWidth, unsigned sourceHeight, unsigned destHeight) const
         {
@@ -97,7 +109,7 @@ class Matrix
                     dest[(y * destWidth) + x] = source[(y * sourceWidth) + x];
         }
 
-        std::vector<Type> elements;
+        MatrixType elements;
         unsigned matrixWidth;
         unsigned matrixHeight;
         unsigned matrixSize;

@@ -16,16 +16,22 @@ void TileSystem::update(float dt)
 {
     // Handle action key events (when the player presses "up") on different tiles
     es::Events::clear<LoadNextLevelEvent>();
+    es::Events::clear<SwitchEvent>();
     for (auto& event: es::Events::get<ActionKeyEvent>())
     {
         auto aabb = entities.getComponent<Components::AABB>(event.entityId);
         if (aabb)
         {
-            for (auto& location: aabb->tileCollisions)
+            for (int tileId: aabb->tileCollisions)
             {
-                auto tileId = tileMapData(location.x, location.y).logicalId;
-                if (tileId == Tiles::Exit)
+                // Get the logical ID
+                int logicalId = tileMapData(tileId).logicalId;
+
+                // Handle the action event depending on which tile type it is
+                if (logicalId == Tiles::Exit)
                     handleExitTile();
+                else if (logicalId == Tiles::ToggleSwitch)
+                    es::Events::send(SwitchEvent{tileId, SwitchEvent::Toggle});
             }
         }
     }

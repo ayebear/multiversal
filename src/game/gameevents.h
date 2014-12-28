@@ -8,6 +8,8 @@
 #include <SFML/Window/Mouse.hpp>
 #include <SFML/Graphics/View.hpp>
 #include "OCS/Misc/Config.hpp"
+#include <map>
+#include <vector>
 
 struct MousePosEvent
 {
@@ -55,6 +57,34 @@ struct MapSizeEvent
 struct GameViewEvent
 {
     sf::View gameView;
+};
+
+struct SwitchEvent
+{
+    enum Action
+    {
+        On,
+        Off,
+        Toggle
+    };
+
+    int tileId;
+    int action;
+};
+
+using SwitchMap = std::map<int, std::vector<int> >;
+
+// Toggles everything connected to a switch
+struct SwitchOutputEvent
+{
+    // Logical IDs to lists of tile IDs
+    SwitchMap tileIds;
+};
+
+struct SwitchMapEvent
+{
+    // Tile IDs of switches to lists of connected tile IDs
+    SwitchMap switches;
 };
 
 #endif

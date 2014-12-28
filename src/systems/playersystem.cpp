@@ -128,9 +128,9 @@ void PlayerSystem::handleActionKey(Components::PlayerState& playerState)
                 // Note: All of the colliding tiles are stored in the tileCollisions vector in the AABB component
                 //std::cout << "Action key pressed at location " << tilePos.x << ", " << tilePos.y << "\n";
                 std::cout << "Action key was pressed. Locations: ";
-                for (auto& location: aabb->tileCollisions)
-                    std::cout << location.x << ", " << location.y << "\n";
-                std::cout << "\n";
+                for (int location: aabb->tileCollisions)
+                    std::cout << location << ' ';
+                std::cout << '\n';
                 es::Events::send(ActionKeyEvent{playerState.getOwnerID()});
             }
         }

@@ -29,8 +29,12 @@ void PhysicsSystem::update(float dt)
 
 void PhysicsSystem::stepPositions(float dt)
 {
+    tileMapData.clearTiles();
+
+    // Clear events
     es::Events::clear<CameraEvent>();
     es::Events::clear<OnPlatformEvent>();
+
     // Apply gravity and handle collisions
     for (auto& velocity: entities.getComponentArray<Components::Velocity>())
     {
@@ -76,6 +80,8 @@ void PhysicsSystem::stepPositions(float dt)
                                              sf::Vector2f(size->x, size->y)});
         }
     }
+
+    tileMapData.printTiles();
 }
 
 void PhysicsSystem::handleTileCollision(Components::AABB* entAABB, float& velocity, Components::Position* position, bool vertical, ocs::ID entityId, bool inAltWorld)
@@ -86,6 +92,7 @@ void PhysicsSystem::handleTileCollision(Components::AABB* entAABB, float& veloci
 
     // Temp computed AABB (position + AABB component)
     auto tempAABB = entAABB->getGlobalBounds(position);
+    float newTop = tempAABB.top;
 
     // Get the area of tiles to check collision against
     sf::Vector2u start;
@@ -93,12 +100,12 @@ void PhysicsSystem::handleTileCollision(Components::AABB* entAABB, float& veloci
     tileMap.getCollidingTiles(tempAABB, start, end);
 
     // Check the collision
-    bool collided = false;
+    //bool collided = false;
     bool onPlatform = false;
     auto tileSize = tileMap.getTileSize();
-    for (unsigned y = start.y; y <= end.y && !collided; ++y)
+    for (unsigned y = start.y; y <= end.y; ++y)
     {
-        for (unsigned x = start.x; x <= end.x && !collided; ++x)
+        for (unsigned x = start.x; x <= end.x; ++x)
         {
             int layer = 0;
             if (inAltWorld || magicWindow.isWithin(tileMap.getCenterPoint(x, y)))
@@ -115,8 +122,13 @@ void PhysicsSystem::handleTileCollision(Components::AABB* entAABB, float& veloci
                     {
                         if (velocity >= 0) // Standing on platform
                         {
-                            tempAABB.top = y * tileSize.y - tempAABB.height;
+                            newTop = y * tileSize.y - tempAABB.height;
                             onPlatform = true;
+
+                            // Add the tile ID to the set of tiles with objects on them
+                            // TODO: Find a better way to fix the off by 1 problem
+                            int newLayer = (inAltWorld || magicWindow.isWithin(tileMap.getCenterPoint(x, y - 1)));
+                            tileMapData.addTile(tileMapData.getId(newLayer, x, y - 1));
                         }
                         else // Hitting ceiling
                             tempAABB.top = (y + 1) * tileSize.y;
@@ -129,12 +141,16 @@ void PhysicsSystem::handleTileCollision(Components::AABB* entAABB, float& veloci
                             tempAABB.left = (x + 1) * tileSize.x;
                     }
                     velocity = 0;
-                    collided = true;
+                    //collided = true;
                     //std::cout << "Collision detected: " << x << ", " << y << "\n";
                 }
             }
         }
     }
+
+    // Set the position of the entity
+    if (onPlatform)
+        tempAABB.top = newTop;
 
     // Notify the entity about it being in the air or on a platform
     if (vertical && entityId != ocs::ID(-1))
@@ -222,17 +238,22 @@ void PhysicsSystem::checkTileCollisions()
         if (position)
         {
             sf::Vector2u start, end;
-            tileMap.getCollidingTiles(aabb.getGlobalBounds(position), start, end);
+            auto globalBounds = aabb.getGlobalBounds(position);
+            tileMap.getCollidingTiles(globalBounds, start, end);
+            bool inWindow = magicWindow.isWithin(globalBounds);
             for (unsigned y = start.y; y <= end.y; ++y)
             {
                 for (unsigned x = start.x; x <= end.x; ++x)
                 {
-                    if (tileMapData(x, y).logicalId > 0)
-                        aabb.tileCollisions.push_back(sf::Vector2u(x, y));
+                    // Figure out which layer the tile is in
+                    int layer = (inWindow && magicWindow.isWithin(tileMap.getCenterPoint(x, y)));
+                    int tileId = tileMapData.getId(layer, x, y);
+
+                    // Add the tile ID to the collision list
+                    if (tileMapData(tileId).logicalId > 0)
+                        aabb.tileCollisions.push_back(tileId);
                 }
             }
         }
     }
 }
-
-

@@ -7,10 +7,11 @@
 #include <string>
 #include <SFML/System/Vector2.hpp>
 #include "configfile.h"
-#include "tilemapdata.h"
 #include "OCS/Objects.hpp"
 
+class TileMapData;
 class TileMap;
+class TileMapChanger;
 
 /*
 This class holds the information for a level, and loads everything into memory from a file.
@@ -18,7 +19,8 @@ This class holds the information for a level, and loads everything into memory f
 class Level
 {
     public:
-        Level(const std::string& levelDir, TileMapData& tileMapData, TileMap& tileMap, ocs::ObjectManager& entities);
+        Level(const std::string& levelDir, TileMapData& tileMapData, TileMap& tileMap,
+            TileMapChanger& tileMapChanger, ocs::ObjectManager& entities);
         bool load(int level = -1);
         bool loadNext();
         void update();
@@ -27,12 +29,14 @@ class Level
         void sendStartPosition(sf::Vector2u& pos);
         void loadTileMap(cfg::File& config);
         void loadObjects(cfg::File& config);
+        void loadSwitches(cfg::File& config);
 
         static const cfg::File::ConfigMap defaultOptions;
 
         std::string levelDir;
         TileMapData& tileMapData; // Logical tile map
         TileMap& tileMap; // Visual tile map
+        TileMapChanger& tileMapChanger;
         ocs::ObjectManager& entities;
         int currentLevel;
 };
