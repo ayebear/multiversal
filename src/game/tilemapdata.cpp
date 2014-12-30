@@ -53,8 +53,9 @@ void TileMapData::deriveTiles()
     {
         for (auto& tile: layer)
         {
-            tile.collidable = logicalToCollision[tile.logicalId];
+            // Set the state to false and update the collision
             tile.state = false;
+            updateCollision(tile);
         }
     }
 }
@@ -69,16 +70,17 @@ void TileMapData::updateVisualId(int id)
 
 void TileMapData::updateCollision(int id)
 {
-    auto& tile = operator()(id);
-    if (stateChangesCollision.find(tile.logicalId) != stateChangesCollision.end())
-    {
-        if (logicalToCollision[tile.logicalId])
-            tile.collidable = tile.state;
-        else
-            tile.collidable = !tile.state;
+    updateCollision(operator()(id));
+}
 
-        //tile.collidable = !(tile.state ^ logicalToCollision[tile.logicalId]);
-    }
+void TileMapData::updateCollision(Tile& tile)
+{
+    // Get the regular collision data based on the logical ID
+    tile.collidable = logicalToCollision[tile.logicalId];
+
+    // Handle the special tiles where their state affects collision
+    if (stateChangesCollision.find(tile.logicalId) != stateChangesCollision.end())
+        tile.collidable = (tile.state == tile.collidable);
 }
 
 void TileMapData::addTile(int id)

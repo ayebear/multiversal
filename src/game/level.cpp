@@ -170,11 +170,12 @@ void Level::loadTileMap(cfg::File& config)
 
 void Level::loadObjects(cfg::File& config)
 {
-    // TODO: Have another tile-like layer for creating objects
-    // There could be just the names of the objects, or some IDs that get the names from a mapping file
-    // Will need some sort of parameters for the objects, these will need to be hard-coded
-    // Another option could be to have the objects in the tile map and set their positions to that
     entities.destroyAllObjects();
+
+    // Always make a player object
+    entities.createObject("Player");
+
+    // Create objects from level file
     for (auto& option: config.getSection("Objects"))
     {
         for (auto& object: option.second)

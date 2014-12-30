@@ -40,6 +40,7 @@ class TileMapData
         void deriveTiles();
         void updateVisualId(int id);
         void updateCollision(int id);
+        void updateCollision(Tile& tile);
 
         // Tiles with objects on top
         void addTile(int id);
