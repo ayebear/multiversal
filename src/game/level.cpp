@@ -10,6 +10,7 @@
 #include "tilemapchanger.h"
 #include "components.h"
 #include "logicaltiles.h"
+#include "magicwindow.h"
 
 const cfg::File::ConfigMap Level::defaultOptions = {
     {"",{
@@ -20,12 +21,13 @@ const cfg::File::ConfigMap Level::defaultOptions = {
 };
 
 Level::Level(const std::string& levelDir, TileMapData& tileMapData, TileMap& tileMap,
-        TileMapChanger& tileMapChanger, ocs::ObjectManager& entities):
+        TileMapChanger& tileMapChanger, ocs::ObjectManager& entities, MagicWindow& magicWindow):
     levelDir(levelDir),
     tileMapData(tileMapData),
     tileMap(tileMap),
     tileMapChanger(tileMapChanger),
     entities(entities),
+    magicWindow(magicWindow),
     currentLevel(1)
 {
 }
@@ -46,8 +48,12 @@ bool Level::load(int level)
         return false;
     }
 
+    // Load everything from the config file
     loadTileMap(config);
     loadObjects(config);
+
+    // Reset window
+    magicWindow.show(false);
 
     currentLevel = level;
 
@@ -115,10 +121,7 @@ void Level::loadTileMap(cfg::File& config)
 
                 // Populate the logical to tile ID map
                 if (logicalId != Tiles::None && logicalId != Tiles::Normal)
-                {
                     tileMapData[logicalId].push_back(tileMapData.getId(x, y));
-                    std::cout << logicalId << " = " << tileMapData.getId(x, y) << "\n";
-                }
 
                 if (logicalId == Tiles::Start)
                 {

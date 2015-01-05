@@ -12,6 +12,7 @@
 class TileMapData;
 class TileMap;
 class TileMapChanger;
+class MagicWindow;
 
 /*
 This class holds the information for a level, and loads everything into memory from a file.
@@ -20,7 +21,7 @@ class Level
 {
     public:
         Level(const std::string& levelDir, TileMapData& tileMapData, TileMap& tileMap,
-            TileMapChanger& tileMapChanger, ocs::ObjectManager& entities);
+            TileMapChanger& tileMapChanger, ocs::ObjectManager& entities, MagicWindow& magicWindow);
         bool load(int level = -1);
         bool loadNext();
         void update();
@@ -38,6 +39,8 @@ class Level
         TileMap& tileMap; // Visual tile map
         TileMapChanger& tileMapChanger;
         ocs::ObjectManager& entities;
+        MagicWindow& magicWindow;
+
         int currentLevel;
 };
 

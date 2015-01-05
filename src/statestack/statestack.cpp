@@ -1,30 +1,30 @@
 // Copyright (C) 2014 Eric Hebert (ayebear)
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
-#include "statemanager.h"
+#include "statestack.h"
 
-StateManager::StateManager()
+StateStack::StateStack()
 {
 }
 
-StateManager::~StateManager()
+StateStack::~StateStack()
 {
     deallocateStates();
 }
 
-void StateManager::remove(const std::string& name)
+void StateStack::remove(const std::string& name)
 {
     statePtrs.erase(name);
 }
 
-void StateManager::start(const std::string& name)
+void StateStack::start(const std::string& name)
 {
     StateEvent event(StateEvent::Push, name);
     while (event.command != StateEvent::Exit)
         handleEvent(event);
 }
 
-void StateManager::deallocateStates()
+void StateStack::deallocateStates()
 {
     // Call the remaining onPop functions
     while (!stateStack.empty())
@@ -36,7 +36,7 @@ void StateManager::deallocateStates()
     statePtrs.clear();
 }
 
-void StateManager::handleEvent(StateEvent& event)
+void StateStack::handleEvent(StateEvent& event)
 {
     // Take action based on the event
     if (event.command == StateEvent::Push)
@@ -55,7 +55,7 @@ void StateManager::handleEvent(StateEvent& event)
         event.command = StateEvent::Exit; // Exit the game
 }
 
-void StateManager::push(const std::string& name)
+void StateStack::push(const std::string& name)
 {
     auto found = statePtrs.find(name);
     if (found != statePtrs.end() && found->second)
@@ -66,7 +66,7 @@ void StateManager::push(const std::string& name)
     // If this fails due to a bad type, the current state will just start again.
 }
 
-void StateManager::pop()
+void StateStack::pop()
 {
     if (!stateStack.empty())
     {

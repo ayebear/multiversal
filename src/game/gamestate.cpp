@@ -26,7 +26,7 @@
 GameState::GameState(GameObjects& objects):
     objects(objects),
     tileMapChanger(tileMapData, tileMap),
-    level("data/levels/", tileMapData, tileMap, tileMapChanger, entities)
+    level("data/levels/", tileMapData, tileMap, tileMapChanger, entities, magicWindow)
 {
     // Setup systems
     systems.add<InputSystem>(objects.window);
@@ -58,7 +58,7 @@ GameState::GameState(GameObjects& objects):
     //camera.setView("menu", defaultView);
 
     // Setup the magic window
-    static const unsigned magicWindowSize = 5;
+    static const unsigned magicWindowSize = 5; // TODO: Make this resizable
     magicWindow.setSize(sf::Vector2f(tileMap.getTileSize().x * magicWindowSize, tileMap.getTileSize().y * magicWindowSize));
     auto magicWindowView = magicWindow.getTexture().getDefaultView();
     camera.setView("game2", magicWindowView);
@@ -88,6 +88,7 @@ void GameState::handleEvents()
                     objects.music.setVolume(0); // Mute the music
                 break;
 
+            // TODO: Get rid of these after updating to SFML 2.2
             case sf::Event::LostFocus:
                 WindowFocus::setFocus(false);
                 break;

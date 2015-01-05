@@ -39,7 +39,7 @@ void RenderSystem::update(float dt)
     magicWindow.setView(camera.accessView("game"), windowViewPos);
     tileMap.drawLayer(texture, 1);
 
-    // Note: May add real z-index in the future, for now this should work good enough
+    // TODO: Add z-indexing with z-index components that get sorted
 
     // Draw sprites
     for (auto& sprite: entities.getComponentArray<Components::Sprite>())
@@ -53,13 +53,13 @@ void RenderSystem::update(float dt)
     texture.display();
     window.draw(magicWindow);
 
-    // Draw sprites
-    for (auto& sprite: entities.getComponentArray<Components::Sprite>())
-        drawSprite(sprite, true);
-
     // Draw animated sprites
     for (auto& animSprite: entities.getComponentArray<Components::AnimSprite>())
         drawSprite(animSprite, true);
+
+    // Draw sprites
+    for (auto& sprite: entities.getComponentArray<Components::Sprite>())
+        drawSprite(sprite, true);
 
     window.display();
 }

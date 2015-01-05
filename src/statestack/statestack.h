@@ -1,8 +1,8 @@
 // Copyright (C) 2014 Eric Hebert (ayebear)
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
-#ifndef STATEMANAGER_H
-#define STATEMANAGER_H
+#ifndef STATESTACK_H
+#define STATESTACK_H
 
 #include <string>
 #include <stack>
@@ -15,11 +15,11 @@
 This class handles the deallocation/starting/changing of BaseState sub-classes.
 This class is also generic, but depends on having the BaseState class and StateEvent class.
 */
-class StateManager
+class StateStack
 {
     public:
-        StateManager();
-        ~StateManager();
+        StateStack();
+        ~StateStack();
 
         // Adds a new state (forwards the constructor arguments)
         template <typename T, typename... Args>
@@ -41,7 +41,7 @@ class StateManager
 };
 
 template <typename T, typename... Args>
-void StateManager::add(const std::string& name, Args&&... args)
+void StateStack::add(const std::string& name, Args&&... args)
 {
     statePtrs[name].reset(new T(std::forward<Args>(args)...));
 }
