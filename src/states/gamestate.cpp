@@ -48,9 +48,6 @@ GameState::GameState(GameObjects& objects):
     cfg::File tilesConfig("data/config/tilemap.cfg", cfg::File::Warnings | cfg::File::Errors);
     tileMap.loadTileset(tilesConfig("texture"), tilesConfig("tileWidth").toInt(), tilesConfig("tileHeight").toInt());
 
-    // Load level 1
-    level.load(1);
-
     // Setup the views
     auto defaultView = objects.window.getDefaultView();
     camera.setView("game", defaultView);
@@ -63,6 +60,15 @@ GameState::GameState(GameObjects& objects):
     auto magicWindowView = magicWindow.getTexture().getDefaultView();
     camera.setView("game2", magicWindowView);
     camera.setView("background2", magicWindowView, 0.5f);
+}
+
+void GameState::onStart()
+{
+    // Clear any old events from the last time it was ran
+    es::Events::clearAll();
+
+    // Load level 1
+    level.load(1);
 
     // Start the game music
     objects.music.play("game");
@@ -81,7 +87,7 @@ void GameState::handleEvents()
 
             case sf::Event::KeyPressed:
                 if (event.key.code == sf::Keyboard::Escape)
-                    stateEvent.command = StateEvent::Exit;
+                    stateEvent.command = StateEvent::Pop;
                 else if (event.key.code == sf::Keyboard::R)
                     level.load(); // Reload the current level
                 else if (event.key.code == sf::Keyboard::M)

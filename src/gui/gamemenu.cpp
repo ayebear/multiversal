@@ -1,0 +1,167 @@
+#include "gamemenu.h"
+#include <iostream>
+
+GameMenu::GameMenu(sf::RenderWindow& window, const std::string& configFilename):
+    window(window),
+    config(configFilename),
+    currentItem(NO_SELECTION)
+{
+    view = window.getDefaultView();
+    viewSize = view.getSize();
+    loadSettings();
+}
+
+void GameMenu::addItem(const std::string& name, CallbackType callback)
+{
+    menuItems.emplace_back(name, callback);
+    menuItems.back().label.setFont(font);
+}
+
+void GameMenu::handleEvent(const sf::Event& event)
+{
+    if (event.type == sf::Event::KeyPressed)
+    {
+        switch (event.key.code)
+        {
+            case sf::Keyboard::Return:
+                selectMenuItem(currentItem);
+                break;
+
+            case sf::Keyboard::Up:
+                if (currentItem > 0)
+                    --currentItem;
+                else if (currentItem == -1)
+                    currentItem = 0;
+                break;
+
+            case sf::Keyboard::Down:
+                if (currentItem < int(menuItems.size()) - 1)
+                    ++currentItem;
+                break;
+
+            default:
+                break;
+        }
+    }
+    else if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left)
+    {
+        // Handle clicking on a menu item
+        mapMousePos(sf::Vector2i(event.mouseButton.x, event.mouseButton.y));
+        selectMenuItem(getSelectedItem());
+    }
+    else if (event.type == sf::Event::MouseMoved)
+        mapMousePos(sf::Vector2i(event.mouseMove.x, event.mouseMove.y));
+}
+
+void GameMenu::update(float dt)
+{
+    // Check mouse collisions
+    int found = getSelectedItem();
+    if (found != NO_SELECTION)
+        currentItem = found;
+
+    // Update animations/graphics, positions, sizes, colors, and labels
+    int index = 0;
+    for (auto& item: menuItems)
+    {
+        // Check if this button is hovered over
+        auto& settings = buttonSettings[index == currentItem];
+
+        // Update properties of the button
+        // Update logical bounding box
+        float yPos = firstButton.y + (index * (height + padding));
+        item.rect = sf::FloatRect(firstButton.x, yPos, width, height);
+
+        // Update rectangle shape
+        item.shape.setPosition(item.rect.left, item.rect.top);
+        item.shape.setSize(sf::Vector2f(width, height));
+        item.shape.setOutlineThickness(settings.outlineThickness);
+        item.shape.setFillColor(settings.colorFill.toColor());
+        item.shape.setOutlineColor(settings.colorOutline.toColor());
+
+        // Update text
+        item.label.setCharacterSize(fontSize);
+        item.label.setColor(settings.fontColor.toColor());
+
+        // Calculate offset and update text position
+        auto textBounds = item.label.getGlobalBounds();
+        sf::Vector2f textOffset((width - textBounds.width) / 2, textPaddingTop);
+        item.label.setPosition(item.rect.left + textOffset.x, item.rect.top + textOffset.y);
+
+        ++index;
+    }
+}
+
+void GameMenu::draw(sf::RenderTarget& target, sf::RenderStates states) const
+{
+    target.draw(backgroundSprite);
+    for (auto& item: menuItems)
+    {
+        target.draw(item.shape);
+        target.draw(item.label);
+    }
+}
+
+int GameMenu::getSelectedItem() const
+{
+    // See if the mouse is hovering over any menu items
+    int index = 0;
+    int found = NO_SELECTION;
+    for (auto& item: menuItems)
+    {
+        if (item.rect.contains(mousePos))
+            found = index;
+        ++index;
+    }
+    return found;
+}
+
+void GameMenu::mapMousePos(const sf::Vector2i& pos)
+{
+    mousePos = window.mapPixelToCoords(pos);
+}
+
+void GameMenu::selectMenuItem(int index)
+{
+    currentItem = index;
+    // Execute callback of menu item
+    if (index != NO_SELECTION)
+        menuItems[index].callback();
+}
+
+void GameMenu::loadSettings()
+{
+    // Load general settings
+    SpriteLoader::load(backgroundSprite, config("backgroundImage"), true);
+    transitionTime = config("transitionTime").toFloat();
+    padding = config("padding").toInt();
+    textPaddingTop = config("textPaddingTop").toInt();
+    font.loadFromFile(config("fontFile"));
+    width = config("buttonWidth").toInt();
+    height = config("buttonHeight").toInt();
+    fontSize = config("fontSize").toInt();
+
+    // Load button settings
+    unsigned index = 0;
+    for (auto& section: {"Button", "Button.OnHover"})
+    {
+        auto& settings = buttonSettings[index++];
+        config.useSection(section);
+        settings.outlineThickness = config("outlineThickness").toInt();
+        settings.colorFill = config("colorFill");
+        settings.colorOutline = config("colorOutline");
+        settings.fontColor = config("fontColor");
+    }
+
+    // Calculate positions and text padding
+    config.useSection();
+    firstButton.x = (viewSize.x - width) / 2;
+    firstButton.y = config("firstButtonOffset").toInt();
+}
+
+GameMenu::MenuItem::MenuItem(const std::string& name, CallbackType callback):
+    name(name),
+    callback(callback)
+{
+    label.setString(name);
+}

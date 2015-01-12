@@ -20,6 +20,7 @@ class BaseState
         const StateEvent& start(); // Runs the main loop, then returns the action object
 
         // These are totally optional, they don't even need to be implemented by sub classes
+        virtual void onStart() {} // Gets called whenever the state is initially ran, or popped back to from another state
         virtual void onPush() {} // Gets called only when the state has been pushed onto the stack
         virtual void onPop() {} // Gets called only when the state has been popped off of the stack
 
@@ -31,6 +32,7 @@ class BaseState
     protected:
         StateEvent stateEvent;
         float dt;
+        static const float dtMax;
 
     private:
         sf::Clock clock;

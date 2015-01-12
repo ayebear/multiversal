@@ -27,6 +27,7 @@ class GameState: public BaseState
     public:
         GameState(GameObjects& objects);
 
+        void onStart();
         void handleEvents();
         void update();
         void draw() {} // Update() calls the render system to draw

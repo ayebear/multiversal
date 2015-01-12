@@ -2,6 +2,7 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "statestack.h"
+#include <iostream>
 
 StateStack::StateStack()
 {
@@ -60,9 +61,12 @@ void StateStack::push(const std::string& name)
     auto found = statePtrs.find(name);
     if (found != statePtrs.end() && found->second)
     {
+        std::cout << "StateStack: Pushing state '" << name << "'...\n";
         stateStack.push(name);
         found->second->onPush();
     }
+    else
+        std::cout << "StateStack: Error pushing state '" << name << "'.\n";
     // If this fails due to a bad type, the current state will just start again.
 }
 
@@ -70,9 +74,11 @@ void StateStack::pop()
 {
     if (!stateStack.empty())
     {
-        auto& state = statePtrs[stateStack.top()];
+        auto stateName = stateStack.top();
+        auto& state = statePtrs[stateName];
         if (state)
             state->onPop();
         stateStack.pop();
+        std::cout << "Popped state '" << stateName << "'.\n";
     }
 }
