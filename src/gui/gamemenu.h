@@ -1,3 +1,6 @@
+// Copyright (C) 2014-2015 Eric Hebert (ayebear)
+// This code is licensed under GPLv3, see LICENSE.txt for details.
+
 #ifndef GAMEMENU_H
 #define GAMEMENU_H
 
@@ -11,11 +14,8 @@
 
 /*
 An SFML menu designed for use with games.
-Possible animations when highlighting/hovering:
-    Color shift
-    Border translation
-    Zoom (should zoom neighbors, which would look like a dock animation)
-    Could play sound effects
+You can configure various settings in the config file.
+Buttons can have different settings for each state.
 */
 class GameMenu: public sf::Drawable
 {
