@@ -204,7 +204,8 @@ float GameMenu::updateDt(float& itemDt, float dt, float animTime, bool hovered)
 GameMenu::MenuItem::MenuItem(const std::string& name, CallbackType callback):
     name(name),
     callback(callback),
-    dt(0)
+    dt(0),
+    dtText(0)
 {
     label.setString(name);
 }
