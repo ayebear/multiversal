@@ -16,6 +16,22 @@
 An SFML menu designed for use with games.
 You can configure various settings in the config file.
 Buttons can have different settings for each state.
+A transition time can be set to animate the button state transitions.
+
+How to use:
+    Use addItem() to add menu items linked to callbacks.
+    Whenever the item is clicked, the callback will be called.
+    Note: Make sure your callbacks eventually return, otherwise there is
+        potential for a stack overflow to eventually occur.
+
+Example:
+    void pressedStart()
+    {
+        std::cout << "'Start' was pressed.\n";
+    }
+...
+    GameMenu menu(window, "menu.cfg");
+    menu.addItem("Start", pressedStart);
 */
 class GameMenu: public sf::Drawable
 {
@@ -38,6 +54,19 @@ class GameMenu: public sf::Drawable
         void mapMousePos(const sf::Vector2i& pos);
         void selectMenuItem(int index);
         void loadSettings();
+        sf::Color averageColors(const sf::Color& startColor, const sf::Color& endColor, float ratio) const;
+        float interpolate(float start, float end, float ratio) const;
+
+        // Returns the new "ratio" or point in time of the animation
+        float updateDt(float& itemDt, float dt, float animTime, bool hovered);
+
+        // Returns an alternate value when dividing by 0
+        template <class Type> Type safeDivide(Type a, Type b, Type c) const
+        {
+            if (b)
+                return (a / b);
+            return c;
+        }
 
         struct MenuItem
         {
@@ -47,6 +76,8 @@ class GameMenu: public sf::Drawable
             sf::Text label;
             std::string name;
             CallbackType callback;
+            float dt;
+            float dtText;
         };
 
         struct ButtonSettings
@@ -72,6 +103,7 @@ class GameMenu: public sf::Drawable
 
         // Settings
         float transitionTime;
+        float textTransitionTime;
         int padding;
         int textPaddingTop;
         unsigned width;

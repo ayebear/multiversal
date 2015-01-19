@@ -68,7 +68,12 @@ void GameMenu::update(float dt)
     for (auto& item: menuItems)
     {
         // Check if this button is hovered over
-        auto& settings = buttonSettings[index == currentItem];
+        bool hovered = (index == currentItem);
+        auto& settings = buttonSettings[hovered];
+
+        // Update delta times for current animation
+        float ratio = updateDt(item.dt, dt, transitionTime, hovered);
+        float textRatio = updateDt(item.dtText, dt, textTransitionTime, hovered);
 
         // Update properties of the button
         // Update logical bounding box
@@ -78,13 +83,13 @@ void GameMenu::update(float dt)
         // Update rectangle shape
         item.shape.setPosition(item.rect.left, item.rect.top);
         item.shape.setSize(sf::Vector2f(width, height));
-        item.shape.setOutlineThickness(settings.outlineThickness);
-        item.shape.setFillColor(settings.colorFill.toColor());
-        item.shape.setOutlineColor(settings.colorOutline.toColor());
+        item.shape.setOutlineThickness(interpolate(buttonSettings[0].outlineThickness, buttonSettings[1].outlineThickness, ratio));
+        item.shape.setFillColor(averageColors(buttonSettings[0].colorFill.toColor(), buttonSettings[1].colorFill.toColor(), ratio));
+        item.shape.setOutlineColor(averageColors(buttonSettings[0].colorOutline.toColor(), buttonSettings[1].colorOutline.toColor(), ratio));
 
         // Update text
         item.label.setCharacterSize(fontSize);
-        item.label.setColor(settings.fontColor.toColor());
+        item.label.setColor(averageColors(buttonSettings[0].fontColor.toColor(), buttonSettings[1].fontColor.toColor(), textRatio));
 
         // Calculate offset and update text position
         auto textBounds = item.label.getGlobalBounds();
@@ -137,6 +142,7 @@ void GameMenu::loadSettings()
     // Load general settings
     SpriteLoader::load(backgroundSprite, config("backgroundImage"), true);
     transitionTime = config("transitionTime").toFloat();
+    textTransitionTime = config("textTransitionTime").toFloat();
     padding = config("padding").toInt();
     textPaddingTop = config("textPaddingTop").toInt();
     font.loadFromFile(config("fontFile"));
@@ -162,9 +168,43 @@ void GameMenu::loadSettings()
     firstButton.y = config("firstButtonOffset").toInt();
 }
 
+sf::Color GameMenu::averageColors(const sf::Color& startColor, const sf::Color& endColor, float ratio) const
+{
+    return sf::Color(interpolate(startColor.r, endColor.r, ratio),
+                     interpolate(startColor.g, endColor.g, ratio),
+                     interpolate(startColor.b, endColor.b, ratio),
+                     interpolate(startColor.a, endColor.a, ratio));
+}
+
+float GameMenu::interpolate(float start, float end, float ratio) const
+{
+    // Note: Ratio should be between 0 and 1
+    float change = (start - end) * ratio;
+    return (start - change);
+}
+
+float GameMenu::updateDt(float& itemDt, float dt, float animTime, bool hovered)
+{
+    // If hovered, add to the dt
+    // Otherwise, subtract from it
+    if (hovered)
+        itemDt += dt;
+    else
+        itemDt -= dt;
+
+    // Keep the dt value in bounds of the animation
+    if (itemDt < 0)
+        itemDt = 0;
+    if (itemDt > animTime)
+        itemDt = animTime;
+
+    return safeDivide(itemDt, animTime, float(hovered));
+}
+
 GameMenu::MenuItem::MenuItem(const std::string& name, CallbackType callback):
     name(name),
-    callback(callback)
+    callback(callback),
+    dt(0)
 {
     label.setString(name);
 }
