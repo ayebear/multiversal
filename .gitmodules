@@ -3,3 +3,7 @@
 	url = https://github.com/ayebear/ConfigFile.git
 	branch = master
 
+[submodule "src/ocs"]
+	path = src/ocs
+	url = https://github.com/Lastresort92/OCS.git
+	branch = master
