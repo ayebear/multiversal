@@ -103,6 +103,7 @@ void GameMenu::update(float dt)
 void GameMenu::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     target.draw(backgroundSprite);
+    target.draw(foregroundSprite);
     for (auto& item: menuItems)
     {
         target.draw(item.shape);
@@ -141,6 +142,7 @@ void GameMenu::loadSettings()
 {
     // Load general settings
     SpriteLoader::load(backgroundSprite, config("backgroundImage"), true);
+    SpriteLoader::load(foregroundSprite, config("foregroundImage"), true);
     transitionTime = config("transitionTime").toFloat();
     textTransitionTime = config("textTransitionTime").toFloat();
     padding = config("padding").toInt();
