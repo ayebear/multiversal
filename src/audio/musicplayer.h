@@ -75,6 +75,8 @@ class MusicPlayer
 
         using SongList = std::vector<std::string>; // A single list of music filenames
 
+        static const unsigned DEFAULT_VOLUME = 70;
+
         std::map<std::string, SongList> songs; // Stores all of the song sets
         unsigned int currentSongId; // The currently playing song
         std::string currentSongSet; // The currently playing set of songs

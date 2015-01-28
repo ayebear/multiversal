@@ -7,12 +7,15 @@
 
 const cfg::File::ConfigMap MusicPlayer::defaultOptions = {
 {"", {
-    {"volume", cfg::makeOption(70, 0, 100)},
+    {"volume", cfg::makeOption(DEFAULT_VOLUME, 0, 100)},
     {"shuffle", cfg::makeOption(true)}
 }}};
 
 MusicPlayer::MusicPlayer(const std::string& configPath):
+    shuffle(true),
     noMusic(true),
+    isMuted(false),
+    volume(DEFAULT_VOLUME),
     state(Stopped)
 {
     music.setLoop(false);
