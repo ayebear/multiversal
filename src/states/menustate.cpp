@@ -18,6 +18,7 @@ MenuState::MenuState(GameObjects& objects):
 void MenuState::onStart()
 {
     objects.window.setView(objects.window.getDefaultView());
+    objects.music.play("menu");
 }
 
 void MenuState::handleEvents()
@@ -35,6 +36,7 @@ void MenuState::handleEvents()
 void MenuState::update()
 {
     menu.update(dt);
+    objects.music.update();
 }
 
 void MenuState::draw()

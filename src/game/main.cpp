@@ -3,17 +3,21 @@
 
 #include "gameobjects.h"
 #include "statestack.h"
-#include "gamestate.h"
 #include "menustate.h"
+#include "gamestate.h"
+#include "leveleditorstate.h"
 #include "aboutstate.h"
+#include "finalstate.h"
 
 int main()
 {
-    GameObjects objects("Puzzle Game v0.1.4 Dev");
+    GameObjects objects("Puzzle Game v0.1.5 Dev");
     StateStack states;
-    states.add<GameState>("Game", objects);
     states.add<MenuState>("Menu", objects);
+    states.add<GameState>("Game", objects);
+    states.add<LevelEditorState>("LevelEditor", objects);
     states.add<AboutState>("About", objects);
+    states.add<FinalState>("Final", objects);
     states.start("Menu");
     return 0;
 }

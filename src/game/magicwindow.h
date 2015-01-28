@@ -34,8 +34,10 @@ class MagicWindow: public sf::Drawable, public sf::Transformable
         void update();
 
         // Setup
-        void setCenter(const sf::Vector2f& center, bool force = false);
+        void setTileSize(const sf::Vector2u& newTileSize);
+        void setCenter(const sf::Vector2f& center, bool force = false, bool updatePreview = true);
         void setSize(const sf::Vector2f& newSize);
+        void setSize(unsigned newBlockSize);
 
         // Returns true if the position or size changed
         bool hasChanged() const;
@@ -56,12 +58,22 @@ class MagicWindow: public sf::Drawable, public sf::Transformable
         virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
     private:
+
+        void handleResize(int delta);
+        void handleKeyPressed(const sf::Event::KeyEvent& keyEvent);
+
+        static const unsigned DEFAULT_BLOCK_SIZE = 5;
+        static const unsigned MAX_BLOCK_SIZE = 5;
+        static const unsigned MIN_BLOCK_SIZE = 2;
+
         // States
         bool changed;
         bool visible;
         bool active; // If mouse input should take effect
 
         // Settings
+        unsigned blockSize;
+        sf::Vector2u tileSize;
         sf::Vector2f size;
         sf::Vector2f position;
         sf::Vector2f center;

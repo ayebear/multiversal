@@ -57,6 +57,7 @@ class MusicPlayer
         void skip(); // Plays the next song in the set
         void pause(); // Pauses the music (can be resumed with play())
         void stop(); // Stops playing all music
+        void mute(); // Toggles volume mute
 
     private:
         bool play(unsigned int); // Plays a music file with the ID in the song list
@@ -81,6 +82,8 @@ class MusicPlayer
         sf::Music music; // The currently playing music object
         bool shuffle; // Whether to shuffle or play the songs in order
         bool noMusic; // For more efficient updating
+        bool isMuted; // If the music is currently muted
+        float volume; // Current volume (ignoring mute)
         State state; // Current state of music
 
         static const cfg::File::ConfigMap defaultOptions;

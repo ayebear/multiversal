@@ -36,6 +36,7 @@ void MusicPlayer::loadListFromConfig(const std::string& configPath)
 
 void MusicPlayer::setVolume(float volume)
 {
+    this->volume = volume;
     music.setVolume(volume);
 }
 
@@ -95,6 +96,15 @@ void MusicPlayer::stop()
     music.stop();
 }
 
+void MusicPlayer::mute()
+{
+    isMuted = !isMuted;
+    if (isMuted)
+        music.setVolume(0);
+    else
+        music.setVolume(volume);
+}
+
 bool MusicPlayer::play(unsigned int songId)
 {
     // Play the song with the specified ID
@@ -145,17 +155,24 @@ void MusicPlayer::checkSongId()
 
 void MusicPlayer::shuffleSongs()
 {
+    // Only shuffle if shuffle mode is enabled
     if (shuffle)
     {
-        // TODO: Use a real random number generator with a seed...
+        // Only shuffle if there are more than 2 songs
         auto& songSet = songs[currentSongSet];
         if (songSet.size() > 2)
         {
-            std::random_shuffle(songSet.begin(), songSet.end()); // Shuffle the songs
+            // Shuffle the songs
+            std::random_device rd;
+            std::mt19937 g(rd());
+            std::shuffle(songSet.begin(), songSet.end(), g);
+
             // If the last song played is the same as the new first song
             if (lastSong == songSet.front())
-                std::swap(songSet.front(), songSet[(rand() % (songSet.size() - 1)) + 1]);
+            {
                 // Make it so the next song will be different
+                std::swap(songSet.front(), songSet.back());
+            }
         }
     }
 }

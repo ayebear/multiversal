@@ -7,7 +7,8 @@
 #include "events.h"
 #include "gameevents.h"
 
-MagicWindow::MagicWindow()
+MagicWindow::MagicWindow():
+    blockSize(DEFAULT_BLOCK_SIZE)
 {
     changed = false;
     visible = false;
@@ -26,6 +27,10 @@ void MagicWindow::update()
     {
         if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left)
             active = false;
+        else if (event.type == sf::Event::MouseWheelMoved)
+            handleResize(event.mouseWheel.delta);
+        else if (event.type == sf::Event::KeyPressed)
+            handleKeyPressed(event.key);
     }
     // Check real-time mouse input
     for (auto& event: es::Events::get<MousePosEvent>())
@@ -47,7 +52,13 @@ void MagicWindow::update()
     }
 }
 
-void MagicWindow::setCenter(const sf::Vector2f& center, bool force)
+void MagicWindow::setTileSize(const sf::Vector2u& newTileSize)
+{
+    tileSize = newTileSize;
+    // Note: Other things may need to update
+}
+
+void MagicWindow::setCenter(const sf::Vector2f& center, bool force, bool updatePreview)
 {
     // Only set the position if the player is holding the mouse button down
     // Or, if the code calling it forces it to set the position
@@ -68,7 +79,8 @@ void MagicWindow::setCenter(const sf::Vector2f& center, bool force)
     }
 
     // Update the preview box position, which hovers under the player's mouse pointer
-    preview.setPosition(center);
+    if (updatePreview)
+        preview.setPosition(center);
 }
 
 void MagicWindow::setSize(const sf::Vector2f& newSize)
@@ -83,7 +95,16 @@ void MagicWindow::setSize(const sf::Vector2f& newSize)
         preview.setOrigin(size.x / 2, size.y / 2);
         texture.create(size.x, size.y);
         textureView.setSize(size);
+
+        // Update the center position
+        setCenter(center, true, false);
     }
+}
+
+void MagicWindow::setSize(unsigned newBlockSize)
+{
+    blockSize = std::max(std::min(newBlockSize, MAX_BLOCK_SIZE), MIN_BLOCK_SIZE);
+    setSize(sf::Vector2f(tileSize.x * blockSize, tileSize.y * blockSize));
 }
 
 bool MagicWindow::hasChanged() const
@@ -146,4 +167,20 @@ void MagicWindow::draw(sf::RenderTarget& target, sf::RenderStates states) const
         target.draw(border, states);
     }
     target.draw(preview);
+}
+
+void MagicWindow::handleResize(int delta)
+{
+    setSize(blockSize + delta);
+}
+
+void MagicWindow::handleKeyPressed(const sf::Event::KeyEvent& keyEvent)
+{
+    if (keyEvent.control)
+    {
+        if (keyEvent.code == sf::Keyboard::Add || keyEvent.code == sf::Keyboard::E)
+            handleResize(1);
+        else if (keyEvent.code == sf::Keyboard::Subtract || keyEvent.code == sf::Keyboard::Q)
+            handleResize(-1);
+    }
 }

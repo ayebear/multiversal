@@ -55,8 +55,10 @@ GameState::GameState(GameObjects& objects):
     //camera.setView("menu", defaultView);
 
     // Setup the magic window
-    static const unsigned magicWindowSize = 5; // TODO: Make this resizable
-    magicWindow.setSize(sf::Vector2f(tileMap.getTileSize().x * magicWindowSize, tileMap.getTileSize().y * magicWindowSize));
+    //static const unsigned magicWindowSize = 5; // TODO: Make this resizable
+    //magicWindow.setSize(sf::Vector2f(tileMap.getTileSize().x * magicWindowSize, tileMap.getTileSize().y * magicWindowSize));
+    magicWindow.setTileSize(tileMap.getTileSize());
+    magicWindow.setSize(5);
     auto magicWindowView = magicWindow.getTexture().getDefaultView();
     camera.setView("game2", magicWindowView);
     camera.setView("background2", magicWindowView, 0.5f);
@@ -91,7 +93,7 @@ void GameState::handleEvents()
                 else if (event.key.code == sf::Keyboard::R)
                     level.load(); // Reload the current level
                 else if (event.key.code == sf::Keyboard::M)
-                    objects.music.setVolume(0); // Mute the music
+                    objects.music.mute(); // Mute the music
                 break;
 
             // TODO: Get rid of these after updating to SFML 2.2
