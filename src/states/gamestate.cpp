@@ -55,8 +55,6 @@ GameState::GameState(GameObjects& objects):
     //camera.setView("menu", defaultView);
 
     // Setup the magic window
-    //static const unsigned magicWindowSize = 5; // TODO: Make this resizable
-    //magicWindow.setSize(sf::Vector2f(tileMap.getTileSize().x * magicWindowSize, tileMap.getTileSize().y * magicWindowSize));
     magicWindow.setTileSize(tileMap.getTileSize());
     magicWindow.setSize(5);
     auto magicWindowView = magicWindow.getTexture().getDefaultView();

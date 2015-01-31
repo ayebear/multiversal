@@ -82,7 +82,7 @@ void EntityPrototypeLoader::loadEntity(const std::string& entityName, const std:
 
     // Mark this entity name as visited
     visitedParents.insert(parentName);
-    std::cout << "  Visited '" << parentName << "'\n";
+    //std::cout << "  Visited '" << parentName << "'\n";
 
     // Loop through any parents, and call this function
     for (auto& parent: entToComp[parentName].parentNames)
@@ -90,13 +90,13 @@ void EntityPrototypeLoader::loadEntity(const std::string& entityName, const std:
         // Make sure parents are never re-visited before recursing
         if (visitedParents.find(parent) == visitedParents.end())
             loadEntity(entityName, parent);
-        else
-            std::cout << "  Skipping '" << parent << "', already visited.\n";
+        //else
+            //std::cout << "  Skipping '" << parent << "', already visited.\n";
     }
 
     // Load the components of this entity or parent
     loadComponents(entityName, entToComp[parentName].componentData);
-    std::cout << "  Loaded components from '" << parentName << "'\n";
+    //std::cout << "  Loaded components from '" << parentName << "'\n";
 }
 
 void EntityPrototypeLoader::loadComponents(const std::string& entityName, const cfg::File::Section& section)

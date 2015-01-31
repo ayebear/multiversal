@@ -66,7 +66,7 @@ sf::FloatRect AnimatedSprite::getGlobalBounds() const
 
 void AnimatedSprite::addAnimation(const std::string& animationName, float duration, unsigned row, unsigned tileCount, bool flipX, bool flipY)
 {
-    std::cout << "addAnimation(" << animationName << ", " << duration << ", " << row << ", " << tileCount << ", " << flipX << ", " << flipY << ")\n";
+    //std::cout << "addAnimation(" << animationName << ", " << duration << ", " << row << ", " << tileCount << ", " << flipX << ", " << flipY << ")\n";
     animations[animationName].duration = duration;
     unsigned top = row * tileSize.y;
     //auto textureSize = texture.getSize(); // Will need for bounds checking

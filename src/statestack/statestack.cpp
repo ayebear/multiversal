@@ -10,7 +10,8 @@ StateStack::StateStack()
 
 StateStack::~StateStack()
 {
-    deallocateStates();
+    // Call the remaining onPop functions
+    while (pop());
 }
 
 void StateStack::remove(const std::string& name)
@@ -20,21 +21,10 @@ void StateStack::remove(const std::string& name)
 
 void StateStack::start(const std::string& name)
 {
+    // Push a state onto the stack and run it
     StateEvent event(StateEvent::Push, name);
     while (event.command != StateEvent::Exit)
         handleEvent(event);
-}
-
-void StateStack::deallocateStates()
-{
-    // Call the remaining onPop functions
-    while (!stateStack.empty())
-    {
-        statePtrs[stateStack.top()]->onPop();
-        stateStack.pop();
-    }
-    // Remove and delete the allocated states
-    statePtrs.clear();
 }
 
 void StateStack::handleEvent(StateEvent& event)
@@ -48,37 +38,53 @@ void StateStack::handleEvent(StateEvent& event)
     // Run the current state (on the top of the stack)
     if (!stateStack.empty())
     {
-        auto& state = statePtrs[stateStack.top()];
+        auto name = stateStack.top();
+        auto state = getState(name);
         if (state)
+        {
+            std::cout << "StateStack: Running state '" << name << "'...\n";
             event = state->start();
+        }
     }
     else // If the stack is empty
-        event.command = StateEvent::Exit; // Exit the game
+        event.command = StateEvent::Exit; // Exit the program
 }
 
 void StateStack::push(const std::string& name)
 {
-    auto found = statePtrs.find(name);
-    if (found != statePtrs.end() && found->second)
+    // Only push a state when it exists
+    auto state = getState(name);
+    if (state)
     {
-        std::cout << "StateStack: Pushing state '" << name << "'...\n";
         stateStack.push(name);
-        found->second->onPush();
+        state->onPush();
+        std::cout << "StateStack: Pushed state '" << name << "'.\n";
     }
     else
         std::cout << "StateStack: Error pushing state '" << name << "'.\n";
     // If this fails due to a bad type, the current state will just start again.
 }
 
-void StateStack::pop()
+bool StateStack::pop()
 {
-    if (!stateStack.empty())
+    bool status = !stateStack.empty();
+    if (status)
     {
-        auto stateName = stateStack.top();
-        auto& state = statePtrs[stateName];
+        // Call onPop and pop the state's name off the stack
+        auto name = stateStack.top();
+        auto state = getState(name);
         if (state)
             state->onPop();
         stateStack.pop();
-        std::cout << "Popped state '" << stateName << "'.\n";
+        std::cout << "StateStack: Popped state '" << name << "'.\n";
     }
+    return status;
+}
+
+BaseState* StateStack::getState(const std::string& name)
+{
+    auto found = statePtrs.find(name);
+    if (found != statePtrs.end())
+        return found->second.get();
+    return nullptr;
 }

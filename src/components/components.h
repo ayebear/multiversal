@@ -150,6 +150,25 @@ struct Gravity: public ocs::Component<Gravity>
     }
 };
 
+struct Movable: public ocs::Component<Movable>
+{
+    // These are the points where it will be moved to
+    std::vector<sf::Vector2f> points;
+
+    // Settings and state
+    bool moving;
+    bool loop;
+    float speed;
+    unsigned currentPoint;
+
+    void deSerialize(const std::string& str)
+    {
+        std::string pointStr;
+        serializer.deSerialize("% % %s", str, loop, speed, pointStr);
+        // TODO: Extract points from the string into the points vector
+    }
+};
+
 // Component flags
 
 // If an entity should accept user input
@@ -168,6 +187,13 @@ struct DrawOnTop: public ocs::Component<DrawOnTop> {};
 
 // Determines if an entity can be carried by another entity with a Carrier component
 struct Carryable: public ocs::Component<Carryable> {};
+
+// Determines if an entity should be shown in the window independent of which
+// world it is currently in. Example: The player entity has this component.
+struct AboveWindow: public ocs::Component<AboveWindow> {};
+
+// Determines if other entities can pass through this entity or not
+struct Rigid: public ocs::Component<Rigid> {};
 
 // TODO: Maybe add a gravity component
 

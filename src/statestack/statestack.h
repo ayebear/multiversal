@@ -29,11 +29,12 @@ class StateStack
         void start(const std::string& name); // The main loop that runs until a state returns an exit event
 
     private:
-        void deallocateStates();
-
         void handleEvent(StateEvent& event); // Handles a StateEvent object
         void push(const std::string& name); // Adds a state onto the stack
-        void pop(); // Removes the last pushed state from the stack
+        bool pop(); // Removes the last pushed state from the stack
+
+        // This returns a state pointer or nullptr if not found
+        BaseState* getState(const std::string& name);
 
         std::stack<std::string> stateStack; // Represents a stack of the states
         using StatePtr = std::unique_ptr<BaseState>; // Unique pointer to a state

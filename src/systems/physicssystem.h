@@ -30,6 +30,7 @@ class PhysicsSystem: public es::System
         void updateEdgeCases(Components::Position* position, Components::Size* size, float& velocity, ocs::ID entityId);
         void checkEntityCollisions();
         void checkTileCollisions();
+        int determineLayer(bool inAltWorld, bool aboveWindow, unsigned x, unsigned y) const;
 
         // These are used for gravity and falling
         static const sf::Vector2i maxVelocity;

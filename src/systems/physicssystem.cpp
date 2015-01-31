@@ -99,35 +99,32 @@ void PhysicsSystem::handleTileCollision(Components::AABB* entAABB, float& veloci
     sf::Vector2u end;
     tileMap.getCollidingTiles(tempAABB, start, end);
 
+    bool aboveWindow = entities.hasComponents<Components::AboveWindow>(entityId);
+
     // Check the collision
-    //bool collided = false;
     bool onPlatform = false;
     auto tileSize = tileMap.getTileSize();
     for (unsigned y = start.y; y <= end.y; ++y)
     {
         for (unsigned x = start.x; x <= end.x; ++x)
         {
-            int layer = 0;
-            if (inAltWorld || magicWindow.isWithin(tileMap.getCenterPoint(x, y)))
-                ++layer;
+            // Find which layer this object is part of
+            int layer = determineLayer(inAltWorld, true, x, y);
             tileMapData.useLayer(layer);
-            //tileMap.useLayer(layer);
             if (tileMapData(x, y).collidable)
             {
                 auto tileBox = tileMap.getBoundingBox(x, y);
-                //printRect(tileBox);
                 if (tileBox.intersects(tempAABB))
                 {
                     if (vertical) // Use y
                     {
-                        if (velocity >= 0) // Standing on platform
+                        if (velocity >= 0) // Object is on platform
                         {
                             newTop = y * tileSize.y - tempAABB.height;
                             onPlatform = true;
 
                             // Add the tile ID to the set of tiles with objects on them
-                            // TODO: Find a better way to fix the off by 1 problem
-                            int newLayer = (inAltWorld || magicWindow.isWithin(tileMap.getCenterPoint(x, y - 1)));
+                            int newLayer = determineLayer(inAltWorld, aboveWindow, x, y - 1);
                             tileMapData.addTile(tileMapData.getId(newLayer, x, y - 1));
                         }
                         else // Hitting ceiling
@@ -141,8 +138,6 @@ void PhysicsSystem::handleTileCollision(Components::AABB* entAABB, float& veloci
                             tempAABB.left = (x + 1) * tileSize.x;
                     }
                     velocity = 0;
-                    //collided = true;
-                    //std::cout << "Collision detected: " << x << ", " << y << "\n";
                 }
             }
         }
@@ -256,4 +251,9 @@ void PhysicsSystem::checkTileCollisions()
             }
         }
     }
+}
+
+int PhysicsSystem::determineLayer(bool inAltWorld, bool aboveWindow, unsigned x, unsigned y) const
+{
+    return (inAltWorld || (aboveWindow && magicWindow.isWithin(tileMap.getCenterPoint(x, y))));
 }
