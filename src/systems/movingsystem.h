@@ -1,5 +1,5 @@
-#ifndef MOVABLESYSTEM_H
-#define MOVABLESYSTEM_H
+#ifndef MOVINGSYSTEM_H
+#define MOVINGSYSTEM_H
 
 #include "system.h"
 #include "OCS/Objects.hpp"
