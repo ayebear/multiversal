@@ -32,7 +32,7 @@ class RenderSystem: public es::System
         sf::RenderWindow& window;
         Camera& camera;
         MagicWindow& magicWindow;
-        sf::RenderTexture& texture;
+        sf::RenderTexture* texture;
 
         SpriteLoader sprites;
 
@@ -44,7 +44,7 @@ class RenderSystem: public es::System
             if (hasOnTop == onTop)
             {
                 if (entities.hasComponents<Components::AltWorld>(sprite.getOwnerID()))
-                    texture.draw(sprite.sprite);
+                    texture->draw(sprite.sprite);
                 else
                     window.draw(sprite.sprite);
             }

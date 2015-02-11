@@ -21,5 +21,5 @@ void bindComponentStrings(ocs::ObjectManager& entities)
     entities.bindStringToComponent<Components::Carryable>("Carryable");
     entities.bindStringToComponent<Components::DrawOnTop>("DrawOnTop");
     entities.bindStringToComponent<Components::AboveWindow>("AboveWindow");
-    entities.bindStringToComponent<Components::Movable>("Movable");
+    entities.bindStringToComponent<Components::Moving>("Moving");
 }

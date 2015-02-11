@@ -5,6 +5,7 @@
 #define MAGICWINDOW_H
 
 #include <SFML/Graphics.hpp>
+#include <vector>
 
 /*
 TODO:
@@ -27,6 +28,10 @@ This class contains the in-game window into the alternate world, which is the ma
 */
 class MagicWindow: public sf::Drawable, public sf::Transformable
 {
+    static const unsigned DEFAULT_BLOCK_SIZE = 5;
+    static const unsigned MAX_BLOCK_SIZE = 5;
+    static const unsigned MIN_BLOCK_SIZE = 2;
+
     public:
         MagicWindow();
 
@@ -36,14 +41,13 @@ class MagicWindow: public sf::Drawable, public sf::Transformable
         // Setup
         void setTileSize(const sf::Vector2u& newTileSize);
         void setCenter(const sf::Vector2f& center, bool force = false, bool updatePreview = true);
-        void setSize(const sf::Vector2f& newSize);
-        void setSize(unsigned newBlockSize);
+        void setSize(unsigned newBlockSize = DEFAULT_BLOCK_SIZE);
 
         // Returns true if the position or size changed
         bool hasChanged() const;
 
         // Used for drawing the alternate level to
-        sf::RenderTexture& getTexture();
+        sf::RenderTexture& getRenderTexture();
 
         // Collision detection
         bool isWithin(const sf::Vector2u& pos) const;
@@ -59,12 +63,10 @@ class MagicWindow: public sf::Drawable, public sf::Transformable
 
     private:
 
+        void setSize(const sf::Vector2f& newSize);
+        void updateTextures();
         void handleResize(int delta);
         void handleKeyPressed(const sf::Event::KeyEvent& keyEvent);
-
-        static const unsigned DEFAULT_BLOCK_SIZE = 5;
-        static const unsigned MAX_BLOCK_SIZE = 5;
-        static const unsigned MIN_BLOCK_SIZE = 2;
 
         // States
         bool changed;
@@ -73,6 +75,7 @@ class MagicWindow: public sf::Drawable, public sf::Transformable
 
         // Settings
         unsigned blockSize;
+        unsigned currentTexture;
         sf::Vector2u tileSize;
         sf::Vector2f size;
         sf::Vector2f position;
@@ -81,7 +84,7 @@ class MagicWindow: public sf::Drawable, public sf::Transformable
         // Graphics
         sf::RectangleShape border;
         sf::RectangleShape preview;
-        sf::RenderTexture texture;
+        std::vector<sf::RenderTexture> textures;
         sf::View textureView; // Stays the size of the texture
 };
 

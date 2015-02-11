@@ -19,11 +19,18 @@ This class holds the information for a level, and loads everything into memory f
 */
 class Level
 {
+    enum class LoadStatus
+    {
+        Error,
+        Success,
+        Finished
+    };
+
     public:
         Level(const std::string& levelDir, TileMapData& tileMapData, TileMap& tileMap,
             TileMapChanger& tileMapChanger, ocs::ObjectManager& entities, MagicWindow& magicWindow);
-        bool load(int level = -1);
-        bool loadNext();
+        LoadStatus load(int level = -1);
+        LoadStatus loadNext();
         void update();
 
     private:
@@ -33,6 +40,7 @@ class Level
         void loadSwitches(cfg::File& config);
 
         static const cfg::File::ConfigMap defaultOptions;
+        static const int TOTAL_LEVELS;
 
         std::string levelDir;
         TileMapData& tileMapData; // Logical tile map

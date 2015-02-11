@@ -8,10 +8,13 @@
 #include "gameevents.h"
 
 MagicWindow::MagicWindow():
-    blockSize(DEFAULT_BLOCK_SIZE)
+    changed(false),
+    visible(false),
+    active(false),
+    blockSize(DEFAULT_BLOCK_SIZE),
+    currentTexture(0),
+    textures(MAX_BLOCK_SIZE - MIN_BLOCK_SIZE + 1)
 {
-    changed = false;
-    visible = false;
     border.setFillColor(sf::Color::Transparent);
     border.setOutlineColor(sf::Color::Blue);
     border.setOutlineThickness(4);
@@ -55,7 +58,8 @@ void MagicWindow::update()
 void MagicWindow::setTileSize(const sf::Vector2u& newTileSize)
 {
     tileSize = newTileSize;
-    // Note: Other things may need to update
+    updateTextures();
+    setSize(DEFAULT_BLOCK_SIZE);
 }
 
 void MagicWindow::setCenter(const sf::Vector2f& center, bool force, bool updatePreview)
@@ -83,27 +87,10 @@ void MagicWindow::setCenter(const sf::Vector2f& center, bool force, bool updateP
         preview.setPosition(center);
 }
 
-void MagicWindow::setSize(const sf::Vector2f& newSize)
-{
-    changed = (size != newSize);
-    if (changed)
-    {
-        // Update the size if it changed
-        size = newSize;
-        border.setSize(size);
-        preview.setSize(size);
-        preview.setOrigin(size.x / 2, size.y / 2);
-        texture.create(size.x, size.y);
-        textureView.setSize(size);
-
-        // Update the center position
-        setCenter(center, true, false);
-    }
-}
-
 void MagicWindow::setSize(unsigned newBlockSize)
 {
     blockSize = std::max(std::min(newBlockSize, MAX_BLOCK_SIZE), MIN_BLOCK_SIZE);
+    currentTexture = blockSize - MIN_BLOCK_SIZE;
     setSize(sf::Vector2f(tileSize.x * blockSize, tileSize.y * blockSize));
 }
 
@@ -112,9 +99,9 @@ bool MagicWindow::hasChanged() const
     return changed;
 }
 
-sf::RenderTexture& MagicWindow::getTexture()
+sf::RenderTexture& MagicWindow::getRenderTexture()
 {
-    return texture;
+    return textures[currentTexture];
 }
 
 bool MagicWindow::isWithin(const sf::Vector2u& pos) const
@@ -153,7 +140,7 @@ void MagicWindow::setView(const sf::View& view, const sf::Vector2f& windowViewPo
     textureViewRect.width = size.x;
     textureViewRect.height = size.y;
     textureView.reset(textureViewRect);
-    texture.setView(textureView);
+    getRenderTexture().setView(textureView);
 }
 
 void MagicWindow::draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -162,11 +149,40 @@ void MagicWindow::draw(sf::RenderTarget& target, sf::RenderStates states) const
     if (visible)
     {
         // Draw the contents of the window if visible
-        sf::Sprite sprite(texture.getTexture());
+        sf::Sprite sprite(textures[currentTexture].getTexture());
         target.draw(sprite, states);
         target.draw(border, states);
     }
     target.draw(preview);
+}
+
+void MagicWindow::setSize(const sf::Vector2f& newSize)
+{
+    changed = (size != newSize);
+    if (changed)
+    {
+        // Update the size if it changed
+        size = newSize;
+        border.setSize(size);
+        preview.setSize(size);
+        preview.setOrigin(size.x / 2, size.y / 2);
+        textureView.setSize(size);
+
+        // Update the center position
+        setCenter(center, true, false);
+    }
+}
+
+void MagicWindow::updateTextures()
+{
+    unsigned count = 0;
+    for (auto& tex: textures)
+    {
+        unsigned currentBlockSize = MIN_BLOCK_SIZE + count;
+        tex.create(tileSize.x * currentBlockSize, tileSize.y * currentBlockSize);
+        std::cout << "Created texture of block size " << currentBlockSize << ".\n";
+        ++count;
+    }
 }
 
 void MagicWindow::handleResize(int delta)

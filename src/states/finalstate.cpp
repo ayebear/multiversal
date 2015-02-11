@@ -3,6 +3,7 @@
 
 #include "finalstate.h"
 #include "gameobjects.h"
+#include <iostream>
 
 FinalState::FinalState(GameObjects& objects):
     objects(objects)
@@ -21,7 +22,11 @@ void FinalState::handleEvents()
 
 void FinalState::update()
 {
-    // Temporarily disable this state until it is implemented
+    std::cout << "\n=================================================\n";
+    std::cout << "CONGRATULATIONS! YOU COMPLETED ALL OF THE LEVELS!\n";
+    std::cout << "=================================================\n\n";
+
+    // Temporarily disable this state until it is fully implemented
     stateEvent.command = StateEvent::Pop;
 }
 

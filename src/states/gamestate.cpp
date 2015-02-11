@@ -14,6 +14,7 @@
 // Include systems
 #include "inputsystem.h"
 #include "playersystem.h"
+#include "movingsystem.h"
 #include "physicssystem.h"
 #include "carrysystem.h"
 #include "spritepositionsystem.h"
@@ -30,6 +31,7 @@ GameState::GameState(GameObjects& objects):
 {
     // Setup systems
     systems.add<InputSystem>(objects.window);
+    systems.add<MovingSystem>(entities);
     systems.add<PhysicsSystem>(entities, tileMapData, tileMap, magicWindow);
     systems.add<PlayerSystem>(entities, tileMap);
     systems.add<CarrySystem>(entities, magicWindow);
@@ -56,8 +58,7 @@ GameState::GameState(GameObjects& objects):
 
     // Setup the magic window
     magicWindow.setTileSize(tileMap.getTileSize());
-    magicWindow.setSize(5);
-    auto magicWindowView = magicWindow.getTexture().getDefaultView();
+    auto magicWindowView = magicWindow.getRenderTexture().getDefaultView();
     camera.setView("game2", magicWindowView);
     camera.setView("background2", magicWindowView, 0.5f);
 }
@@ -66,6 +67,9 @@ void GameState::onStart()
 {
     // Clear any old events from the last time it was ran
     es::Events::clearAll();
+
+    // Reset the window size
+    magicWindow.setSize();
 
     // Load level 1
     level.load(1);
@@ -115,7 +119,16 @@ void GameState::update()
     es::Events::clear<GameViewEvent>();
     es::Events::send(GameViewEvent{camera.getView("game")});
 
+    // Load the next level if needed
     level.update();
+
+    // Check if all levels have been completed
+    if (es::Events::exists<GameFinishedEvent>())
+    {
+        stateEvent.command = StateEvent::Change;
+        stateEvent.name = "Final";
+        es::Events::clear<GameFinishedEvent>();
+    }
 
     // Update all of the systems
     systems.update(dt);

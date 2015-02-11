@@ -79,6 +79,8 @@ struct SwitchOutputEvent
 {
     // Logical IDs to lists of tile IDs
     SwitchMap tileIds;
+
+    // TODO: Add object IDs
 };
 
 struct SwitchMapEvent
@@ -86,5 +88,13 @@ struct SwitchMapEvent
     // Tile IDs of switches to lists of connected tile IDs
     SwitchMap switches;
 };
+
+struct MovingEvent
+{
+    ocs::ID entityId;
+    bool state;
+};
+
+struct GameFinishedEvent {};
 
 #endif

@@ -14,7 +14,8 @@ struct StateEvent
         Continue = 0, // Continues running the current state
         Exit, // Exits the whole program
         Pop, // Goes back to the previous state
-        Push // Adds a new state onto the stack
+        Push, // Adds a new state onto the stack
+        Change // Pops the current state, pushes a new one
     };
 
     StateEvent(): command(Continue) {}

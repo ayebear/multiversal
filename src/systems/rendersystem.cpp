@@ -12,8 +12,7 @@ RenderSystem::RenderSystem(ocs::ObjectManager& entities, TileMap& tileMap, sf::R
     tileMap(tileMap),
     window(window),
     camera(camera),
-    magicWindow(magicWindow),
-    texture(magicWindow.getTexture())
+    magicWindow(magicWindow)
 {
     // Load the background images
     sprites.loadFromConfig("data/config/sprites.cfg");
@@ -31,13 +30,13 @@ void RenderSystem::update(float dt)
     //window.draw(tileMap);
 
     // Draw the magic window
-    //auto& texture = magicWindow.getTexture();
-    texture.clear(sf::Color::Transparent);
+    texture = &magicWindow.getRenderTexture();
+    texture->clear(sf::Color::Transparent);
     auto windowViewPos = getViewPos(camera.getView("game"));
     magicWindow.setView(camera.accessView("background"), windowViewPos);
-    texture.draw(sprites("background2"));
+    texture->draw(sprites("background2"));
     magicWindow.setView(camera.accessView("game"), windowViewPos);
-    tileMap.drawLayer(texture, 1);
+    tileMap.drawLayer(*texture, 1);
 
     // TODO: Add z-indexing with z-index components that get sorted
 
@@ -50,7 +49,7 @@ void RenderSystem::update(float dt)
         drawSprite(animSprite);
 
     // Finish drawing the render texture for the magic window
-    texture.display();
+    texture->display();
     window.draw(magicWindow);
 
     // Draw animated sprites

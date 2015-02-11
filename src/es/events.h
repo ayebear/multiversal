@@ -22,6 +22,7 @@ struct BaseEventQueue
 {
     virtual ~BaseEventQueue() {}
     virtual void clear() = 0;
+    virtual size_t size() const = 0;
 };
 
 template <class EventType>
@@ -32,6 +33,11 @@ struct EventQueue: public BaseEventQueue
     void clear()
     {
         events.clear();
+    }
+
+    size_t size() const
+    {
+        return events.size();
     }
 };
 
@@ -97,6 +103,15 @@ class Events
         {
             for (auto& eventQueue: getEventQueueTable())
                 eventQueue.second->clear();
+        }
+
+        // Returns the total number of events
+        static size_t getTotal()
+        {
+            size_t total = 0;
+            for (auto& eventQueue: getEventQueueTable())
+                total += eventQueue.second->size();
+            return total;
         }
 
     private:

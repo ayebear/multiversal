@@ -20,6 +20,8 @@ const cfg::File::ConfigMap Level::defaultOptions = {
     }
 };
 
+const int Level::TOTAL_LEVELS = 1;
+
 Level::Level(const std::string& levelDir, TileMapData& tileMapData, TileMap& tileMap,
         TileMapChanger& tileMapChanger, ocs::ObjectManager& entities, MagicWindow& magicWindow):
     levelDir(levelDir),
@@ -32,10 +34,14 @@ Level::Level(const std::string& levelDir, TileMapData& tileMapData, TileMap& til
 {
 }
 
-bool Level::load(int level)
+Level::LoadStatus Level::load(int level)
 {
     if (level == -1)
         level = currentLevel;
+
+    // Don't load more levels than the game should have
+    if (level > TOTAL_LEVELS)
+        return LoadStatus::Finished;
 
     std::cout << "Loading level " << level << "...\n";
 
@@ -45,7 +51,7 @@ bool Level::load(int level)
     if (!config)
     {
         std::cout << "Error loading level.\n";
-        return false;
+        return LoadStatus::Error;
     }
 
     // Load everything from the config file
@@ -57,10 +63,10 @@ bool Level::load(int level)
 
     currentLevel = level;
 
-    return true;
+    return LoadStatus::Success;
 }
 
-bool Level::loadNext()
+Level::LoadStatus Level::loadNext()
 {
     return load(currentLevel + 1);
 }
@@ -68,7 +74,10 @@ bool Level::loadNext()
 void Level::update()
 {
     if (es::Events::exists<LoadNextLevelEvent>())
-        loadNext();
+    {
+        if (loadNext() == LoadStatus::Finished)
+            es::Events::send(GameFinishedEvent{});
+    }
 
     // Send the map size to the camera system
     es::Events::clear<MapSizeEvent>();
@@ -197,6 +206,17 @@ void Level::loadObjects(cfg::File& config)
                         pos->y = y;
                     }
                 }
+            }
+            else if (option.first == "MovingPlatform"/* && !object.toString().empty()*/)
+            {
+                /*
+                auto moving = entities.getComponent<Components::Moving>(id);
+                if (moving)
+                    moving->deSerialize(object.toString());
+                */
+                // TODO: Delete this and do the object mapping stuff
+                // Make it moving by default
+                es::Events::send(MovingEvent{id, true});
             }
         }
     }

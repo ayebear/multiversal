@@ -11,7 +11,7 @@
 
 int main()
 {
-    GameObjects objects("Puzzle Game v0.1.5 Dev");
+    GameObjects objects("Puzzle Game v0.1.6 Dev");
     StateStack states;
     states.add<MenuState>("Menu", objects);
     states.add<GameState>("Game", objects);

@@ -34,6 +34,11 @@ void StateStack::handleEvent(StateEvent& event)
         push(event.name);
     else if (event.command == StateEvent::Pop)
         pop();
+    else if (event.command == StateEvent::Change)
+    {
+        pop();
+        push(event.name);
+    }
 
     // Run the current state (on the top of the stack)
     if (!stateStack.empty())

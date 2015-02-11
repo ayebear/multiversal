@@ -17,7 +17,6 @@ namespace Components
 
 struct Position: public ocs::Component<Position>
 {
-    //sf::Vector2f position;
     float x, y;
     void deSerialize(const std::string& str)
     {
@@ -27,7 +26,6 @@ struct Position: public ocs::Component<Position>
 
 struct Velocity: public ocs::Component<Velocity>
 {
-    //sf::Vector2f velocity;
     float x, y;
     void deSerialize(const std::string& str)
     {
@@ -37,7 +35,6 @@ struct Velocity: public ocs::Component<Velocity>
 
 struct Size: public ocs::Component<Size>
 {
-    //sf::Vector2u size;
     unsigned x, y;
     void deSerialize(const std::string& str)
     {
@@ -150,22 +147,58 @@ struct Gravity: public ocs::Component<Gravity>
     }
 };
 
-struct Movable: public ocs::Component<Movable>
+/*
+This component automatically updates the position component of any object.
+Can be used for moving platforms, clouds, etc.
+*/
+struct Moving: public ocs::Component<Moving>
 {
     // These are the points where it will be moved to
     std::vector<sf::Vector2f> points;
 
     // Settings and state
-    bool moving;
-    bool loop;
-    float speed;
-    unsigned currentPoint;
+    bool state; // Controlled by switch for instance
+    bool isMoving; // If it should be updating position
+    bool loop; // If it should continue after the last point
+    unsigned currentPoint; // Index of current destination point
+    float speed; // How fast it should move
+    float distance; // The total distance since the last point
+    sf::Vector2f velocity; // This is a movement vector calculated from the speed and points
+    sf::Vector2f startPos; // Starting position of movement
+
+    Moving():
+        state(false),
+        isMoving(false),
+        loop(false),
+        currentPoint(0),
+        speed(0.0f),
+        distance(0.0f)
+    {
+    }
 
     void deSerialize(const std::string& str)
     {
         std::string pointStr;
         serializer.deSerialize("% % %s", str, loop, speed, pointStr);
-        // TODO: Extract points from the string into the points vector
+
+        // Get the array of points as strings
+        std::vector<std::string> pointStrings;
+        strlib::split(pointStr, "|", pointStrings, false);
+        sf::Vector2f point;
+
+        // Parse the point values and store them in memory
+        std::cout << "Points:\n";
+        for (auto& str: pointStrings)
+        {
+            auto values = strlib::split<float>(str, ",");
+            if (values.size() == 2)
+            {
+                points.emplace_back(values[0], values[1]);
+                std::cout << values[0] << ", " << values[1] << "\n";
+            }
+        }
+        // Note: Could just do this in the level loading code and populate the array
+        // from the level file.
     }
 };
 
@@ -194,8 +227,6 @@ struct AboveWindow: public ocs::Component<AboveWindow> {};
 
 // Determines if other entities can pass through this entity or not
 struct Rigid: public ocs::Component<Rigid> {};
-
-// TODO: Maybe add a gravity component
 
 }
 
