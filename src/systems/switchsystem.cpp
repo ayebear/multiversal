@@ -6,6 +6,7 @@
 #include "tilemapchanger.h"
 #include "logicaltiles.h"
 #include "events.h"
+#include <iostream>
 
 SwitchSystem::SwitchSystem(TileMapData& tileMapData, TileMapChanger& tileMapChanger):
     tileMapData(tileMapData),
@@ -17,9 +18,12 @@ void SwitchSystem::update(float dt)
 {
     es::Events::clear<SwitchOutputEvent>();
 
-    // Get the initial switch map
+    // Get the initial switch maps
     for (auto& event: es::Events::get<SwitchMapEvent>())
+    {
         switches.swap(event.switches);
+        switchObjects.swap(event.switchObjects);
+    }
     es::Events::clear<SwitchMapEvent>();
 
     // Update push-button switches
@@ -59,8 +63,11 @@ void SwitchSystem::flipSwitch(int tileId, bool state)
         SwitchOutputEvent event;
         for (int id: switches[tileId])
             event.tileIds[tileMapData(id).logicalId].push_back(id);
+        event.objectNames = switchObjects[tileId];
 
         // Send the event
         es::Events::send(event);
+
+        std::cout << "Flipped switch " << tileId << ".\n";
     }
 }

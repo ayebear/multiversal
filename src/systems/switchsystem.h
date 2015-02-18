@@ -24,6 +24,7 @@ class SwitchSystem: public es::System
         void flipSwitch(int tileId, bool state);
 
         SwitchMap switches;
+        SwitchObjectMap switchObjects;
 
         TileMapData& tileMapData;
         TileMapChanger& tileMapChanger;

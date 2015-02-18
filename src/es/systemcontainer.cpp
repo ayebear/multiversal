@@ -10,6 +10,13 @@ SystemContainer::SystemContainer()
 {
 }
 
+void SystemContainer::initialize()
+{
+    // Call initialize on all of the systems
+    for (auto& s: systems)
+        s->initialize();
+}
+
 void SystemContainer::update(float dt)
 {
     // Call update on all of the systems

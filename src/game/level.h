@@ -29,9 +29,18 @@ class Level
     public:
         Level(const std::string& levelDir, TileMapData& tileMapData, TileMap& tileMap,
             TileMapChanger& tileMapChanger, ocs::ObjectManager& entities, MagicWindow& magicWindow);
+
+        // Loads a level (default is to reload the current level)
         LoadStatus load(int level = -1);
+
+        // Loads the next level
         LoadStatus loadNext();
-        void update();
+
+        // Returns an object ID from an object's name
+        ocs::ID getObjectIdFromName(const std::string& name) const;
+
+        // Returns true if a new level was loaded
+        bool update();
 
     private:
         void sendStartPosition(sf::Vector2u& pos);
@@ -50,6 +59,7 @@ class Level
         MagicWindow& magicWindow;
 
         int currentLevel;
+        std::map<std::string, ocs::ID> objectNamesToIds;
 };
 
 #endif

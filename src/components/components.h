@@ -157,17 +157,15 @@ struct Moving: public ocs::Component<Moving>
     std::vector<sf::Vector2f> points;
 
     // Settings and state
-    bool state; // Controlled by switch for instance
     bool isMoving; // If it should be updating position
     bool loop; // If it should continue after the last point
-    unsigned currentPoint; // Index of current destination point
+    int currentPoint; // Index of current destination point
     float speed; // How fast it should move
     float distance; // The total distance since the last point
     sf::Vector2f velocity; // This is a movement vector calculated from the speed and points
     sf::Vector2f startPos; // Starting position of movement
 
     Moving():
-        state(false),
         isMoving(false),
         loop(false),
         currentPoint(0),
@@ -178,28 +176,49 @@ struct Moving: public ocs::Component<Moving>
 
     void deSerialize(const std::string& str)
     {
-        std::string pointStr;
-        serializer.deSerialize("% % %s", str, loop, speed, pointStr);
-
-        // Get the array of points as strings
-        std::vector<std::string> pointStrings;
-        strlib::split(pointStr, "|", pointStrings, false);
-        sf::Vector2f point;
-
-        // Parse the point values and store them in memory
-        std::cout << "Points:\n";
-        for (auto& str: pointStrings)
+        if (!str.empty())
         {
-            auto values = strlib::split<float>(str, ",");
-            if (values.size() == 2)
+            std::string pointStr;
+            serializer.deSerialize("% % %s", str, loop, speed, pointStr);
+
+            // Get the array of points as strings
+            auto pointStrings = strlib::split(pointStr, "|");
+
+            // Parse the point values and store them in memory
+            for (auto& str: pointStrings)
             {
-                points.emplace_back(values[0], values[1]);
-                std::cout << values[0] << ", " << values[1] << "\n";
+                auto values = strlib::split<float>(str, ",");
+                if (values.size() == 2)
+                    points.emplace_back(values[0], values[1]);
             }
         }
-        // Note: Could just do this in the level loading code and populate the array
-        // from the level file.
     }
+};
+
+// A simple boolean state component
+struct State: public ocs::Component<State>
+{
+    bool value;
+
+    State(): value(false), lastValue(false) {}
+
+    void deSerialize(const std::string& str)
+    {
+        value = strlib::strToBool(str);
+    }
+
+    bool hasChanged()
+    {
+        if (value != lastValue)
+        {
+            lastValue = value;
+            return true;
+        }
+        return false;
+    }
+
+    private:
+        bool lastValue;
 };
 
 // Component flags

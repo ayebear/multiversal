@@ -71,17 +71,33 @@ Level::LoadStatus Level::loadNext()
     return load(currentLevel + 1);
 }
 
-void Level::update()
+ocs::ID Level::getObjectIdFromName(const std::string& name) const
 {
+    ocs::ID id = -1;
+    auto found = objectNamesToIds.find(name);
+    if (found != objectNamesToIds.end())
+        id = found->second;
+    return id;
+}
+
+bool Level::update()
+{
+    bool loadedLeved = false;
+
+    // Check if the next level should be loaded
     if (es::Events::exists<LoadNextLevelEvent>())
     {
-        if (loadNext() == LoadStatus::Finished)
+        auto status = loadNext();
+        if (status == LoadStatus::Finished)
             es::Events::send(GameFinishedEvent{});
+        else if (status == LoadStatus::Success)
+            loadedLeved = true;
     }
 
     // Send the map size to the camera system
     es::Events::clear<MapSizeEvent>();
     es::Events::send(MapSizeEvent{tileMap.getPixelSize()});
+    return loadedLeved;
 }
 
 void Level::sendStartPosition(sf::Vector2u& pos)
@@ -190,33 +206,29 @@ void Level::loadObjects(cfg::File& config)
     // Create objects from level file
     for (auto& option: config.getSection("Objects"))
     {
-        for (auto& object: option.second)
+        // Extract object name and type
+        auto names = strlib::split(option.first, ":");
+        if (names.size() == 2)
         {
-            auto id = entities.createObject(option.first);
-            if (option.first == "Box" || option.first == "Box2")
+            // Create an object with the type
+            auto id = entities.createObject(names[1]);
+
+            // Keep its unique name in a lookup table
+            objectNamesToIds[names[0]] = id;
+
+            // Update all specified components
+            for (auto& componentStr: option.second)
             {
-                auto pos = entities.getComponent<Components::Position>(id);
-                if (pos)
+                auto& compStr = componentStr.toString();
+                auto separator = compStr.find(' ');
+                if (separator != std::string::npos && separator > 0 && separator + 1 < compStr.size())
                 {
-                    std::istringstream data(object.toString());
-                    int x, y;
-                    if (data >> x >> y)
-                    {
-                        pos->x = x;
-                        pos->y = y;
-                    }
+                    // Extract the component's name and data
+                    auto componentName = compStr.substr(0, separator);
+                    auto componentData = compStr.substr(separator + 1);
+                    std::cout << "Component name: '" << componentName << "', Data: '" << componentData << "'\n";
+                    entities.updateComponentFromString(id, componentName, componentData);
                 }
-            }
-            else if (option.first == "MovingPlatform"/* && !object.toString().empty()*/)
-            {
-                /*
-                auto moving = entities.getComponent<Components::Moving>(id);
-                if (moving)
-                    moving->deSerialize(object.toString());
-                */
-                // TODO: Delete this and do the object mapping stuff
-                // Make it moving by default
-                es::Events::send(MovingEvent{id, true});
             }
         }
     }
@@ -230,6 +242,12 @@ void Level::loadSwitches(cfg::File& config)
         int switchTileId = std::stoi(option.first);
         for (auto& element: option.second)
             event.switches[switchTileId].push_back(element.toInt());
+    }
+    for (auto& option: config.getSection("SwitchObjects"))
+    {
+        int switchTileId = std::stoi(option.first);
+        for (auto& element: option.second)
+            event.switchObjects[switchTileId].push_back(element.toString());
     }
     es::Events::send(event);
 }

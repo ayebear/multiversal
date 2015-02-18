@@ -22,6 +22,7 @@
 #include "tilesystem.h"
 #include "switchsystem.h"
 #include "forcefieldsystem.h"
+#include "objectswitchsystem.h"
 #include "rendersystem.h"
 
 GameState::GameState(GameObjects& objects):
@@ -40,6 +41,7 @@ GameState::GameState(GameObjects& objects):
     systems.add<TileSystem>(entities, tileMapData);
     systems.add<SwitchSystem>(tileMapData, tileMapChanger);
     systems.add<ForceFieldSystem>(tileMapChanger);
+    systems.add<ObjectSwitchSystem>(level, entities);
     systems.add<RenderSystem>(entities, tileMap, objects.window, camera, magicWindow);
 
     // Load entity prototypes
@@ -71,8 +73,9 @@ void GameState::onStart()
     // Reset the window size
     magicWindow.setSize();
 
-    // Load level 1
+    // Load level 1 and initialize the systems
     level.load(1);
+    systems.initialize();
 
     // Start the game music
     objects.music.play("game");
@@ -93,7 +96,11 @@ void GameState::handleEvents()
                 if (event.key.code == sf::Keyboard::Escape)
                     stateEvent.command = StateEvent::Pop;
                 else if (event.key.code == sf::Keyboard::R)
-                    level.load(); // Reload the current level
+                {
+                    // Reload the current level
+                    level.load();
+                    systems.initialize();
+                }
                 else if (event.key.code == sf::Keyboard::M)
                     objects.music.mute(); // Mute the music
                 break;
@@ -120,7 +127,8 @@ void GameState::update()
     es::Events::send(GameViewEvent{camera.getView("game")});
 
     // Load the next level if needed
-    level.update();
+    if (level.update())
+        systems.initialize();
 
     // Check if all levels have been completed
     if (es::Events::exists<GameFinishedEvent>())

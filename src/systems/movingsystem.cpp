@@ -2,29 +2,49 @@
 #include "events.h"
 #include "gameevents.h"
 #include "vectors.h"
+#include <iostream>
 
 MovingSystem::MovingSystem(ocs::ObjectManager& entities):
     entities(entities)
 {
 }
 
-// TODO: Set all objects' positions with moving components to the first point
-// Currently, the objects start at their position component values
+void MovingSystem::initialize()
+{
+    std::cout << "MovingSystem::initialize()\n";
+    // Move all objects with Moving components to the first point
+    for (auto& moving: entities.getComponentArray<Components::Moving>())
+    {
+        auto position = entities.getComponent<Components::Position>(moving.getOwnerID());
+        if (position && !moving.points.empty())
+        {
+            auto point = moving.points.front();
+            position->x = point.x;
+            position->y = point.y;
+        }
+    }
+}
 
 void MovingSystem::update(float dt)
 {
     processEvents();
     for (auto& moving: entities.getComponentArray<Components::Moving>())
     {
-        auto ownerId = moving.getOwnerID();
-        auto position = entities.getComponent<Components::Position>(ownerId);
-        if (position)
+        auto position = entities.getComponent<Components::Position>(moving.getOwnerID());
+        auto state = entities.getComponent<Components::State>(moving.getOwnerID());
+        if (position && state)
         {
             // Make sure nothing goes out of bounds
-            if (moving.currentPoint >= moving.points.size())
+            if (moving.currentPoint >= static_cast<int>(moving.points.size()))
                 moving.currentPoint = 0;
 
-            if (moving.isMoving)
+            // Start moving if the state changes
+            if (state->hasChanged())
+            {
+                moving.isMoving = true;
+                goToNextPoint(moving, *position, *state);
+            }
+            else if (moving.isMoving)
             {
                 // Update the position from our velocity vector
                 position->x += moving.velocity.x * dt;
@@ -40,7 +60,7 @@ void MovingSystem::update(float dt)
                     position->x = destination.x;
                     position->y = destination.y;
 
-                    goToNextPoint(moving, *position);
+                    goToNextPoint(moving, *position, *state);
                 }
             }
         }
@@ -49,6 +69,7 @@ void MovingSystem::update(float dt)
 
 void MovingSystem::processEvents()
 {
+    // TODO: Determine if this is needed
     // Handle events that can change the state of moving components
     // Note: May need to map a "moving component ID" to a regular object ID
     for (auto& event: es::Events::get<MovingEvent>())
@@ -56,22 +77,23 @@ void MovingSystem::processEvents()
         std::cout << "~~~~~ Received MovingEvent ~~~~~\n";
         auto moving = entities.getComponent<Components::Moving>(event.entityId);
         auto position = entities.getComponent<Components::Position>(event.entityId);
-        if (moving && position && moving->state != event.state)
+        auto state = entities.getComponent<Components::State>(event.entityId);
+        if (moving && position && state && state->value != event.state)
         {
             // Change the state and update the current point
-            moving->state = event.state;
+            state->value = event.state;
             moving->isMoving = true;
-            goToNextPoint(*moving, *position);
+            goToNextPoint(*moving, *position, *state);
         }
     }
     es::Events::clear<MovingEvent>();
 }
 
-void MovingSystem::goToNextPoint(Components::Moving& moving, Components::Position& position) const
+void MovingSystem::goToNextPoint(Components::Moving& moving, Components::Position& position, Components::State& state) const
 {
     // Go to the next point (depends on state as well)
-    moving.currentPoint += (moving.state ? 1 : -1);
-    size_t last = moving.points.size() - 1;
+    moving.currentPoint += (state.value ? 1 : -1);
+    int last = moving.points.size() - 1;
 
     // Loop and wraparound, or just stay at the same point and stop
     if (moving.currentPoint > last)

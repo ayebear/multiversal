@@ -25,6 +25,9 @@ class SystemContainer
         template <typename T, typename... Args>
         void add(Args&&... args);
 
+        // Calls initialize() on all systems
+        void initialize();
+
         // Calls update() on all systems
         // Note: The order this is called is the same order the systems were added
         void update(float dt);
