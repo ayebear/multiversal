@@ -5,5 +5,5 @@
 
 [submodule "src/ocs"]
 	path = src/ocs
-	url = https://github.com/Lastresort92/OCS.git
+	url = https://github.com/ayebear/OCS.git
 	branch = master
