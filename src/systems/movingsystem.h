@@ -1,3 +1,6 @@
+// Copyright (C) 2014-2015 Eric Hebert (ayebear)
+// This code is licensed under GPLv3, see LICENSE.txt for details.
+
 #ifndef MOVINGSYSTEM_H
 #define MOVINGSYSTEM_H
 
@@ -18,7 +21,6 @@ class MovingSystem: public es::System
         void update(float dt);
 
     private:
-        void processEvents();
         void goToNextPoint(Components::Moving& moving, Components::Position& position, Components::State& state) const;
         void calculateVelocity(Components::Moving& moving, Components::Position& position) const;
 

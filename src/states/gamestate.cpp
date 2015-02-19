@@ -21,8 +21,8 @@
 #include "camerasystem.h"
 #include "tilesystem.h"
 #include "switchsystem.h"
-#include "forcefieldsystem.h"
 #include "objectswitchsystem.h"
+#include "tilegroupsystem.h"
 #include "rendersystem.h"
 
 GameState::GameState(GameObjects& objects):
@@ -40,8 +40,8 @@ GameState::GameState(GameObjects& objects):
     systems.add<CameraSystem>(camera);
     systems.add<TileSystem>(entities, tileMapData);
     systems.add<SwitchSystem>(tileMapData, tileMapChanger);
-    systems.add<ForceFieldSystem>(tileMapChanger);
     systems.add<ObjectSwitchSystem>(level, entities);
+    systems.add<TileGroupSystem>(tileMapChanger, entities);
     systems.add<RenderSystem>(entities, tileMap, objects.window, camera, magicWindow);
 
     // Load entity prototypes

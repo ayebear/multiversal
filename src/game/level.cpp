@@ -237,12 +237,6 @@ void Level::loadObjects(cfg::File& config)
 void Level::loadSwitches(cfg::File& config)
 {
     SwitchMapEvent event;
-    for (auto& option: config.getSection("Switches"))
-    {
-        int switchTileId = std::stoi(option.first);
-        for (auto& element: option.second)
-            event.switches[switchTileId].push_back(element.toInt());
-    }
     for (auto& option: config.getSection("SwitchObjects"))
     {
         int switchTileId = std::stoi(option.first);

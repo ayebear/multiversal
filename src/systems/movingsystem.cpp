@@ -1,3 +1,6 @@
+// Copyright (C) 2014-2015 Eric Hebert (ayebear)
+// This code is licensed under GPLv3, see LICENSE.txt for details.
+
 #include "movingsystem.h"
 #include "events.h"
 #include "gameevents.h"
@@ -27,7 +30,6 @@ void MovingSystem::initialize()
 
 void MovingSystem::update(float dt)
 {
-    processEvents();
     for (auto& moving: entities.getComponentArray<Components::Moving>())
     {
         auto position = entities.getComponent<Components::Position>(moving.getOwnerID());
@@ -65,28 +67,6 @@ void MovingSystem::update(float dt)
             }
         }
     }
-}
-
-void MovingSystem::processEvents()
-{
-    // TODO: Determine if this is needed
-    // Handle events that can change the state of moving components
-    // Note: May need to map a "moving component ID" to a regular object ID
-    for (auto& event: es::Events::get<MovingEvent>())
-    {
-        std::cout << "~~~~~ Received MovingEvent ~~~~~\n";
-        auto moving = entities.getComponent<Components::Moving>(event.entityId);
-        auto position = entities.getComponent<Components::Position>(event.entityId);
-        auto state = entities.getComponent<Components::State>(event.entityId);
-        if (moving && position && state && state->value != event.state)
-        {
-            // Change the state and update the current point
-            state->value = event.state;
-            moving->isMoving = true;
-            goToNextPoint(*moving, *position, *state);
-        }
-    }
-    es::Events::clear<MovingEvent>();
 }
 
 void MovingSystem::goToNextPoint(Components::Moving& moving, Components::Position& position, Components::State& state) const

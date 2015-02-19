@@ -72,28 +72,18 @@ struct SwitchEvent
     int action;
 };
 
-// TODO: Get rid of the ability to control tiles directly, only control object names
-// There could be objects that in turn control groups of tiles
-using SwitchMap = std::map<int, std::vector<int> >;
-
-using SwitchObjectMap = std::map<int, std::vector<std::string> >;
-
 // Toggles everything connected to a switch
 struct SwitchOutputEvent
 {
-    // Logical IDs to lists of tile IDs
-    SwitchMap tileIds;
-
     // Object names being switched
     std::vector<std::string> objectNames;
 };
 
+using SwitchObjectMap = std::map<int, std::vector<std::string> >;
+
 // Used to update information of what switches are connected to
 struct SwitchMapEvent
 {
-    // Tile IDs of switches to lists of connected tile IDs
-    SwitchMap switches;
-
     // Tile IDs of switches to lists of connected objects
     SwitchObjectMap switchObjects;
 };

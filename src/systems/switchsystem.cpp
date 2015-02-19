@@ -20,10 +20,7 @@ void SwitchSystem::update(float dt)
 
     // Get the initial switch maps
     for (auto& event: es::Events::get<SwitchMapEvent>())
-    {
-        switches.swap(event.switches);
         switchObjects.swap(event.switchObjects);
-    }
     es::Events::clear<SwitchMapEvent>();
 
     // Update push-button switches
@@ -61,8 +58,6 @@ void SwitchSystem::flipSwitch(int tileId, bool state)
     {
         // Create a switch output event
         SwitchOutputEvent event;
-        for (int id: switches[tileId])
-            event.tileIds[tileMapData(id).logicalId].push_back(id);
         event.objectNames = switchObjects[tileId];
 
         // Send the event

@@ -23,4 +23,5 @@ void bindComponentStrings(ocs::ObjectManager& entities)
     entities.bindStringToComponent<Components::AboveWindow>("AboveWindow");
     entities.bindStringToComponent<Components::Moving>("Moving");
     entities.bindStringToComponent<Components::State>("State");
+    entities.bindStringToComponent<Components::TileGroup>("TileGroup");
 }

@@ -22,20 +22,13 @@ void ObjectSwitchSystem::update(float dt)
 
 void ObjectSwitchSystem::toggleObjectState(const std::string& name)
 {
-    std::cout << "Toggling object state '" << name << "'.\n";
-
     // Get object ID from name
     auto id = level.getObjectIdFromName(name);
-
-    std::cout << "ID of object: " << id << "\n";
 
     // Get state component from object ID
     auto state = entities.getComponent<Components::State>(id);
 
     // Update state
     if (state)
-    {
         state->value = !state->value;
-        std::cout << "State = " << state->value << "\n";
-    }
 }

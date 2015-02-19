@@ -221,6 +221,17 @@ struct State: public ocs::Component<State>
         bool lastValue;
 };
 
+// Holds a group of tile IDs (mainly used for state switching)
+struct TileGroup: public ocs::Component<TileGroup>
+{
+    std::vector<int> tileIds;
+
+    void deSerialize(const std::string& str)
+    {
+        tileIds = strlib::split<int>(str, " ");
+    }
+};
+
 // Component flags
 
 // If an entity should accept user input
