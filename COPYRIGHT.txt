@@ -1,4 +1,4 @@
-PuzzleGame - Untitled Puzzle Platformer Game
+Multiversal - 2D puzzle platformer with parallel worlds
 
 Copyright (C) 2014-2015 Eric Hebert (ayebear)
 
