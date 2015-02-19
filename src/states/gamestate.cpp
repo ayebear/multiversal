@@ -9,7 +9,6 @@
 #include "gameevents.h"
 #include "entityprototypeloader.h"
 #include "componentstrings.h"
-#include "windowfocus.h"
 
 // Include systems
 #include "inputsystem.h"
@@ -34,7 +33,7 @@ GameState::GameState(GameObjects& objects):
     systems.add<InputSystem>(objects.window);
     systems.add<MovingSystem>(entities);
     systems.add<PhysicsSystem>(entities, tileMapData, tileMap, magicWindow);
-    systems.add<PlayerSystem>(entities, tileMap);
+    systems.add<PlayerSystem>(entities, tileMap, objects.window);
     systems.add<CarrySystem>(entities, magicWindow);
     systems.add<SpritePositionSystem>(entities);
     systems.add<CameraSystem>(camera);
@@ -103,15 +102,6 @@ void GameState::handleEvents()
                 }
                 else if (event.key.code == sf::Keyboard::M)
                     objects.music.mute(); // Mute the music
-                break;
-
-            // TODO: Get rid of these after updating to SFML 2.2
-            case sf::Event::LostFocus:
-                WindowFocus::setFocus(false);
-                break;
-
-            case sf::Event::GainedFocus:
-                WindowFocus::setFocus(true);
                 break;
 
             default:

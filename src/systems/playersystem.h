@@ -7,6 +7,7 @@
 #include "components.h"
 #include "OCS/Objects.hpp"
 #include "system.h"
+#include <SFML/Graphics/RenderWindow.hpp>
 
 class TileMap;
 
@@ -23,7 +24,7 @@ TODO: Make this more generic somehow.
 class PlayerSystem: public es::System
 {
     public:
-        PlayerSystem(ocs::ObjectManager& entities, TileMap& tileMap);
+        PlayerSystem(ocs::ObjectManager& entities, TileMap& tileMap, sf::RenderWindow& window);
         void update(float dt);
         void handleJumps(Components::PlayerState& playerState);
         void handleMovement(Components::PlayerState& playerState);
@@ -33,6 +34,7 @@ class PlayerSystem: public es::System
     private:
         ocs::ObjectManager& entities;
         TileMap& tileMap;
+        sf::RenderWindow& window;
 };
 
 #endif

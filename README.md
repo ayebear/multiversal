@@ -11,7 +11,7 @@ More information about this can be found on http://ayebear.com/. The design is s
 Code
 ----
 
-The code is written in C++11, and uses SFML 2.1 (https://github.com/LaurentGomila/SFML).
+The code is written in C++14, and uses SFML 2.2 (https://github.com/LaurentGomila/SFML).
 
 The code is licensed under the GPLv3 license. See LICENSE.txt for more details.
 

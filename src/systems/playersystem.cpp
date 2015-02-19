@@ -5,13 +5,13 @@
 #include "events.h"
 #include "events.h"
 #include "gameevents.h"
-#include "windowfocus.h"
 #include "tilemap.h"
 #include <iostream>
 
-PlayerSystem::PlayerSystem(ocs::ObjectManager& entities, TileMap& tileMap):
+PlayerSystem::PlayerSystem(ocs::ObjectManager& entities, TileMap& tileMap, sf::RenderWindow& window):
     entities(entities),
-    tileMap(tileMap)
+    tileMap(tileMap),
+    window(window)
 {
 }
 
@@ -64,9 +64,9 @@ void PlayerSystem::handleMovement(Components::PlayerState& playerState)
     auto carrier = entities.getComponent<Components::Carrier>(playerState.getOwnerID());
     if (velocity && sprite)
     {
-        // TODO: Take in events from a an input system
-        bool leftPressed = (WindowFocus::hasFocus() && (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A)));
-        bool rightPressed = (WindowFocus::hasFocus() && (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D)));
+        // TODO: Take in events from an input system
+        bool leftPressed = (window.hasFocus() && (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A)));
+        bool rightPressed = (window.hasFocus() && (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D)));
         std::string carryStr;
         if (carrier && carrier->carrying)
             carryStr = "Carry";
