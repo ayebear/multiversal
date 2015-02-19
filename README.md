@@ -54,14 +54,14 @@ Controls
 
 #### Character
 
-A/D: Move left/right
-W: Lift/drop objects; Action key
-Space: Jump
+* A/D: Move left/right
+* W: Lift/drop objects; Action key
+* Space: Jump
 
 #### Window
 
-Left click: Activate and place window
-Right click: Deactivate window
+* Left click: Activate and place window
+* Right click: Deactivate window
 
 
 Code
