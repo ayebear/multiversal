@@ -1,9 +1,9 @@
 [submodule "src/configfile"]
-	path = src/configfile
+	path = lib/configfile
 	url = https://github.com/ayebear/ConfigFile.git
 	branch = master
 
 [submodule "src/ocs"]
-	path = src/ocs
+	path = lib/ocs
 	url = https://github.com/ayebear/OCS.git
 	branch = master
