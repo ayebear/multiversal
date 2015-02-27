@@ -17,6 +17,7 @@ class TileGroupSystem: public es::System
 {
     public:
         TileGroupSystem(TileMapChanger& tileMapChanger, ocs::ObjectManager& entities);
+        void initialize();
         void update(float dt);
 
     private:

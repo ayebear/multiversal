@@ -47,8 +47,11 @@ class SpriteLoader
         bool loadFromConfig(const std::string& configFilename);
 
         sf::Sprite& getSprite(const std::string& name);
-        sf::Texture& getTexture(const std::string& filename);
+        static sf::Texture& getTexture(const std::string& filename);
         sf::Sprite& operator()(const std::string& name);
+
+        // Loads a texture file into the textures map for fast future access
+        static bool preloadTexture(const std::string& filename);
 
     private:
         static sf::Texture& loadTexture(const std::string& filename, bool& status);

@@ -7,6 +7,7 @@
 #include "system.h"
 #include "OCS/Objects.hpp"
 #include "components.h"
+#include "movingcomponent.h"
 
 /*
 Handles updating the positions of objects with Movable components.

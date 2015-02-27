@@ -107,6 +107,53 @@ void Level::sendStartPosition(sf::Vector2u& pos)
     es::Events::send(PlayerPosition{startPos, pos});
 }
 
+void Level::loadLogicalLayer(cfg::File& config, int layer)
+{
+    sf::Vector2u startTilePos;
+    int y = 0;
+    for (auto& tiles: config("logical"))
+    {
+        int x = 0;
+        auto values = strlib::split<int>(tiles, " ");
+        for (int logicalId: values)
+        {
+            tileMapData(x, y).logicalId = logicalId;
+
+            // Populate the logical to tile ID map
+            if (logicalId != Tiles::None && logicalId != Tiles::Normal)
+                tileMapData[logicalId].push_back(tileMapData.getId(x, y));
+
+            if (logicalId == Tiles::Start)
+            {
+                startTilePos.x = x;
+                startTilePos.y = y;
+            }
+            ++x;
+        }
+        ++y;
+    }
+    // Send the player's starting position
+    if (layer == 0)
+        sendStartPosition(startTilePos);
+}
+
+void Level::loadVisualLayer(cfg::File& config, int layer)
+{
+    int y = 0;
+    for (auto& tiles: config("visual"))
+    {
+        int x = 0;
+        auto values = strlib::split<int>(tiles, " ");
+        for (int visualId: values)
+        {
+            tileMapData(x, y).visualId = visualId;
+            tileMap.set(x, y, visualId);
+            ++x;
+        }
+        ++y;
+    }
+}
+
 void Level::loadTileMap(cfg::File& config)
 {
     // Resize tile maps
@@ -114,9 +161,9 @@ void Level::loadTileMap(cfg::File& config)
     unsigned height = config("height").toInt();
     tileMap.resize(width, height);
     tileMapData.resize(width, height);
+    tileMapData.clearTileIds();
 
     // Load layer data
-    sf::Vector2u startTilePos;
     int currentLayer = 0;
     for (auto& section: config)
     {
@@ -130,49 +177,10 @@ void Level::loadTileMap(cfg::File& config)
 
         tileMap.useLayer(currentLayer);
         tileMapData.useLayer(currentLayer);
-
         config.useSection(section.first);
 
-        // Load the logical layer
-        int y = 0;
-        for (auto& tiles: config("logical"))
-        {
-            int x = 0;
-            std::istringstream data(tiles.toString());
-            int logicalId = 0;
-            while (data >> logicalId)
-            {
-                tileMapData(x, y).logicalId = logicalId;
-
-                // Populate the logical to tile ID map
-                if (logicalId != Tiles::None && logicalId != Tiles::Normal)
-                    tileMapData[logicalId].push_back(tileMapData.getId(x, y));
-
-                if (logicalId == Tiles::Start)
-                {
-                    startTilePos.x = x;
-                    startTilePos.y = y;
-                }
-                ++x;
-            }
-            ++y;
-        }
-
-        // Load the visual layer
-        y = 0;
-        for (auto& tiles: config("visual"))
-        {
-            int x = 0;
-            std::istringstream data(tiles.toString());
-            int visualId = 0;
-            while (data >> visualId)
-            {
-                tileMapData(x, y).visualId = visualId;
-                tileMap.set(x, y, visualId);
-                ++x;
-            }
-            ++y;
-        }
+        loadLogicalLayer(config, currentLayer);
+        loadVisualLayer(config, currentLayer);
     }
 
     // Derive the remaining layer data (this basically initializes the layers)
@@ -188,9 +196,6 @@ void Level::loadTileMap(cfg::File& config)
 
     // Load the switch connections
     loadSwitches(config);
-
-    // Send the player's starting position
-    sendStartPosition(startTilePos);
 
     // Use the real world as the current layer
     tileMap.useLayer(0);

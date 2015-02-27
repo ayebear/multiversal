@@ -3,6 +3,8 @@
 
 #include "componentstrings.h"
 #include "components.h"
+#include "movingcomponent.h"
+#include "lasercomponent.h"
 
 void bindComponentStrings(ocs::ObjectManager& entities)
 {
@@ -24,4 +26,7 @@ void bindComponentStrings(ocs::ObjectManager& entities)
     entities.bindStringToComponent<Components::Moving>("Moving");
     entities.bindStringToComponent<Components::State>("State");
     entities.bindStringToComponent<Components::TileGroup>("TileGroup");
+    entities.bindStringToComponent<Components::Laser>("Laser");
+    entities.bindStringToComponent<Components::TilePosition>("TilePosition");
+    entities.bindStringToComponent<Components::Rotation>("Rotation");
 }

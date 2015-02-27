@@ -44,6 +44,8 @@ class Level
 
     private:
         void sendStartPosition(sf::Vector2u& pos);
+        void loadLogicalLayer(cfg::File& config, int layer);
+        void loadVisualLayer(cfg::File& config, int layer);
         void loadTileMap(cfg::File& config);
         void loadObjects(cfg::File& config);
         void loadSwitches(cfg::File& config);

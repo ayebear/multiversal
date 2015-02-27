@@ -22,11 +22,8 @@ namespace Tiles
         ToggleSwitch = 9,
         LaserSensor = 10,
 
-        // Lasers
-        Laser = 11,
-        Mirror = 12,
-
         // Other tiles
+        Mirror = 12,
         ForceField = 13,
 
         // Level tiles

@@ -100,11 +100,6 @@ sf::FloatRect TileMap::getBoundingBox(unsigned x, unsigned y) const
     return sf::FloatRect(x * tileSize.x, y * tileSize.y, tileSize.x, tileSize.y);
 }
 
-sf::Vector2u TileMap::getCenterPoint(unsigned x, unsigned y) const
-{
-    return sf::Vector2u(x * tileSize.x + (tileSize.x / 2), y * tileSize.y + (tileSize.y / 2));
-}
-
 void TileMap::getCollidingTiles(const sf::FloatRect& entAABB, sf::Vector2u& start, sf::Vector2u& end)
 {
     // Get the area to check collision against

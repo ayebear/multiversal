@@ -7,6 +7,7 @@
 #include "matrix.h"
 #include <map>
 #include <set>
+#include <SFML/System/Vector2.hpp>
 
 // Holds all of the information for a tile
 struct Tile
@@ -14,6 +15,7 @@ struct Tile
     int logicalId;
     int visualId;
     bool collidable;
+    bool blocksLaser;
     bool state;
 };
 
@@ -46,7 +48,6 @@ class TileMapData
         void addTile(int id);
         bool findTile(int id) const;
         void clearTiles();
-        void printTiles() const;
 
         // Tile IDs
         using TileList = std::vector<int>;
@@ -79,14 +80,26 @@ class TileMapData
 
         // Game specific -----------------------------------------------------
 
-        // This is used to check if a tile type is collidable
-        std::map<int, bool> logicalToCollision;
+        struct TileInfo
+        {
+            enum
+            {
+                Collision = 0,
+                CollisionTrue,
+                LaserCollision,
+                LaserCollisionTrue,
+                StateToVisual,
+                StateToVisualTrue
+            };
 
-        // This is used for tiles with states to change visual IDs
-        std::map<int, TileList> logicalToVisual;
+            TileInfo();
+            bool collision[4];
+            int stateToVisual[2];
+            bool stateToVisualUsed;
+        };
 
-        // This is used to check if collision should change when state changes
-        std::set<int> stateChangesCollision;
+        // Used to lookup information about a particular logical ID (tile type)
+        std::map<int, TileInfo> logicalToInfo;
 };
 
 #endif

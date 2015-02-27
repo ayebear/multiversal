@@ -25,8 +25,16 @@ class RenderSystem: public es::System
         void update(float dt);
 
     private:
+        // Determines if an object is in the alternate world
+        bool inAltWorld(ocs::ID id) const;
+
+        // Draws laser beams
+        void drawLasers(int layer);
+
+        template <class SpriteType>
+        void drawSprite(const SpriteType& sprite, bool onTop = false);
+
         // References to various things to draw
-        // TODO: Maybe use events to send things to draw?
         ocs::ObjectManager& entities;
         TileMap& tileMap;
         sf::RenderWindow& window;
@@ -35,20 +43,20 @@ class RenderSystem: public es::System
         sf::RenderTexture* texture;
 
         SpriteLoader sprites;
-
-        // Draws either an animated sprite or regular sprite component
-        template <class SpriteType>
-        void drawSprite(const SpriteType& sprite, bool onTop = false)
-        {
-            bool hasOnTop = entities.hasComponents<Components::DrawOnTop>(sprite.getOwnerID());
-            if (hasOnTop == onTop)
-            {
-                if (entities.hasComponents<Components::AltWorld>(sprite.getOwnerID()))
-                    texture->draw(sprite.sprite);
-                else
-                    window.draw(sprite.sprite);
-            }
-        }
 };
+
+// Draws either an animated sprite or regular sprite component
+template <class SpriteType>
+void RenderSystem::drawSprite(const SpriteType& sprite, bool onTop)
+{
+    bool hasOnTop = entities.hasComponents<Components::DrawOnTop>(sprite.getOwnerID());
+    if (hasOnTop == onTop)
+    {
+        if (inAltWorld(sprite.getOwnerID()))
+            texture->draw(sprite.sprite);
+        else
+            window.draw(sprite.sprite);
+    }
+}
 
 #endif

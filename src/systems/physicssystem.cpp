@@ -20,11 +20,29 @@ PhysicsSystem::PhysicsSystem(ocs::ObjectManager& entities, TileMapData& tileMapD
 {
 }
 
+void PhysicsSystem::initialize()
+{
+    updateTilePositionComponents();
+}
+
 void PhysicsSystem::update(float dt)
 {
     stepPositions(dt);
     checkEntityCollisions();
     checkTileCollisions();
+
+    // Print tile locations for debugging
+    for (auto& event: es::Events::get<sf::Event>())
+    {
+        if (event.type == sf::Event::MouseButtonPressed)
+        {
+            auto tileSize = tileMap.getTileSize();
+            sf::Vector2i location(event.mouseButton.x / tileSize.x, event.mouseButton.y / tileSize.y);
+            int tileId1 = tileMapData.getId(0, location.x, location.y);
+            int tileId2 = tileMapData.getId(1, location.x, location.y);
+            std::cout << "Location: (" << location.x << ", " << location.y << "), ID: " << tileId1 << ", AltID: " << tileId2 << "\n";
+        }
+    }
 }
 
 void PhysicsSystem::stepPositions(float dt)
@@ -80,8 +98,6 @@ void PhysicsSystem::stepPositions(float dt)
                                              sf::Vector2f(size->x, size->y)});
         }
     }
-
-    tileMapData.printTiles();
 }
 
 void PhysicsSystem::handleTileCollision(Components::AABB* entAABB, float& velocity, Components::Position* position, bool vertical, ocs::ID entityId, bool inAltWorld)
@@ -241,7 +257,7 @@ void PhysicsSystem::checkTileCollisions()
                 for (unsigned x = start.x; x <= end.x; ++x)
                 {
                     // Figure out which layer the tile is in
-                    int layer = (inWindow && magicWindow.isWithin(tileMap.getCenterPoint(x, y)));
+                    int layer = (inWindow && magicWindow.isWithin(tileMap.getCenterPoint<unsigned>(x, y)));
                     int tileId = tileMapData.getId(layer, x, y);
 
                     // Add the tile ID to the collision list
@@ -255,5 +271,34 @@ void PhysicsSystem::checkTileCollisions()
 
 int PhysicsSystem::determineLayer(bool inAltWorld, bool aboveWindow, unsigned x, unsigned y) const
 {
-    return (inAltWorld || (aboveWindow && magicWindow.isWithin(tileMap.getCenterPoint(x, y))));
+    return (inAltWorld || (aboveWindow && magicWindow.isWithin(tileMap.getCenterPoint<unsigned>(x, y))));
+}
+
+void PhysicsSystem::updateTilePositionComponents()
+{
+    for (auto& tilePos: entities.getComponentArray<Components::TilePosition>())
+    {
+        // Update pos/layer
+        tilePos.layer = tileMapData.getLayer(tilePos.id);
+        tilePos.pos.x = tileMapData.getX(tilePos.id);
+        tilePos.pos.y = tileMapData.getY(tilePos.id);
+
+        // Update position components if they exist
+        auto position = entities.getComponent<Components::Position>(tilePos.getOwnerID());
+        if (position)
+        {
+            auto center = tileMap.getCenterPoint<float>(tilePos.pos.x, tilePos.pos.y);
+            position->x = center.x;
+            position->y = center.y;
+        }
+
+        // Update sprite components to have a centered origin point
+        // Note: This is done so rotations will work as expected
+        auto sprite = entities.getComponent<Components::Sprite>(tilePos.getOwnerID());
+        if (sprite)
+        {
+            auto bounds = sprite->sprite.getGlobalBounds();
+            sprite->sprite.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f);
+        }
+    }
 }

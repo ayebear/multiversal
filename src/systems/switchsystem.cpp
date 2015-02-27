@@ -33,6 +33,10 @@ void SwitchSystem::update(float dt)
         flipSwitch(tileId, objectOnTop);
     }
 
+    // Turn off laser sensors
+    for (int tileId: tileMapData[Tiles::LaserSensor])
+        flipSwitch(tileId, false);
+
     // Update toggle switches, and anything else controlled by switch events
     for (auto& event: es::Events::get<SwitchEvent>())
     {
@@ -48,6 +52,7 @@ void SwitchSystem::update(float dt)
         // Change the state of the switch
         flipSwitch(event.tileId, state);
     }
+    es::Events::clear<SwitchEvent>();
 }
 
 void SwitchSystem::flipSwitch(int tileId, bool state)

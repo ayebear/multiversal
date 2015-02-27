@@ -63,9 +63,9 @@ void TileMapData::deriveTiles()
 void TileMapData::updateVisualId(int id)
 {
     auto& tile = operator()(id);
-    auto& visualIds = logicalToVisual[tile.logicalId];
-    if (visualIds.size() >= 2)
-        tile.visualId = visualIds[tile.state];
+    auto& tileInfo = logicalToInfo[tile.logicalId];
+    if (tileInfo.stateToVisualUsed)
+        tile.visualId = tileInfo.stateToVisual[tile.state];
 }
 
 void TileMapData::updateCollision(int id)
@@ -75,12 +75,10 @@ void TileMapData::updateCollision(int id)
 
 void TileMapData::updateCollision(Tile& tile)
 {
-    // Get the regular collision data based on the logical ID
-    tile.collidable = logicalToCollision[tile.logicalId];
-
-    // Handle the special tiles where their state affects collision
-    if (stateChangesCollision.find(tile.logicalId) != stateChangesCollision.end())
-        tile.collidable = (tile.state == tile.collidable);
+    // Get the normal/laser collision data based on the logical ID
+    auto& tileInfo = logicalToInfo[tile.logicalId];
+    tile.collidable = tileInfo.collision[TileInfo::Collision + tile.state];
+    tile.blocksLaser = tileInfo.collision[TileInfo::LaserCollision + tile.state];
 }
 
 void TileMapData::addTile(int id)
@@ -96,14 +94,6 @@ bool TileMapData::findTile(int id) const
 void TileMapData::clearTiles()
 {
     tilesWithObjectsOnTop.clear();
-}
-
-void TileMapData::printTiles() const
-{
-    /*std::cout << "Tiles: ";
-    for (int id: tilesWithObjectsOnTop)
-        std::cout << id << " ";
-    std::cout << "\n";*/
 }
 
 TileMapData::TileList& TileMapData::operator[](int logicalId)
@@ -135,23 +125,37 @@ void TileMapData::loadTileInfo()
 {
     cfg::File config("data/config/tile_info.cfg");
 
-    // Load collision data for tile types
-    for (auto& option: config.getSection("LogicalToCollision"))
+    // Load all of the information about certain logical tiles
+    for (auto& option: config.getSection("TileInfo"))
     {
-        int logicalId = std::stoi(option.first);
-        logicalToCollision[logicalId] = option.second.toBool();
-    }
+        int logicalId = strlib::fromString<int>(option.first);
+        auto values = strlib::split<int>(option.second, " ");
+        if (values.size() > TileInfo::LaserCollisionTrue)
+        {
+            auto& tileInfo = logicalToInfo[logicalId];
 
-    // Load visual IDs for tile types
-    for (auto& option: config.getSection("LogicalWithStateToVisual"))
-    {
-        int logicalId = std::stoi(option.first);
-        for (auto& visualIdOption: option.second)
-            logicalToVisual[logicalId].push_back(visualIdOption.toInt());
-        logicalToVisual[logicalId].resize(2);
-    }
+            // Extract collision properties
+            unsigned index = 0;
+            for (bool& col: tileInfo.collision)
+                col = (values[index++] != 0);
 
-    // Load logical IDs that should change collision with their state
-    for (auto& option: config("stateChangesCollision"))
-        stateChangesCollision.insert(option.toInt());
+            // Extract visual ID information
+            if (values.size() > TileInfo::StateToVisualTrue)
+            {
+                tileInfo.stateToVisual[0] = values[TileInfo::StateToVisual];
+                tileInfo.stateToVisual[1] = values[TileInfo::StateToVisualTrue];
+                tileInfo.stateToVisualUsed = true;
+            }
+        }
+    }
+}
+
+TileMapData::TileInfo::TileInfo():
+    stateToVisualUsed(false)
+{
+    // Initialize arrays
+    for (bool& c: collision)
+        c = false;
+    for (int& v: stateToVisual)
+        v = 0;
 }

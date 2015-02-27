@@ -38,6 +38,7 @@ class GameState: public BaseState
         GameObjects& objects;
 
         // TODO: Move to a world class
+        // Will need most of these for the level editor
         TileMapData tileMapData;
         TileMap tileMap;
         TileMapChanger tileMapChanger;

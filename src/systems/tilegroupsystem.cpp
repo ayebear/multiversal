@@ -11,6 +11,15 @@ TileGroupSystem::TileGroupSystem(TileMapChanger& tileMapChanger, ocs::ObjectMana
 {
 }
 
+void TileGroupSystem::initialize()
+{
+    for (auto& tileGroup: entities.getComponentArray<Components::TileGroup>())
+    {
+        for (auto id: tileGroup.tileIds)
+            tileMapChanger.changeState(id, tileGroup.initialState);
+    }
+}
+
 void TileGroupSystem::update(float dt)
 {
     for (auto& tileGroup: entities.getComponentArray<Components::TileGroup>())

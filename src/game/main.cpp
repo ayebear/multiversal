@@ -11,7 +11,7 @@
 
 int main()
 {
-    GameObjects objects("Multiversal v0.1.8 Dev");
+    GameObjects objects("Multiversal v0.2.1 Dev");
     StateStack states;
     states.add<MenuState>("Menu", objects);
     states.add<GameState>("Game", objects);

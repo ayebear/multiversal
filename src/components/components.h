@@ -10,10 +10,11 @@
 #include "animatedsprite.h"
 #include "spriteloader.h"
 
+/*
+Contains commonly used components.
+*/
 namespace Components
 {
-
-// Note: Using one file for now, but may split this up later.
 
 struct Position: public ocs::Component<Position>
 {
@@ -147,54 +148,6 @@ struct Gravity: public ocs::Component<Gravity>
     }
 };
 
-/*
-This component automatically updates the position component of any object.
-Can be used for moving platforms, clouds, etc.
-*/
-struct Moving: public ocs::Component<Moving>
-{
-    // These are the points where it will be moved to
-    std::vector<sf::Vector2f> points;
-
-    // Settings and state
-    bool isMoving; // If it should be updating position
-    bool loop; // If it should continue after the last point
-    int currentPoint; // Index of current destination point
-    float speed; // How fast it should move
-    float distance; // The total distance since the last point
-    sf::Vector2f velocity; // This is a movement vector calculated from the speed and points
-    sf::Vector2f startPos; // Starting position of movement
-
-    Moving():
-        isMoving(false),
-        loop(false),
-        currentPoint(0),
-        speed(0.0f),
-        distance(0.0f)
-    {
-    }
-
-    void deSerialize(const std::string& str)
-    {
-        if (!str.empty())
-        {
-            std::string pointStr;
-            serializer.deSerialize("% % %s", str, loop, speed, pointStr);
-
-            // Get the array of points as strings
-            auto pointStrings = strlib::split(pointStr, "|");
-
-            // Parse the point values and store them in memory
-            for (auto& str: pointStrings)
-            {
-                auto values = strlib::split<float>(str, ",");
-                if (values.size() == 2)
-                    points.emplace_back(values[0], values[1]);
-            }
-        }
-    }
-};
-
 // A simple boolean state component
 struct State: public ocs::Component<State>
 {
@@ -224,11 +177,49 @@ struct State: public ocs::Component<State>
 // Holds a group of tile IDs (mainly used for state switching)
 struct TileGroup: public ocs::Component<TileGroup>
 {
+    bool initialState;
     std::vector<int> tileIds;
+
+    TileGroup(): initialState(false) {}
 
     void deSerialize(const std::string& str)
     {
+        initialState = false;
         tileIds = strlib::split<int>(str, " ");
+        if (!tileIds.empty())
+        {
+            // Use the first element as the initial state
+            initialState = (tileIds.front() != 0);
+            tileIds.erase(tileIds.begin());
+        }
+    }
+};
+
+// Holds a single tile ID, which gets converted to a position
+struct TilePosition: public ocs::Component<TilePosition>
+{
+    int id; // Unique tile ID
+    int layer; // Which world
+    sf::Vector2u pos; // Tile coordinates
+
+    TilePosition(): id(0), layer(0) {}
+
+    void deSerialize(const std::string& str)
+    {
+        id = fromString<int>(str);
+    }
+};
+
+// Contains an angle, used for rotating sprites
+struct Rotation: public ocs::Component<Rotation>
+{
+    float angle;
+
+    Rotation(): angle(0.0f) {}
+
+    void deSerialize(const std::string& str)
+    {
+        angle = fromString<float>(str);
     }
 };
 

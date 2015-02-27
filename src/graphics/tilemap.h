@@ -11,6 +11,7 @@
 /*
 TODO:
     Change the order of stored vertices so they are contiguous (left to right)
+    Clean up and document the methods
 */
 
 /*
@@ -40,10 +41,16 @@ class TileMap: public sf::Drawable, public sf::Transformable
         const sf::Vector2u& getMapSize() const;
         const sf::Vector2u& getTileSize() const;
         sf::FloatRect getBoundingBox(unsigned x, unsigned y) const;
-        sf::Vector2u getCenterPoint(unsigned x, unsigned y) const;
         void getCollidingTiles(const sf::FloatRect& entAABB, sf::Vector2u& start, sf::Vector2u& end);
         void drawLayer(sf::RenderTarget& target, int layer);
         virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
+
+        // Returns the graphical center position of a tile from coordinates
+        template <typename T>
+        sf::Vector2<T> getCenterPoint(unsigned x, unsigned y) const;
+
+        template <typename T1, typename T2>
+        sf::Vector2<T1> getCenterPoint(const sf::Vector2<T2>& pos) const;
 
     private:
         struct TileLayer
@@ -63,5 +70,18 @@ class TileMap: public sf::Drawable, public sf::Transformable
         std::map<int, TileLayer> tiles;
         TileLayer* currentLayer; // Points to the last layer used
 };
+
+template <typename T>
+sf::Vector2<T> TileMap::getCenterPoint(unsigned x, unsigned y) const
+{
+    return sf::Vector2<T>(x * tileSize.x + (tileSize.x / static_cast<T>(2)),
+                          y * tileSize.y + (tileSize.y / static_cast<T>(2)));
+}
+
+template <typename T1, typename T2>
+sf::Vector2<T1> TileMap::getCenterPoint(const sf::Vector2<T2>& pos) const
+{
+    return getCenterPoint<T1>(static_cast<T1>(pos.x), static_cast<T1>(pos.y));
+}
 
 #endif

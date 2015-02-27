@@ -58,6 +58,13 @@ sf::Sprite& SpriteLoader::operator()(const std::string& name)
     return sprites[name];
 }
 
+bool SpriteLoader::preloadTexture(const std::string& filename)
+{
+    bool status;
+    loadTexture(filename, status);
+    return status;
+}
+
 sf::Texture& SpriteLoader::loadTexture(const std::string& filename, bool& status)
 {
     status = true;

@@ -16,12 +16,13 @@
 #include "movingsystem.h"
 #include "physicssystem.h"
 #include "carrysystem.h"
-#include "spritepositionsystem.h"
+#include "spritesystem.h"
 #include "camerasystem.h"
 #include "tilesystem.h"
 #include "switchsystem.h"
 #include "objectswitchsystem.h"
 #include "tilegroupsystem.h"
+#include "lasersystem.h"
 #include "rendersystem.h"
 
 GameState::GameState(GameObjects& objects):
@@ -35,12 +36,13 @@ GameState::GameState(GameObjects& objects):
     systems.add<PhysicsSystem>(entities, tileMapData, tileMap, magicWindow);
     systems.add<PlayerSystem>(entities, tileMap, objects.window);
     systems.add<CarrySystem>(entities, magicWindow);
-    systems.add<SpritePositionSystem>(entities);
+    systems.add<SpriteSystem>(entities);
     systems.add<CameraSystem>(camera);
     systems.add<TileSystem>(entities, tileMapData);
     systems.add<SwitchSystem>(tileMapData, tileMapChanger);
     systems.add<ObjectSwitchSystem>(level, entities);
     systems.add<TileGroupSystem>(tileMapChanger, entities);
+    systems.add<LaserSystem>(entities, tileMapData, tileMap, magicWindow);
     systems.add<RenderSystem>(entities, tileMap, objects.window, camera, magicWindow);
 
     // Load entity prototypes
@@ -82,7 +84,6 @@ void GameState::onStart()
 
 void GameState::handleEvents()
 {
-    // TODO: Will need to update the input system here, or these events will be a frame behind
     for (auto& event: es::Events::get<sf::Event>())
     {
         switch (event.type)

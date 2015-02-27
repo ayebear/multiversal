@@ -21,6 +21,7 @@ class PhysicsSystem: public es::System
 {
     public:
         PhysicsSystem(ocs::ObjectManager& entities, TileMapData& tileMapData, TileMap& tileMap, MagicWindow& magicWindow);
+        void initialize();
         void update(float dt);
 
     private:
@@ -31,6 +32,7 @@ class PhysicsSystem: public es::System
         void checkEntityCollisions();
         void checkTileCollisions();
         int determineLayer(bool inAltWorld, bool aboveWindow, unsigned x, unsigned y) const;
+        void updateTilePositionComponents();
 
         // These are used for gravity and falling
         static const sf::Vector2i maxVelocity;
