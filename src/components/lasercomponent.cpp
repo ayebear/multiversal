@@ -2,6 +2,7 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "lasercomponent.h"
+#include "vectors.h"
 
 namespace Components
 {
@@ -16,26 +17,26 @@ const std::map<std::string, int> Laser::directionMap = {
 };
 
 Laser::Laser():
-    beamCount(0),
-    directionCode(Up)
+    beamCount(0)
 {
 }
 
 void Laser::deSerialize(const std::string& str)
 {
-    std::string directionStr;
-    serializer.deSerialize("%s", str, directionStr);
-
     // Convert direction text to code
-    auto found = directionMap.find(directionStr);
-    if (found == directionMap.end())
-        directionCode = Up;
-    else
+    unsigned directionCode = Up;
+    auto found = directionMap.find(str);
+    if (found != directionMap.end())
         directionCode = found->second;
 
     // Convert direction code to delta values
     direction.x = codeToDeltaX[directionCode];
     direction.y = codeToDeltaY[directionCode];
+}
+
+double Laser::getAngle(const sf::Vector2i& dir) const
+{
+    return vectors::rotateAngle(vectors::getAngle(dir), 90.0);
 }
 
 }

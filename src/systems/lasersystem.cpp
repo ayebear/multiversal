@@ -21,17 +21,33 @@ LaserSystem::LaserSystem(ocs::ObjectManager& entities, TileMapData& tileMapData,
     magicWindow(magicWindow)
 {
     SpriteLoader::preloadTexture(textureFilename);
-    beamWidth = SpriteLoader::getTexture(textureFilename).getSize().x;
+    auto& texture = SpriteLoader::getTexture(textureFilename);
+    texture.setSmooth(true);
+    beamWidth = texture.getSize().x;
 }
 
 void LaserSystem::initialize()
 {
     tileSize = tileMap.getTileSize();
     mapSize = tileMap.getMapSize();
+
+    // Update the rotation components based on the direction of the lasers
+    for (auto& laser: entities.getComponentArray<Components::Laser>())
+    {
+        auto rotation = entities.getComponent<Components::Rotation>(laser.getOwnerID());
+        if (rotation)
+            rotation->angle = laser.getAngle(laser.direction);
+    }
 }
 
 void LaserSystem::update(float dt)
 {
+    // Store the laser sensors to turn off
+    laserSensorsToDisable.clear();
+    for (int tileId: tileMapData[Tiles::LaserSensor])
+        laserSensorsToDisable.insert(tileId);
+
+    // Update laser beams
     for (auto& laser: entities.getComponentArray<Components::Laser>())
     {
         auto tilePos = entities.getComponent<Components::TilePosition>(laser.getOwnerID());
@@ -41,6 +57,10 @@ void LaserSystem::update(float dt)
         else
             laser.beams.clear();
     }
+
+    // Turn off the laser sensors in the list
+    for (int tileId: laserSensorsToDisable)
+        es::Events::send(SwitchEvent{tileId, SwitchEvent::Off});
 }
 
 LaserSystem::PointInfo LaserSystem::findPoint()
@@ -96,8 +116,6 @@ LaserSystem::PointInfo LaserSystem::findPoint()
         // Set to edge point (this depends on the current direction)
         point.position.x += float(tileSize.x) * ((currentDirection.x - 1) / -2.0f);
         point.position.y += float(tileSize.y) * ((currentDirection.y - 1) / -2.0f);
-        //std::cout << "Setting edge position: (" << point.position.x << ", " << point.position.y << "), Direction: (" <<
-            //currentDirection.x << ", " << currentDirection.y << ")\n";
     }
 
     // TODO: Also collide with objects
@@ -109,7 +127,6 @@ void LaserSystem::addBeams(Components::Laser& laser, Components::TilePosition& t
     // Setup everything
     currentPosition = vectors::cast<int>(tilePos.pos);
     currentDirection = laser.direction;
-    currentDirectionCode = laser.directionCode;
 
     // Current layer is the starting layer of the beam
     currentLayer = (tilePos.layer && !getLayer());
@@ -146,10 +163,7 @@ void LaserSystem::addBeams(Components::Laser& laser, Components::TilePosition& t
 
         // Set the beam's position and rotation
         beam->sprite.setPosition(startPoint);
-        float angle = ((currentDirectionCode + 2) % 4) * 90.0f;
-        //float angle = vectors::getAngle(sf::Vector2f(currentDirection.x, -currentDirection.y));
-        //std::cout << "Angle: " << angle << "\n";
-        beam->sprite.setRotation(angle);
+        beam->sprite.setRotation(vectors::rotateAngle(laser.getAngle(currentDirection), 180.0));
 
         // Set the beam's layer
         beam->layer = currentLayer;
@@ -164,6 +178,7 @@ void LaserSystem::addBeams(Components::Laser& laser, Components::TilePosition& t
         {
             // Enable the laser sensor
             es::Events::send(SwitchEvent{endPoint.tileId, SwitchEvent::On});
+            laserSensorsToDisable.erase(endPoint.tileId);
         }
 
         startPoint = endPoint.position;
@@ -179,20 +194,11 @@ int LaserSystem::getLayer() const
 
 void LaserSystem::changeDirection(bool state, sf::Vector2i& direction) const
 {
+    // Used for redirecting the beam
     std::swap(direction.x, direction.y);
     if (!state)
     {
         direction.x *= -1;
         direction.y *= -1;
     }
-
-    // TODO: Remove this, since the angle can be computed from the direction vector
-    if (direction.x == -1)
-        currentDirectionCode = Components::Laser::Left;
-    else if (direction.y == -1)
-        currentDirectionCode = Components::Laser::Up;
-    else if (direction.x == 1)
-        currentDirectionCode = Components::Laser::Right;
-    else if (direction.y == 1)
-        currentDirectionCode = Components::Laser::Down;
 }

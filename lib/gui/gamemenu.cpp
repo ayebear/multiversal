@@ -2,12 +2,14 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "gamemenu.h"
+#include "vectors.h"
 #include <iostream>
 
 GameMenu::GameMenu(sf::RenderWindow& window, const std::string& configFilename):
     window(window),
     config(configFilename),
-    currentItem(NO_SELECTION)
+    currentItem(NO_SELECTION),
+    mouseMoved(false)
 {
     view = window.getDefaultView();
     viewSize = view.getSize();
@@ -59,9 +61,13 @@ void GameMenu::handleEvent(const sf::Event& event)
 void GameMenu::update(float dt)
 {
     // Check mouse collisions
-    int found = getSelectedItem();
-    if (found != NO_SELECTION)
-        currentItem = found;
+    if (mouseMoved)
+    {
+        int found = getSelectedItem();
+        if (found != NO_SELECTION)
+            currentItem = found;
+    }
+    mouseMoved = false;
 
     // Update animations/graphics, positions, sizes, colors, and labels
     int index = 0;
@@ -128,6 +134,7 @@ int GameMenu::getSelectedItem() const
 void GameMenu::mapMousePos(const sf::Vector2i& pos)
 {
     mousePos = window.mapPixelToCoords(pos);
+    mouseMoved = true;
 }
 
 void GameMenu::selectMenuItem(int index)
@@ -168,6 +175,14 @@ void GameMenu::loadSettings()
     config.useSection();
     firstButton.x = (viewSize.x - width) / 2;
     firstButton.y = config("firstButtonOffset").toInt();
+
+    // Center foreground sprite
+    int foregroundWidth = foregroundSprite.getTexture()->getSize().x;
+    foregroundSprite.setPosition((viewSize.x - foregroundWidth) / 2, 0);
+
+    // Center and scale background sprite
+    auto backgroundSize = vectors::cast<int>(backgroundSprite.getTexture()->getSize());
+    backgroundSprite.setPosition((viewSize.x - backgroundSize.x) / 2, (viewSize.y - backgroundSize.y) / 2);
 }
 
 sf::Color GameMenu::averageColors(const sf::Color& startColor, const sf::Color& endColor, float ratio) const

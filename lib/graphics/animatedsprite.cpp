@@ -20,7 +20,9 @@ AnimatedSprite::AnimatedSprite(const std::string& configFilename):
 
 bool AnimatedSprite::loadTexture(const std::string& textureFilename)
 {
-    return SpriteLoader::load(sprite, textureFilename, true);
+    bool status = SpriteLoader::load(sprite, textureFilename, true);
+    SpriteLoader::getTexture(textureFilename).setSmooth(true);
+    return status;
 }
 
 void AnimatedSprite::setTileSize(const sf::Vector2u& size)

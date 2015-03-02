@@ -63,8 +63,8 @@ class LaserSystem: public es::System
         // Used temporarily for making the beams
         sf::Vector2i currentPosition;
         sf::Vector2i currentDirection;
-        mutable unsigned currentDirectionCode;
         int currentLayer;
+        std::set<int> laserSensorsToDisable;
 };
 
 #endif

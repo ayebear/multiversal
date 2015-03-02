@@ -35,13 +35,11 @@ struct Laser: public ocs::Component<Laser>
 
     std::vector<Beam> beams;
     unsigned beamCount;
-
-    // Starts here
     sf::Vector2i direction;
-    unsigned directionCode;
 
     Laser();
     void deSerialize(const std::string& str);
+    double getAngle(const sf::Vector2i& dir) const;
 };
 
 }

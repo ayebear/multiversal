@@ -111,7 +111,7 @@ struct PlayerState: public ocs::Component<PlayerState>
     };
 
     // This could be moved elsewhere...
-    static const int jumpSpeed = -800;
+    static const int jumpSpeed = -3200;
     // Probably a "Jumpable" component, or maybe Input
 
     PlayerState(): state(OnPlatform), wasRight(false) {}

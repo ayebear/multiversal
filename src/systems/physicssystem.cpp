@@ -9,8 +9,8 @@
 #include "events.h"
 #include "gameevents.h"
 
-const sf::Vector2i PhysicsSystem::maxVelocity(400, 800);
-const sf::Vector2i PhysicsSystem::gravityConstant(160, 160);
+const sf::Vector2i PhysicsSystem::maxVelocity(1600, 3200);
+const sf::Vector2i PhysicsSystem::gravityConstant(640, 640);
 
 PhysicsSystem::PhysicsSystem(ocs::ObjectManager& entities, TileMapData& tileMapData, TileMap& tileMap, MagicWindow& magicWindow):
     entities(entities),
@@ -32,16 +32,13 @@ void PhysicsSystem::update(float dt)
     checkTileCollisions();
 
     // Print tile locations for debugging
-    for (auto& event: es::Events::get<sf::Event>())
+    for (auto& event: es::Events::get<MouseClickedEvent>())
     {
-        if (event.type == sf::Event::MouseButtonPressed)
-        {
-            auto tileSize = tileMap.getTileSize();
-            sf::Vector2i location(event.mouseButton.x / tileSize.x, event.mouseButton.y / tileSize.y);
-            int tileId1 = tileMapData.getId(0, location.x, location.y);
-            int tileId2 = tileMapData.getId(1, location.x, location.y);
-            std::cout << "Location: (" << location.x << ", " << location.y << "), ID: " << tileId1 << ", AltID: " << tileId2 << "\n";
-        }
+        auto tileSize = tileMap.getTileSize();
+        sf::Vector2i location(event.mousePos.x / tileSize.x, event.mousePos.y / tileSize.y);
+        int tileId1 = tileMapData.getId(0, location.x, location.y);
+        int tileId2 = tileMapData.getId(1, location.x, location.y);
+        std::cout << "Location: (" << location.x << ", " << location.y << "), ID: " << tileId1 << ", AltID: " << tileId2 << "\n";
     }
 }
 

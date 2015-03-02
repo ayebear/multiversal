@@ -72,6 +72,12 @@ The code is written in C++14, and uses SFML 2.2 (https://github.com/LaurentGomil
 The code is licensed under the GPLv3 license. See LICENSE.txt for more details.
 
 
+Assets
+------
+
+The remaining required assets needed to run this game can be downloaded here: http://ayebear.com/multiversal/data.zip.
+
+
 Author
 ------
 

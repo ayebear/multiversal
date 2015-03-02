@@ -3,7 +3,6 @@
 
 #include "playersystem.h"
 #include "events.h"
-#include "events.h"
 #include "gameevents.h"
 #include "tilemap.h"
 #include <iostream>
@@ -33,7 +32,6 @@ void PlayerSystem::handleJumps(Components::PlayerState& playerState)
     {
         if (event.entityId == playerState.getOwnerID())
         {
-            //std::cout << "Player state: " << event.state << "\n";
             if (event.state)
                 playerState.state = Components::PlayerState::OnPlatform;
             else
@@ -42,12 +40,13 @@ void PlayerSystem::handleJumps(Components::PlayerState& playerState)
     }
     for (auto& event: es::Events::get<sf::Event>())
     {
-        if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space)
+        if (event.type == sf::Event::KeyPressed && (event.key.code == sf::Keyboard::Space ||
+            event.key.code == sf::Keyboard::W || event.key.code == sf::Keyboard::Up))
         {
             auto velocity = entities.getComponent<Components::Velocity>(playerState.getOwnerID());
             if (velocity)
             {
-                if (playerState.state == Components::PlayerState::OnPlatform)
+                if (true || playerState.state == Components::PlayerState::OnPlatform)
                 {
                     velocity->y = Components::PlayerState::jumpSpeed;
                     playerState.state = Components::PlayerState::InAir;
@@ -64,22 +63,28 @@ void PlayerSystem::handleMovement(Components::PlayerState& playerState)
     auto carrier = entities.getComponent<Components::Carrier>(playerState.getOwnerID());
     if (velocity && sprite)
     {
+        bool hasFocus = window.hasFocus();
+
+        // TODO: Come up with a workaround
+        // SFML 2.2 window focus seems to be broken in fullscreen
+        hasFocus = true;
+
         // TODO: Take in events from an input system
-        bool leftPressed = (window.hasFocus() && (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A)));
-        bool rightPressed = (window.hasFocus() && (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D)));
+        bool leftPressed = (hasFocus && (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A)));
+        bool rightPressed = (hasFocus && (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D)));
         std::string carryStr;
         if (carrier && carrier->carrying)
             carryStr = "Carry";
         if (leftPressed && !rightPressed)
         {
-            velocity->x = -400;
+            velocity->x = -1600;
             sprite->sprite.play("MoveLeft" + carryStr);
             playerState.wasRight = false;
 
         }
         else if (rightPressed && !leftPressed)
         {
-            velocity->x = 400;
+            velocity->x = 1600;
             sprite->sprite.play("MoveRight" + carryStr);
             playerState.wasRight = true;
         }
@@ -107,7 +112,6 @@ void PlayerSystem::handlePosition(Components::PlayerState& playerState)
             position->y = event.position.y;
             std::cout << "Received PlayerPosition event: " << event.position.x << ", " << event.position.y << "\n";
         }
-        //std::cout << "Position: " << position->x << ", " << position->y << "\n";
     }
 }
 
@@ -121,12 +125,8 @@ void PlayerSystem::handleActionKey(Components::PlayerState& playerState)
     {
         for (auto& event: es::Events::get<sf::Event>())
         {
-            if (event.type == sf::Event::KeyPressed && (event.key.code == sf::Keyboard::Up || event.key.code == sf::Keyboard::W))
+            if (event.type == sf::Event::KeyPressed && (event.key.code == sf::Keyboard::Down || event.key.code == sf::Keyboard::S))
             {
-                //auto tileSize = tileMap.getTileSize();
-                //sf::Vector2i tilePos(position->x / tileSize.x, (position->y + tileSize.y) / tileSize.y);
-                // Note: All of the colliding tiles are stored in the tileCollisions vector in the AABB component
-                //std::cout << "Action key pressed at location " << tilePos.x << ", " << tilePos.y << "\n";
                 std::cout << "Action key was pressed. Locations: ";
                 for (int location: aabb->tileCollisions)
                     std::cout << location << ' ';

@@ -63,6 +63,11 @@ double getAngle(const sf::Vector2<T>& vec)
     return (atan2(vec.y, vec.x) * (180.0 / PI));
 }
 
+inline double rotateAngle(double angle, double amount)
+{
+    return fmod(angle + amount, 360.0);
+}
+
 }
 
 #endif

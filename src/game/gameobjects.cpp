@@ -53,18 +53,15 @@ void GameObjects::createWindow(const std::string& windowTitle, unsigned windowWi
 
     // Use the specified window width and height if they are valid
     if (windowSizeValid && !autoResolution)
-    {
         vidMode = sf::VideoMode(windowWidth, windowHeight);
-        std::cout << "Using resolution: " << windowWidth << ", " << windowHeight << "\n";
-    }
     else
-    {
         vidMode = sf::VideoMode::getDesktopMode();
-        std::cout << "Using current resolution.\n";
-    }
 
-    // Either create the window in fullscreen or windowed mode
+    std::cout << "Using resolution: " << vidMode.width << " x " << vidMode.height << " @ " << vidMode.bitsPerPixel << " bpp\n";
+
+    // Create the window in either fullscreen or windowed mode
     window.create(vidMode, windowTitle, (fullscreen ? sf::Style::Fullscreen : sf::Style::Close));
+    window.requestFocus();
 
     // Set the window's vertical sync setting
     window.setVerticalSyncEnabled(vsync);

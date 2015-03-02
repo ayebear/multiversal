@@ -15,12 +15,13 @@ MagicWindow::MagicWindow():
     currentTexture(0),
     textures(MAX_BLOCK_SIZE - MIN_BLOCK_SIZE + 1)
 {
+    const float THICKNESS = 16.0f;
     border.setFillColor(sf::Color::Transparent);
     border.setOutlineColor(sf::Color::Blue);
-    border.setOutlineThickness(4);
+    border.setOutlineThickness(THICKNESS);
     preview.setFillColor(sf::Color::Transparent);
     preview.setOutlineColor(sf::Color(128, 128, 128, 128));
-    preview.setOutlineThickness(4);
+    preview.setOutlineThickness(THICKNESS);
 }
 
 void MagicWindow::update()

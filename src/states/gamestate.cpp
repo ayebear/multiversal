@@ -55,9 +55,9 @@ GameState::GameState(GameObjects& objects):
 
     // Setup the views
     auto defaultView = objects.window.getDefaultView();
+
     camera.setView("game", defaultView);
     camera.setView("background", defaultView, 0.5f);
-    //camera.setView("menu", defaultView);
 
     // Setup the magic window
     magicWindow.setTileSize(tileMap.getTileSize());
@@ -74,9 +74,9 @@ void GameState::onStart()
     // Reset the window size
     magicWindow.setSize();
 
-    // Load level 1 and initialize the systems
+    // Load level 1
     level.load(1);
-    systems.initialize();
+    setupLevel();
 
     // Start the game music
     objects.music.play("game");
@@ -99,7 +99,7 @@ void GameState::handleEvents()
                 {
                     // Reload the current level
                     level.load();
-                    systems.initialize();
+                    setupLevel();
                 }
                 else if (event.key.code == sf::Keyboard::M)
                     objects.music.mute(); // Mute the music
@@ -119,7 +119,7 @@ void GameState::update()
 
     // Load the next level if needed
     if (level.update())
-        systems.initialize();
+        setupLevel();
 
     // Check if all levels have been completed
     if (es::Events::exists<GameFinishedEvent>())
@@ -134,4 +134,22 @@ void GameState::update()
 
     magicWindow.update();
     objects.music.update();
+}
+
+void GameState::setupLevel()
+{
+    // Update the zoom amount of the views
+    float viewHeight = camera.accessView("game").getSize().y;
+    float levelHeight = tileMap.getPixelSize().y;
+    float zoomAmount = levelHeight / viewHeight;
+    std::cout << "Zoom: " << zoomAmount << " = " << levelHeight << " / " << viewHeight << "\n";
+
+    // Update zoom amounts
+    camera.accessView("game").zoom(zoomAmount);
+    camera.accessView("background").zoom(zoomAmount);
+    camera.accessView("game2").zoom(zoomAmount);
+    camera.accessView("background2").zoom(zoomAmount);
+
+    // Initialize the systems
+    systems.initialize();
 }

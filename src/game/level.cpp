@@ -15,7 +15,8 @@
 const cfg::File::ConfigMap Level::defaultOptions = {
     {"",{
         {"width", cfg::makeOption(32, 0)},
-        {"height", cfg::makeOption(12, 0)}
+        {"height", cfg::makeOption(12, 0)},
+        {"version", cfg::makeOption(1, 0)}
         }
     }
 };
@@ -103,7 +104,7 @@ bool Level::update()
 void Level::sendStartPosition(sf::Vector2u& pos)
 {
     auto tileSize = tileMap.getTileSize();
-    sf::Vector2f startPos(pos.x * tileSize.x + 12, pos.y * tileSize.y - 32);
+    sf::Vector2f startPos(pos.x * tileSize.x, (pos.y - 1) * tileSize.y);
     es::Events::send(PlayerPosition{startPos, pos});
 }
 

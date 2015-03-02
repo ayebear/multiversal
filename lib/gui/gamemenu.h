@@ -101,6 +101,7 @@ class GameMenu: public sf::Drawable
         sf::Vector2f viewSize;
         sf::Sprite backgroundSprite;
         sf::Sprite foregroundSprite;
+        bool mouseMoved;
 
         // Settings
         float transitionTime;

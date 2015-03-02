@@ -5,6 +5,7 @@
 #include "gameobjects.h"
 #include "spriteloader.h"
 #include "colorcode.h"
+#include "vectors.h"
 
 AboutState::AboutState(GameObjects& objects):
     objects(objects)
@@ -50,6 +51,10 @@ void AboutState::setup()
     auto& descriptionArray = config("description");
     float totalHeight = (descriptionArray.size() * (fontSize + padding)) - padding;
     float startTop = (viewSize.y - totalHeight) / 2.0f;
+
+    // Center the background sprite
+    auto bgSize = vectors::cast<int>(bgSprite.getTexture()->getSize());
+    bgSprite.setPosition((viewSize.x - bgSize.x) / 2, (viewSize.y - bgSize.y) / 2);
 
     // Setup the sf::Text objects
     int count = 0;

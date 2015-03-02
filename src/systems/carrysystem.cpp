@@ -57,7 +57,7 @@ void CarrySystem::update(float dt)
                 if (carryable)
                 {
                     carrier->id = id;
-                    entities.removeComponents<Components::AltWorld>(id);
+                    entities.removeComponents<Components::AltWorld, Components::TilePosition>(id);
                     entities.addComponents(id, Components::DrawOnTop());
                     carrier->carrying = true;
                     std::cout << "Picked up object " << id << ". # collisions = " << aabb->collisions.size() << "\n";

@@ -33,7 +33,7 @@ class GameState: public BaseState
         void draw() {} // Update() calls the render system to draw
 
     private:
-        void bindStringsToComponents();
+        void setupLevel();
 
         GameObjects& objects;
 
