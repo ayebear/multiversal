@@ -18,7 +18,6 @@ TileSystem::TileSystem(ocs::ObjectManager& entities, TileMapData& tileMapData):
 void TileSystem::update(float dt)
 {
     // Handle action key events (when the player presses "up") on different tiles
-    es::Events::clear<LoadNextLevelEvent>();
     for (auto& event: es::Events::get<ActionKeyEvent>())
     {
         auto aabb = entities.getComponent<Components::AABB>(event.entityId);

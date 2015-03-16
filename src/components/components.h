@@ -97,28 +97,50 @@ struct AnimSprite: public ocs::Component<AnimSprite>
 };
 
 /*
-TODO: Remove this component, and split it into generic components.
-    This will be neccessary in the future, when objects and boxes need to know
-    if they are on a platform or in the air, for example.
+Determines if an object can "jump" at a certain speed.
+Triggered by the "jump" action.
 */
-struct PlayerState: public ocs::Component<PlayerState>
+struct Jumpable: public ocs::Component<Jumpable>
 {
+    float jumpSpeed;
+
+    Jumpable(): jumpSpeed(0.0f) {}
+
+    void deSerialize(const std::string& str)
+    {
+        jumpSpeed = strlib::fromString<float>(str);
+    }
+};
+
+// Determines the state of a collidable object
+struct ObjectState: public ocs::Component<ObjectState>
+{
+    int state;
+
     enum State
     {
         OnPlatform = 0,
-        InAir,
-        Climbing
+        InAir
+        //Climbing // Will need this if ladders are made
     };
 
-    // This could be moved elsewhere...
-    static const int jumpSpeed = -3200;
-    // Probably a "Jumpable" component, or maybe Input
-
-    PlayerState(): state(OnPlatform), wasRight(false) {}
-    int state;
-    bool wasRight;
+    ObjectState(): state(OnPlatform) {}
 };
 
+// Allows an object to move left/right with input
+struct Movable: public ocs::Component<Movable>
+{
+    float velocity;
+
+    Movable(): velocity(0.0f) {}
+
+    void deSerialize(const std::string& str)
+    {
+        velocity = strlib::fromString<float>(str);
+    }
+};
+
+// Gives objects the ability to carry objects with Carryable components
 struct Carrier: public ocs::Component<Carrier>
 {
     // ID of entity being carried
@@ -138,6 +160,7 @@ struct Carrier: public ocs::Component<Carrier>
     }
 };
 
+// Gives objects a certain amount of gravity using a vector
 struct Gravity: public ocs::Component<Gravity>
 {
     sf::Vector2f acceleration;
@@ -224,10 +247,6 @@ struct Rotation: public ocs::Component<Rotation>
 };
 
 // Component flags
-
-// If an entity should accept user input
-// This should be split into movable/jumpable/etc.
-struct Input: public ocs::Component<Input> {};
 
 // Flag for updating the camera
 // Note: Only works if the entity also has a position component

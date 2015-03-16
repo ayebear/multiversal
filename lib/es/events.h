@@ -120,7 +120,7 @@ class Events
         static EventQueue<T>& getQueue()
         {
             // Get the pointer to the event queue
-            auto& specificEvents = getEventQueueTable()[std::type_index(typeid(T))];
+            auto& specificEvents = getEventQueueTable()[typeid(T)];
 
             // Create a new queue if it doesn't exist for this type
             if (!specificEvents)

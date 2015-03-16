@@ -28,36 +28,14 @@ struct CameraEvent
     sf::Vector2f size;
 };
 
-// TODO: Just have a generic component to store this information
-struct OnPlatformEvent
-{
-    bool state;
-    ocs::ID entityId;
-};
-
 struct ActionKeyEvent
 {
     //sf::Vector2i position;
     ocs::ID entityId;
 };
 
-struct PlayerPosition
-{
-    sf::Vector2f position;
-    sf::Vector2u tilePos;
-};
-
 struct LoadNextLevelEvent {};
-
-struct MapSizeEvent
-{
-    sf::Vector2u mapSize;
-};
-
-struct GameViewEvent
-{
-    sf::View gameView;
-};
+struct ReloadLevelEvent {};
 
 struct SwitchEvent
 {
@@ -95,5 +73,27 @@ struct MovingEvent
 };
 
 struct GameFinishedEvent {};
+
+struct TileSelectionEvent
+{
+    int tileId;
+};
+
+struct ObjectSelectionEvent
+{
+    ocs::ID objectId;
+};
+
+// Used to switch focus on/off between level editor and selection screen
+struct SelectionFocusEvent
+{
+    bool focus;
+};
+
+// Used for updating the input system's view
+struct ViewEvent
+{
+    sf::View view;
+};
 
 #endif

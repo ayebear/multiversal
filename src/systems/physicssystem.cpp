@@ -48,7 +48,6 @@ void PhysicsSystem::stepPositions(float dt)
 
     // Clear events
     es::Events::clear<CameraEvent>();
-    es::Events::clear<OnPlatformEvent>();
 
     // Apply gravity and handle collisions
     for (auto& velocity: entities.getComponentArray<Components::Velocity>())
@@ -162,7 +161,7 @@ void PhysicsSystem::handleTileCollision(Components::AABB* entAABB, float& veloci
 
     // Notify the entity about it being in the air or on a platform
     if (vertical && entityId != ocs::ID(-1))
-        es::Events::send(OnPlatformEvent{onPlatform, entityId});
+        updateOnPlatformState(entityId, onPlatform ? Components::ObjectState::OnPlatform : Components::ObjectState::InAir);
 
     // Update the position from the new AABB
     position->x = tempAABB.left - entAABB->rect.left;
@@ -186,7 +185,7 @@ void PhysicsSystem::updateEdgeCases(Components::Position* position, Components::
     if (position->y > newPosition.y)
     {
         position->y = newPosition.y;
-        es::Events::send(OnPlatformEvent{true, entityId});
+        updateOnPlatformState(entityId, Components::ObjectState::OnPlatform);
     }
 }
 
@@ -298,4 +297,11 @@ void PhysicsSystem::updateTilePositionComponents()
             sprite->sprite.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f);
         }
     }
+}
+
+void PhysicsSystem::updateOnPlatformState(ocs::ID entityId, int state)
+{
+    auto objectState = entities.getComponent<Components::ObjectState>(entityId);
+    if (objectState)
+        objectState->state = state;
 }

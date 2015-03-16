@@ -15,9 +15,10 @@ void bindComponentStrings(ocs::ObjectManager& entities)
     entities.bindStringToComponent<Components::AABB>("AABB");
     entities.bindStringToComponent<Components::Sprite>("Sprite");
     entities.bindStringToComponent<Components::AnimSprite>("AnimSprite");
-    entities.bindStringToComponent<Components::PlayerState>("PlayerState");
+    entities.bindStringToComponent<Components::Jumpable>("Jumpable");
+    entities.bindStringToComponent<Components::ObjectState>("ObjectState");
+    entities.bindStringToComponent<Components::Movable>("Movable");
     entities.bindStringToComponent<Components::Carrier>("Carrier");
-    entities.bindStringToComponent<Components::Input>("Input");
     entities.bindStringToComponent<Components::CameraUpdater>("CameraUpdater");
     entities.bindStringToComponent<Components::AltWorld>("AltWorld");
     entities.bindStringToComponent<Components::Carryable>("Carryable");

@@ -13,6 +13,7 @@ GameMenu::GameMenu(sf::RenderWindow& window, const std::string& configFilename):
 {
     view = window.getDefaultView();
     viewSize = view.getSize();
+    loadActions();
     loadSettings();
 }
 
@@ -24,31 +25,9 @@ void GameMenu::addItem(const std::string& name, CallbackType callback)
 
 void GameMenu::handleEvent(const sf::Event& event)
 {
-    if (event.type == sf::Event::KeyPressed)
-    {
-        switch (event.key.code)
-        {
-            case sf::Keyboard::Return:
-                selectMenuItem(currentItem);
-                break;
+    actions.handleEvent(event);
 
-            case sf::Keyboard::Up:
-                if (currentItem > 0)
-                    --currentItem;
-                else if (currentItem == -1)
-                    currentItem = 0;
-                break;
-
-            case sf::Keyboard::Down:
-                if (currentItem < int(menuItems.size()) - 1)
-                    ++currentItem;
-                break;
-
-            default:
-                break;
-        }
-    }
-    else if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left)
+    if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left)
     {
         // Handle clicking on a menu item
         mapMousePos(sf::Vector2i(event.mouseButton.x, event.mouseButton.y));
@@ -145,6 +124,14 @@ void GameMenu::selectMenuItem(int index)
         menuItems[index].callback();
 }
 
+void GameMenu::loadActions()
+{
+    actions.loadSection(config.getSection("Controls"));
+    actions["select"].setCallback([&](){selectMenuItem(currentItem);});
+    actions["moveUp"].setCallback(std::bind(&GameMenu::moveUp, this));
+    actions["moveDown"].setCallback(std::bind(&GameMenu::moveDown, this));
+}
+
 void GameMenu::loadSettings()
 {
     // Load general settings
@@ -198,6 +185,20 @@ float GameMenu::interpolate(float start, float end, float ratio) const
     // Note: Ratio should be between 0 and 1
     float change = (start - end) * ratio;
     return (start - change);
+}
+
+void GameMenu::moveUp()
+{
+    if (currentItem > 0)
+        --currentItem;
+    else if (currentItem == -1)
+        currentItem = 0;
+}
+
+void GameMenu::moveDown()
+{
+    if (currentItem < static_cast<int>(menuItems.size()) - 1)
+        ++currentItem;
 }
 
 float GameMenu::updateDt(float& itemDt, float dt, float animTime, bool hovered)

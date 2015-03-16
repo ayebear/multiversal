@@ -5,27 +5,17 @@
 #define GAMESTATE_H
 
 #include "basestate.h"
-#include "tilemapdata.h"
-#include "tilemap.h"
-#include "tilemapchanger.h"
-#include "camera.h"
-#include "level.h"
-#include "magicwindow.h"
-#include "OCS/Objects.hpp"
-#include "matrix.h"
-#include "systemcontainer.h"
 
 class GameObjects;
+class Game;
 
 /*
-The state for the playable game.
-Handles input, updating, and drawing.
-Currently has all of the game objects, systems, and level.
+The state for the playable game, which just holds an instance of the Game class.
 */
 class GameState: public BaseState
 {
     public:
-        GameState(GameObjects& objects);
+        GameState(GameObjects& objects, Game& game);
 
         void onStart();
         void handleEvents();
@@ -33,22 +23,8 @@ class GameState: public BaseState
         void draw() {} // Update() calls the render system to draw
 
     private:
-        void setupLevel();
-
         GameObjects& objects;
-
-        // TODO: Move to a world class
-        // Will need most of these for the level editor
-        TileMapData tileMapData;
-        TileMap tileMap;
-        TileMapChanger tileMapChanger;
-        Camera camera;
-        Level level;
-        MagicWindow magicWindow;
-        ocs::ObjectManager entities;
-
-        // Systems
-        es::SystemContainer systems;
+        Game& game;
 };
 
 #endif

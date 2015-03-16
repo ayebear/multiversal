@@ -13,13 +13,14 @@ InputSystem::InputSystem(sf::RenderWindow& window):
 void InputSystem::update(float dt)
 {
     proxyEvents();
-    if (es::Events::exists<GameViewEvent>())
-    {
-        // Get the game's view from an event
-        auto view = es::Events::get<GameViewEvent>().back().gameView;
-        sendMouseButtonEvents(view);
-        sendMousePositionEvents(view);
-    }
+
+    // Update the view if any events were sent
+    for (auto& event: es::Events::get<ViewEvent>())
+        currentView = event.view;
+    es::Events::clear<ViewEvent>();
+
+    sendMouseButtonEvents(currentView);
+    sendMousePositionEvents(currentView);
 }
 
 void InputSystem::proxyEvents()

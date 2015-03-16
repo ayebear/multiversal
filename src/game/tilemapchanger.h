@@ -21,6 +21,9 @@ class TileMapChanger
         // Toggles the state of a tile
         void toggleState(int tileId);
 
+        // Derives other tile layer information
+        void updateTile(int tileId);
+
     private:
         TileMapData& tileMapData;
         TileMap& tileMap;

@@ -2,81 +2,21 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "gamestate.h"
-#include <iostream>
 #include "gameobjects.h"
 #include "events.h"
-#include "components.h"
 #include "gameevents.h"
-#include "entityprototypeloader.h"
-#include "componentstrings.h"
+#include "game.h"
 
-// Include systems
-#include "inputsystem.h"
-#include "playersystem.h"
-#include "movingsystem.h"
-#include "physicssystem.h"
-#include "carrysystem.h"
-#include "spritesystem.h"
-#include "camerasystem.h"
-#include "tilesystem.h"
-#include "switchsystem.h"
-#include "objectswitchsystem.h"
-#include "tilegroupsystem.h"
-#include "lasersystem.h"
-#include "rendersystem.h"
-
-GameState::GameState(GameObjects& objects):
+GameState::GameState(GameObjects& objects, Game& game):
     objects(objects),
-    tileMapChanger(tileMapData, tileMap),
-    level("data/levels/", tileMapData, tileMap, tileMapChanger, entities, magicWindow)
+    game(game)
 {
-    // Setup systems
-    systems.add<InputSystem>(objects.window);
-    systems.add<MovingSystem>(entities);
-    systems.add<PhysicsSystem>(entities, tileMapData, tileMap, magicWindow);
-    systems.add<PlayerSystem>(entities, tileMap, objects.window);
-    systems.add<CarrySystem>(entities, magicWindow);
-    systems.add<SpriteSystem>(entities);
-    systems.add<CameraSystem>(camera);
-    systems.add<TileSystem>(entities, tileMapData);
-    systems.add<SwitchSystem>(tileMapData, tileMapChanger);
-    systems.add<ObjectSwitchSystem>(level, entities);
-    systems.add<TileGroupSystem>(tileMapChanger, entities);
-    systems.add<LaserSystem>(entities, tileMapData, tileMap, magicWindow);
-    systems.add<RenderSystem>(entities, tileMap, objects.window, camera, magicWindow);
-
-    // Load entity prototypes
-    bindComponentStrings(entities);
-    EntityPrototypeLoader::load(entities, "data/config/entities.cfg");
-
-    // Load the tiles
-    cfg::File tilesConfig("data/config/tilemap.cfg", cfg::File::Warnings | cfg::File::Errors);
-    tileMap.loadTileset(tilesConfig("texture"), tilesConfig("tileWidth").toInt(), tilesConfig("tileHeight").toInt());
-
-    // Setup the views
-    auto defaultView = objects.window.getDefaultView();
-
-    camera.setView("game", defaultView);
-    camera.setView("background", defaultView, 0.5f);
-
-    // Setup the magic window
-    magicWindow.setTileSize(tileMap.getTileSize());
-    auto magicWindowView = magicWindow.getRenderTexture().getDefaultView();
-    camera.setView("game2", magicWindowView);
-    camera.setView("background2", magicWindowView, 0.5f);
 }
 
 void GameState::onStart()
 {
-    // Clear any old events from the last time it was ran
-    es::Events::clearAll();
-
-    // Reset the window size
-    magicWindow.setSize();
-
-    // Load level 1
-    level.load(1);
-    setupLevel();
+    // Load a new level (or resumes from last save)
+    game.initialize();
 
     // Start the game music
     objects.music.play("game");
@@ -94,13 +34,9 @@ void GameState::handleEvents()
 
             case sf::Event::KeyPressed:
                 if (event.key.code == sf::Keyboard::Escape)
-                    stateEvent.command = StateEvent::Pop;
+                    stateEvent.command = StateEvent::Pop; // Go back to the menu
                 else if (event.key.code == sf::Keyboard::R)
-                {
-                    // Reload the current level
-                    level.load();
-                    setupLevel();
-                }
+                    es::Events::send(ReloadLevelEvent()); // Reload the level
                 else if (event.key.code == sf::Keyboard::M)
                     objects.music.mute(); // Mute the music
                 break;
@@ -113,13 +49,7 @@ void GameState::handleEvents()
 
 void GameState::update()
 {
-    // The input system needs the game view
-    es::Events::clear<GameViewEvent>();
-    es::Events::send(GameViewEvent{camera.getView("game")});
-
-    // Load the next level if needed
-    if (level.update())
-        setupLevel();
+    game.update(dt);
 
     // Check if all levels have been completed
     if (es::Events::exists<GameFinishedEvent>())
@@ -129,27 +59,5 @@ void GameState::update()
         es::Events::clear<GameFinishedEvent>();
     }
 
-    // Update all of the systems
-    systems.update(dt);
-
-    magicWindow.update();
     objects.music.update();
-}
-
-void GameState::setupLevel()
-{
-    // Update the zoom amount of the views
-    float viewHeight = camera.accessView("game").getSize().y;
-    float levelHeight = tileMap.getPixelSize().y;
-    float zoomAmount = levelHeight / viewHeight;
-    std::cout << "Zoom: " << zoomAmount << " = " << levelHeight << " / " << viewHeight << "\n";
-
-    // Update zoom amounts
-    camera.accessView("game").zoom(zoomAmount);
-    camera.accessView("background").zoom(zoomAmount);
-    camera.accessView("game2").zoom(zoomAmount);
-    camera.accessView("background2").zoom(zoomAmount);
-
-    // Initialize the systems
-    systems.initialize();
 }

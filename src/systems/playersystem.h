@@ -7,34 +7,34 @@
 #include "components.h"
 #include "OCS/Objects.hpp"
 #include "system.h"
-#include <SFML/Graphics/RenderWindow.hpp>
+#include "actionhandler.h"
 
-class TileMap;
+class Level;
 
 /*
-This system handles player-related actions.
-TODO: Make this more generic somehow.
-    Maybe have different components that determine if something can jump, move, etc.
-    Basically, get rid of the PlayerState component.
-    Then, make different systems for handling these actions:
-        JumpSystem
-        MovementSystem
-        etc.
+This system handles player-related actions:
+    Movement
+    Jumping
+    Action key
 */
 class PlayerSystem: public es::System
 {
     public:
-        PlayerSystem(ocs::ObjectManager& entities, TileMap& tileMap, sf::RenderWindow& window);
+        PlayerSystem(ocs::ObjectManager& entities, es::ActionHandler& actions, Level& level);
+        void initialize();
         void update(float dt);
-        void handleJumps(Components::PlayerState& playerState);
-        void handleMovement(Components::PlayerState& playerState);
-        void handlePosition(Components::PlayerState& playerState);
-        void handleActionKey(Components::PlayerState& playerState);
 
     private:
+        void handleMovement();
+        void handleJump();
+        void handleAction();
+
         ocs::ObjectManager& entities;
-        TileMap& tileMap;
-        sf::RenderWindow& window;
+        es::ActionHandler& actions;
+        Level& level;
+
+        ocs::ID playerId;
+        bool wasRight;
 };
 
 #endif

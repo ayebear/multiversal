@@ -13,7 +13,7 @@
 #include "magicwindow.h"
 
 const cfg::File::ConfigMap Level::defaultOptions = {
-    {"",{
+    {"", {
         {"width", cfg::makeOption(32, 0)},
         {"height", cfg::makeOption(12, 0)},
         {"version", cfg::makeOption(1, 0)}
@@ -21,55 +21,33 @@ const cfg::File::ConfigMap Level::defaultOptions = {
     }
 };
 
-const int Level::TOTAL_LEVELS = 1;
-
-Level::Level(const std::string& levelDir, TileMapData& tileMapData, TileMap& tileMap,
-        TileMapChanger& tileMapChanger, ocs::ObjectManager& entities, MagicWindow& magicWindow):
-    levelDir(levelDir),
+Level::Level(TileMapData& tileMapData, TileMap& tileMap, TileMapChanger& tileMapChanger, ocs::ObjectManager& entities, MagicWindow& magicWindow):
     tileMapData(tileMapData),
     tileMap(tileMap),
     tileMapChanger(tileMapChanger),
     entities(entities),
-    magicWindow(magicWindow),
-    currentLevel(1)
+    magicWindow(magicWindow)
 {
 }
 
-Level::LoadStatus Level::load(int level)
+bool Level::load(const std::string& filename)
 {
-    if (level == -1)
-        level = currentLevel;
-
-    // Don't load more levels than the game should have
-    if (level > TOTAL_LEVELS)
-        return LoadStatus::Finished;
-
-    std::cout << "Loading level " << level << "...\n";
-
-    // Load configuration
-    std::string filename(levelDir + std::to_string(level) + ".cfg");
+    std::cout << "Loading level file \"" << filename << "\"...\n";
     cfg::File config(filename, defaultOptions);
-    if (!config)
+    bool status = config.getStatus();
+    if (status)
     {
-        std::cout << "Error loading level.\n";
-        return LoadStatus::Error;
+        // Load everything from the config file
+        loadTileMap(config);
+        loadObjects(config);
+
+        // Reset window
+        magicWindow.show(false);
+        magicWindow.setSize();
     }
-
-    // Load everything from the config file
-    loadTileMap(config);
-    loadObjects(config);
-
-    // Reset window
-    magicWindow.show(false);
-
-    currentLevel = level;
-
-    return LoadStatus::Success;
-}
-
-Level::LoadStatus Level::loadNext()
-{
-    return load(currentLevel + 1);
+    else
+        std::cout << "Error loading level.\n";
+    return status;
 }
 
 ocs::ID Level::getObjectIdFromName(const std::string& name) const
@@ -81,36 +59,8 @@ ocs::ID Level::getObjectIdFromName(const std::string& name) const
     return id;
 }
 
-bool Level::update()
-{
-    bool loadedLeved = false;
-
-    // Check if the next level should be loaded
-    if (es::Events::exists<LoadNextLevelEvent>())
-    {
-        auto status = loadNext();
-        if (status == LoadStatus::Finished)
-            es::Events::send(GameFinishedEvent{});
-        else if (status == LoadStatus::Success)
-            loadedLeved = true;
-    }
-
-    // Send the map size to the camera system
-    es::Events::clear<MapSizeEvent>();
-    es::Events::send(MapSizeEvent{tileMap.getPixelSize()});
-    return loadedLeved;
-}
-
-void Level::sendStartPosition(sf::Vector2u& pos)
-{
-    auto tileSize = tileMap.getTileSize();
-    sf::Vector2f startPos(pos.x * tileSize.x, (pos.y - 1) * tileSize.y);
-    es::Events::send(PlayerPosition{startPos, pos});
-}
-
 void Level::loadLogicalLayer(cfg::File& config, int layer)
 {
-    sf::Vector2u startTilePos;
     int y = 0;
     for (auto& tiles: config("logical"))
     {
@@ -124,18 +74,10 @@ void Level::loadLogicalLayer(cfg::File& config, int layer)
             if (logicalId != Tiles::None && logicalId != Tiles::Normal)
                 tileMapData[logicalId].push_back(tileMapData.getId(x, y));
 
-            if (logicalId == Tiles::Start)
-            {
-                startTilePos.x = x;
-                startTilePos.y = y;
-            }
             ++x;
         }
         ++y;
     }
-    // Send the player's starting position
-    if (layer == 0)
-        sendStartPosition(startTilePos);
 }
 
 void Level::loadVisualLayer(cfg::File& config, int layer)
@@ -148,7 +90,10 @@ void Level::loadVisualLayer(cfg::File& config, int layer)
         for (int visualId: values)
         {
             tileMapData(x, y).visualId = visualId;
+
+            // Update the graphical tile map
             tileMap.set(x, y, visualId);
+
             ++x;
         }
         ++y;
@@ -205,9 +150,6 @@ void Level::loadTileMap(cfg::File& config)
 void Level::loadObjects(cfg::File& config)
 {
     entities.destroyAllObjects();
-
-    // Always make a player object
-    entities.createObject("Player");
 
     // Create objects from level file
     for (auto& option: config.getSection("Objects"))

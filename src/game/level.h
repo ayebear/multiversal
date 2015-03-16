@@ -15,35 +15,55 @@ class TileMapChanger;
 class MagicWindow;
 
 /*
-This class holds the information for a level, and loads everything into memory from a file.
+This class loads data from level files:
+    Tile map layers
+    Game objects
+
+Note that it does not store this data, only populates other objects with the data.
+
+The current level file format looks like this:
+    height = 12
+    width = 32
+    version = 1
+
+    [Real]
+    visual = {
+    ...
+    }
+    logical = {
+    ...
+    }
+
+    [Alternate]
+    visual = {
+    ...
+    }
+    logical = {
+    ...
+    }
+
+    [SwitchObjects]
+    123 = {
+        "nameOfObjectToSwitch"
+    }
+
+    [Objects]
+    name:Type = {
+        "Component 321 100"
+    }
 */
 class Level
 {
-    enum class LoadStatus
-    {
-        Error,
-        Success,
-        Finished
-    };
-
     public:
-        Level(const std::string& levelDir, TileMapData& tileMapData, TileMap& tileMap,
-            TileMapChanger& tileMapChanger, ocs::ObjectManager& entities, MagicWindow& magicWindow);
+        Level(TileMapData& tileMapData, TileMap& tileMap, TileMapChanger& tileMapChanger, ocs::ObjectManager& entities, MagicWindow& magicWindow);
 
-        // Loads a level (default is to reload the current level)
-        LoadStatus load(int level = -1);
-
-        // Loads the next level
-        LoadStatus loadNext();
+        // Loads a level file
+        bool load(const std::string& filename);
 
         // Returns an object ID from an object's name
         ocs::ID getObjectIdFromName(const std::string& name) const;
 
-        // Returns true if a new level was loaded
-        bool update();
-
     private:
-        void sendStartPosition(sf::Vector2u& pos);
         void loadLogicalLayer(cfg::File& config, int layer);
         void loadVisualLayer(cfg::File& config, int layer);
         void loadTileMap(cfg::File& config);
@@ -51,16 +71,13 @@ class Level
         void loadSwitches(cfg::File& config);
 
         static const cfg::File::ConfigMap defaultOptions;
-        static const int TOTAL_LEVELS;
 
-        std::string levelDir;
         TileMapData& tileMapData; // Logical tile map
         TileMap& tileMap; // Visual tile map
         TileMapChanger& tileMapChanger;
         ocs::ObjectManager& entities;
         MagicWindow& magicWindow;
 
-        int currentLevel;
         std::map<std::string, ocs::ID> objectNamesToIds;
 };
 

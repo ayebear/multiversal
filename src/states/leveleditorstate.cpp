@@ -3,9 +3,13 @@
 
 #include "leveleditorstate.h"
 #include "gameobjects.h"
+#include "game.h"
 
-LevelEditorState::LevelEditorState(GameObjects& objects):
-    objects(objects)
+LevelEditorState::LevelEditorState(GameObjects& objects, Game& game):
+    objects(objects),
+    game(game),
+    world(game.getWorld()),
+    editor(world.tileMapData, world.tileMap, world.tileMapChanger, world.entities)
 {
 }
 
@@ -16,15 +20,22 @@ void LevelEditorState::handleEvents()
     {
         if (event.type == sf::Event::Closed)
             stateEvent.command = StateEvent::Exit;
+        else
+        {
+            editor.handleEvent(event);
+            selection.handleEvent(event);
+        }
     }
 }
 
 void LevelEditorState::update()
 {
-    // Temporarily disable this state until it is implemented
-    stateEvent.command = StateEvent::Pop;
+    editor.update(dt);
+    selection.update(dt);
 }
 
 void LevelEditorState::draw()
 {
+    objects.window.draw(editor);
+    objects.window.draw(selection);
 }

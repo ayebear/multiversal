@@ -33,6 +33,7 @@ class PhysicsSystem: public es::System
         void checkTileCollisions();
         int determineLayer(bool inAltWorld, bool aboveWindow, unsigned x, unsigned y) const;
         void updateTilePositionComponents();
+        void updateOnPlatformState(ocs::ID entityId, int state);
 
         // These are used for gravity and falling
         static const sf::Vector2i maxVelocity;

@@ -8,14 +8,16 @@
 #include "leveleditorstate.h"
 #include "aboutstate.h"
 #include "finalstate.h"
+#include "game.h"
 
 int main()
 {
-    GameObjects objects("Multiversal v0.2.2 Dev");
+    GameObjects objects("Multiversal v0.2.3 Dev");
+    Game game(objects.window);
     StateStack states;
     states.add<MenuState>("Menu", objects);
-    states.add<GameState>("Game", objects);
-    states.add<LevelEditorState>("LevelEditor", objects);
+    states.add<GameState>("Game", objects, game);
+    states.add<LevelEditorState>("LevelEditor", objects, game);
     states.add<AboutState>("About", objects);
     states.add<FinalState>("Final", objects);
     states.start("Menu");

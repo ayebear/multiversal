@@ -11,6 +11,7 @@
 #include "configfile.h"
 #include "colorcode.h"
 #include "spriteloader.h"
+#include "actionhandler.h"
 
 /*
 An SFML menu designed for use with games.
@@ -53,9 +54,12 @@ class GameMenu: public sf::Drawable
         int getSelectedItem() const;
         void mapMousePos(const sf::Vector2i& pos);
         void selectMenuItem(int index);
+        void loadActions();
         void loadSettings();
         sf::Color averageColors(const sf::Color& startColor, const sf::Color& endColor, float ratio) const;
         float interpolate(float start, float end, float ratio) const;
+        void moveUp();
+        void moveDown();
 
         // Returns the new "ratio" or point in time of the animation
         float updateDt(float& itemDt, float dt, float animTime, bool hovered);
@@ -102,6 +106,7 @@ class GameMenu: public sf::Drawable
         sf::Sprite backgroundSprite;
         sf::Sprite foregroundSprite;
         bool mouseMoved;
+        es::ActionHandler actions;
 
         // Settings
         float transitionTime;

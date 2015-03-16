@@ -5,18 +5,32 @@
 #include "camera.h"
 #include "events.h"
 #include "gameevents.h"
+#include "tilemap.h"
+#include <iostream>
 
-CameraSystem::CameraSystem(Camera& camera):
-    camera(camera)
+CameraSystem::CameraSystem(Camera& camera, TileMap& tileMap):
+    camera(camera),
+    tileMap(tileMap)
 {
+}
+
+void CameraSystem::initialize()
+{
+    // Update the zoom amount of the views
+    float viewHeight = camera.accessView("game").getSize().y;
+    float levelHeight = tileMap.getPixelSize().y;
+    float zoomAmount = levelHeight / viewHeight;
+    std::cout << "Zoom: " << zoomAmount << " = " << levelHeight << " / " << viewHeight << "\n";
+
+    // Update zoom amounts
+    camera.accessView("game").zoom(zoomAmount);
+    camera.accessView("background").zoom(zoomAmount);
+    camera.accessView("game2").zoom(zoomAmount);
+    camera.accessView("background2").zoom(zoomAmount);
 }
 
 void CameraSystem::update(float dt)
 {
-    // Receive map size events
-    for (auto& event: es::Events::get<MapSizeEvent>())
-        mapSize = event.mapSize;
-
     // Receive camera events
     for (auto& event: es::Events::get<CameraEvent>())
     {
@@ -28,14 +42,16 @@ void CameraSystem::update(float dt)
         sf::Vector2f viewSize(camera.getView("game").getSize());
 
         // Make sure view isn't off the map
-        if (viewCenter.x - (viewSize.x / 2) < 0)
-            viewCenter.x = viewSize.x / 2;
-        if (viewCenter.y - (viewSize.y / 2) < 0)
-            viewCenter.y = viewSize.y / 2;
-        if (viewCenter.x >= mapSize.x - (viewSize.x / 2))
-            viewCenter.x = mapSize.x - (viewSize.x / 2);
-        if (viewCenter.y >= mapSize.y - (viewSize.y / 2))
-            viewCenter.y = mapSize.y - (viewSize.y / 2);
+        sf::Vector2f halfSize(viewSize.x / 2, viewSize.y / 2);
+        if (viewCenter.x - halfSize.x < 0)
+            viewCenter.x = halfSize.x;
+        if (viewCenter.y - halfSize.y < 0)
+            viewCenter.y = halfSize.y;
+        auto mapSize = tileMap.getPixelSize();
+        if (viewCenter.x >= mapSize.x - halfSize.x)
+            viewCenter.x = mapSize.x - halfSize.x;
+        if (viewCenter.y >= mapSize.y - halfSize.y)
+            viewCenter.y = mapSize.y - halfSize.y;
 
         camera.setCenter(viewCenter);
     }

@@ -9,6 +9,9 @@
 
 /*
 This class handles the processing of all inputs, and sends out global input events with all of the needed information.
+
+Note: Relies on ViewEvent events to be sent
+
 Maybe also map the input to "actions", which are sent as events, so a "player jump" action event is sent instead of
     "space pressed" or something. Then this would allow customizable hotkeys, so that other code doesn't need to
     handle any of that.
@@ -24,13 +27,16 @@ class InputSystem: public es::System
     public:
         InputSystem(sf::RenderWindow& window);
         void update(float dt);
+
+    private:
         void proxyEvents();
         void sendMouseButtonEvents(const sf::View& view);
         void sendMousePositionEvents(const sf::View& view);
 
-    private:
         sf::RenderWindow& window;
         sf::Vector2f currentMousePos;
+
+        sf::View currentView;
 };
 
 #endif
