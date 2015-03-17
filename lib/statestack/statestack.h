@@ -44,7 +44,7 @@ class StateStack
 template <typename T, typename... Args>
 void StateStack::add(const std::string& name, Args&&... args)
 {
-    statePtrs[name].reset(new T(std::forward<Args>(args)...));
+    statePtrs[name] = std::make_unique<T>(std::forward<Args>(args)...);
 }
 
 #endif

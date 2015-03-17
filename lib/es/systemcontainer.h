@@ -72,7 +72,7 @@ template <typename T, typename... Args>
 void SystemContainer::add(Args&&... args)
 {
     size_t index = getIndex(typeid(T));
-    systems[index].reset(new T(std::forward<Args>(args)...));
+    systems[index] = std::make_unique<T>(std::forward<Args>(args)...);
 }
 
 template <typename T>

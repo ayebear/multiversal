@@ -124,7 +124,7 @@ class Events
 
             // Create a new queue if it doesn't exist for this type
             if (!specificEvents)
-                specificEvents.reset(new EventQueue<T>());
+                specificEvents = std::make_unique<EventQueue<T>>();
 
             // Return the specific type of event queue (casted from the base class pointer)
             return *(static_cast<EventQueue<T>*>(specificEvents.get()));

@@ -218,7 +218,10 @@ sf::Event::KeyEvent Action::getKeyEvent(const std::string& keyCombo) const
 {
     // Split up something like "Control+Shift+A" and return a KeyEvent
     sf::Event::KeyEvent keyEvent{};
+    keyEvent.code = sf::Keyboard::Unknown;
     auto keyNames = strlib::split(keyCombo, "+");
+
+    // Go through all of the key names in the combination
     for (auto& name: keyNames)
     {
         auto lowerCombo = strlib::toLower(name);
