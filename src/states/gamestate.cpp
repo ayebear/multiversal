@@ -11,6 +11,10 @@ GameState::GameState(GameObjects& objects, Game& game):
     objects(objects),
     game(game)
 {
+    auto& actions = game.getWorld().actions;
+    actions("Game", "restartLevel").setCallback([]{ es::Events::send(ReloadLevelEvent{}); });
+    actions("Game", "toggleMute").setCallback([&]{ objects.music.mute(); });
+    actions("Game", "popState").setCallback([&]{ stateEvent.command = StateEvent::Pop; });
 }
 
 void GameState::onStart()
@@ -26,24 +30,8 @@ void GameState::handleEvents()
 {
     for (auto& event: es::Events::get<sf::Event>())
     {
-        switch (event.type)
-        {
-            case sf::Event::Closed:
-                stateEvent.command = StateEvent::Exit;
-                break;
-
-            case sf::Event::KeyPressed:
-                if (event.key.code == sf::Keyboard::Escape)
-                    stateEvent.command = StateEvent::Pop; // Go back to the menu
-                else if (event.key.code == sf::Keyboard::R)
-                    es::Events::send(ReloadLevelEvent()); // Reload the level
-                else if (event.key.code == sf::Keyboard::M)
-                    objects.music.mute(); // Mute the music
-                break;
-
-            default:
-                break;
-        }
+        if (event.type == sf::Event::Closed)
+            stateEvent.command = StateEvent::Exit;
     }
 }
 

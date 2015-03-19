@@ -23,6 +23,7 @@ struct GameWorld
 {
     GameWorld();
 
+    es::ActionHandler actions;
     TileMapData tileMapData;
     TileMap tileMap;
     TileMapChanger tileMapChanger;
@@ -32,7 +33,6 @@ struct GameWorld
     MagicWindow magicWindow;
     ocs::ObjectManager entities;
     es::SystemContainer systems;
-    es::ActionHandler actions;
 };
 
 #endif

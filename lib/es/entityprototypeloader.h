@@ -8,6 +8,9 @@
 #include "configfile.h"
 #include <vector>
 
+namespace es
+{
+
 /*
 This is an alternate version of the ObjectPrototypeLoader class from OCS.
 It uses cfg::File formatted files instead, to keep things consistent with the rest of the project.
@@ -76,5 +79,7 @@ class EntityPrototypeLoader
         // Temporary for each entity
         std::set<std::string> visitedParents;
 };
+
+}
 
 #endif

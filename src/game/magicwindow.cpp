@@ -7,7 +7,8 @@
 #include "events.h"
 #include "gameevents.h"
 
-MagicWindow::MagicWindow():
+MagicWindow::MagicWindow(es::ActionHandler& actions):
+    actions(actions),
     changed(false),
     visible(false),
     active(false),
@@ -22,24 +23,28 @@ MagicWindow::MagicWindow():
     preview.setFillColor(sf::Color::Transparent);
     preview.setOutlineColor(sf::Color(128, 128, 128, 128));
     preview.setOutlineThickness(THICKNESS);
+
+    // Setup action callbacks
+    actions("MagicWindow", "grow").setCallback([&]{ handleResize(1); });
+    actions("MagicWindow", "shrink").setCallback([&]{ handleResize(-1); });
 }
 
 void MagicWindow::update()
 {
-    // Check SFML events
+    // Handle SFML events
     for (auto& event: es::Events::get<sf::Event>())
     {
         if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left)
             active = false;
-        else if (event.type == sf::Event::MouseWheelMoved)
+        else if (event.type == sf::Event::MouseWheelMoved && actions["control"].isActive())
             handleResize(event.mouseWheel.delta);
-        else if (event.type == sf::Event::KeyPressed)
-            handleKeyPressed(event.key);
     }
-    // Check real-time mouse input
+
+    // Handle real-time mouse input
     for (auto& event: es::Events::get<MousePosEvent>())
         setCenter(event.mousePos);
-    // Check mouse-clicked events
+
+    // Handle mouse-clicked events
     for (auto& event: es::Events::get<MouseClickedEvent>())
     {
         if (event.button == sf::Mouse::Left)
@@ -189,15 +194,4 @@ void MagicWindow::updateTextures()
 void MagicWindow::handleResize(int delta)
 {
     setSize(blockSize + delta);
-}
-
-void MagicWindow::handleKeyPressed(const sf::Event::KeyEvent& keyEvent)
-{
-    if (keyEvent.control)
-    {
-        if (keyEvent.code == sf::Keyboard::Add || keyEvent.code == sf::Keyboard::E)
-            handleResize(1);
-        else if (keyEvent.code == sf::Keyboard::Subtract || keyEvent.code == sf::Keyboard::Q)
-            handleResize(-1);
-    }
 }

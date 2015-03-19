@@ -6,7 +6,8 @@
 GameWorld::GameWorld():
     tileMapChanger(tileMapData, tileMap),
     level(tileMapData, tileMap, tileMapChanger, entities, magicWindow),
-    levelLoader(level, "data/levels/")
+    levelLoader(level, "data/levels/"),
+    magicWindow(actions)
 {
     actions.loadFromConfig("data/config/controls.cfg");
 }

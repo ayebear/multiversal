@@ -6,6 +6,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <vector>
+#include "actionhandler.h"
 
 /*
 TODO:
@@ -33,7 +34,7 @@ class MagicWindow: public sf::Drawable, public sf::Transformable
     static const unsigned MIN_BLOCK_SIZE = 2;
 
     public:
-        MagicWindow();
+        MagicWindow(es::ActionHandler& actions);
 
         // Processes events
         void update();
@@ -66,7 +67,8 @@ class MagicWindow: public sf::Drawable, public sf::Transformable
         void setSize(const sf::Vector2f& newSize);
         void updateTextures();
         void handleResize(int delta);
-        void handleKeyPressed(const sf::Event::KeyEvent& keyEvent);
+
+        es::ActionHandler& actions;
 
         // States
         bool changed;

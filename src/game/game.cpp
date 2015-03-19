@@ -44,7 +44,7 @@ Game::Game(sf::RenderWindow& window):
 
     // Load entity prototypes
     bindComponentStrings(world.entities);
-    EntityPrototypeLoader::load(world.entities, "data/config/entities.cfg");
+    es::EntityPrototypeLoader::load(world.entities, "data/config/entities.cfg");
 
     // Load the tiles
     cfg::File tilesConfig("data/config/tilemap.cfg", cfg::File::Warnings | cfg::File::Errors);

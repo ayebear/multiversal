@@ -141,7 +141,7 @@ void Action::trigger(const sf::Event& event)
 
 bool Action::isActive() const
 {
-    if (windowHasFocus && held)
+    if (windowHasFocus && held && !keys.empty())
     {
         // Get modifier key input
         bool altPressed = (sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt) || sf::Keyboard::isKeyPressed(sf::Keyboard::RAlt));
@@ -152,7 +152,8 @@ bool Action::isActive() const
         // Return true if any key combinations are currently being pressed
         for (auto& key: keys)
         {
-            if (sf::Keyboard::isKeyPressed(key.code) &&
+            if ((key.code == sf::Keyboard::Unknown ||
+                sf::Keyboard::isKeyPressed(key.code)) &&
                 key.alt == altPressed &&
                 key.control == ctrlPressed &&
                 key.shift == shiftPressed &&
@@ -169,6 +170,7 @@ void Action::parseString(const std::string& str)
     auto actionStr = strlib::split(str, ":");
     if (!actionStr.empty())
     {
+        keys.clear();
         type = sf::Event::KeyPressed;
         held = false;
         if (actionStr.size() >= 2)
@@ -189,7 +191,7 @@ void Action::parseString(const std::string& str)
         {
             std::cout << "Key combo: " << keyCombo << "\n";
             auto keyEvent = getKeyEvent(keyCombo);
-            if (keyEvent.code != sf::Keyboard::Unknown)
+            if (held || keyEvent.code != sf::Keyboard::Unknown)
                 keys.push_back(keyEvent);
         }
     }

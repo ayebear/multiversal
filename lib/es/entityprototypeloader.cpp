@@ -3,6 +3,9 @@
 
 #include "entityprototypeloader.h"
 
+namespace es
+{
+
 EntityPrototypeLoader::EntityPrototypeLoader(ocs::ObjectManager& objManager, const std::string& configFilename):
     objManager(objManager),
     config(configFilename)
@@ -104,4 +107,6 @@ void EntityPrototypeLoader::loadComponents(const std::string& entityName, const 
     // Load each component from a string in the section
     for (auto& option: section)
         objManager.addComponentToPrototypeFromString(entityName, option.first, option.second.toString());
+}
+
 }
