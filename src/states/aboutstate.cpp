@@ -2,13 +2,13 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "aboutstate.h"
-#include "gameobjects.h"
+#include "gameresources.h"
 #include "spriteloader.h"
 #include "colorcode.h"
 #include "vectors.h"
 
-AboutState::AboutState(GameObjects& objects):
-    objects(objects)
+AboutState::AboutState(GameResources& resources):
+    resources(resources)
 {
     setup();
 }
@@ -16,7 +16,7 @@ AboutState::AboutState(GameObjects& objects):
 void AboutState::handleEvents()
 {
     sf::Event event;
-    while (objects.window.pollEvent(event))
+    while (resources.window.pollEvent(event))
     {
         if (event.type == sf::Event::Closed)
             stateEvent.command = StateEvent::Exit;
@@ -31,11 +31,11 @@ void AboutState::update()
 
 void AboutState::draw()
 {
-    objects.window.clear();
-    objects.window.draw(bgSprite);
+    resources.window.clear();
+    resources.window.draw(bgSprite);
     for (auto& text: textList)
-        objects.window.draw(text);
-    objects.window.display();
+        resources.window.draw(text);
+    resources.window.display();
 }
 
 void AboutState::setup()
@@ -47,7 +47,7 @@ void AboutState::setup()
     int fontSize = config("fontSize").toInt();
     int padding = config("padding").toInt();
     ColorCode fontColor(config("fontColor"));
-    auto viewSize = objects.window.getView().getSize();
+    auto viewSize = resources.window.getView().getSize();
     auto& descriptionArray = config("description");
     float totalHeight = (descriptionArray.size() * (fontSize + padding)) - padding;
     float startTop = (viewSize.y - totalHeight) / 2.0f;

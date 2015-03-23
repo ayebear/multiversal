@@ -34,7 +34,7 @@ void PhysicsSystem::update(float dt)
     // Print tile locations for debugging
     for (auto& event: es::Events::get<MouseClickedEvent>())
     {
-        auto tileSize = tileMap.getTileSize();
+        const auto& tileSize = tileMap.getTileSize();
         sf::Vector2i location(event.mousePos.x / tileSize.x, event.mousePos.y / tileSize.y);
         int tileId1 = tileMapData.getId(0, location.x, location.y);
         int tileId2 = tileMapData.getId(1, location.x, location.y);
@@ -109,13 +109,13 @@ void PhysicsSystem::handleTileCollision(Components::AABB* entAABB, float& veloci
     // Get the area of tiles to check collision against
     sf::Vector2u start;
     sf::Vector2u end;
-    tileMap.getCollidingTiles(tempAABB, start, end);
+    getCollidingTiles(tempAABB, start, end);
 
     bool aboveWindow = entities.hasComponents<Components::AboveWindow>(entityId);
 
     // Check the collision
     bool onPlatform = false;
-    auto tileSize = tileMap.getTileSize();
+    const auto& tileSize = tileMap.getTileSize();
     for (unsigned y = start.y; y <= end.y; ++y)
     {
         for (unsigned x = start.x; x <= end.x; ++x)
@@ -246,7 +246,7 @@ void PhysicsSystem::checkTileCollisions()
         {
             sf::Vector2u start, end;
             auto globalBounds = aabb.getGlobalBounds(position);
-            tileMap.getCollidingTiles(globalBounds, start, end);
+            getCollidingTiles(globalBounds, start, end);
             bool inWindow = magicWindow.isWithin(globalBounds);
             for (unsigned y = start.y; y <= end.y; ++y)
             {
@@ -304,4 +304,28 @@ void PhysicsSystem::updateOnPlatformState(ocs::ID entityId, int state)
     auto objectState = entities.getComponent<Components::ObjectState>(entityId);
     if (objectState)
         objectState->state = state;
+}
+
+void PhysicsSystem::getCollidingTiles(const sf::FloatRect& entAABB, sf::Vector2u& start, sf::Vector2u& end)
+{
+    const auto& tileSize = tileMap.getTileSize();
+    const auto& mapSize = tileMap.getMapSize();
+
+    // Get the area to check collision against
+    auto startTemp = sf::Vector2i(entAABB.left / tileSize.x, entAABB.top / tileSize.y);
+    end = sf::Vector2u((entAABB.left + entAABB.width) / tileSize.x,
+                       (entAABB.top + entAABB.height) / tileSize.y);
+
+    // Make sure this is within bounds
+    // TODO: Use "enforce" functions
+    if (startTemp.y < 0)
+        startTemp.y = 0;
+    if (startTemp.x < 0)
+        startTemp.x = 0;
+    if (end.x > mapSize.x - 1)
+        end.x = mapSize.x - 1;
+    if (end.y > mapSize.y - 1)
+        end.y = mapSize.y - 1;
+
+    start = sf::Vector2u(startTemp.x, startTemp.y);
 }

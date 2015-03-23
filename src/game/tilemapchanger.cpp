@@ -16,8 +16,11 @@ bool TileMapChanger::changeState(int tileId, bool state)
     bool stateChanged = false;
     if (tileMapData(tileId).state != state)
     {
+        // Update the state, visual ID, and collision
         tileMapData(tileId).state = state;
-        updateTile(tileId);
+        tileMapData.updateVisualId(tileId);
+        tileMapData.updateCollision(tileId);
+        updateVisualTile(tileId);
         stateChanged = true;
     }
     return stateChanged;
@@ -28,12 +31,8 @@ void TileMapChanger::toggleState(int tileId)
     changeState(tileId, !tileMapData(tileId).state);
 }
 
-void TileMapChanger::updateTile(int tileId)
+void TileMapChanger::updateVisualTile(int tileId)
 {
-    // Update the state and visual ID
-    tileMapData.updateVisualId(tileId);
-    tileMapData.updateCollision(tileId);
-
     // Update the graphical tile map with the new visual ID
     tileMap.set(tileMapData.getLayer(tileId), tileMapData.getX(tileId),
         tileMapData.getY(tileId), tileMapData(tileId).visualId);

@@ -2,12 +2,12 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "menustate.h"
-#include "gameobjects.h"
+#include "gameresources.h"
 #include <iostream>
 
-MenuState::MenuState(GameObjects& objects):
-    objects(objects),
-    menu(objects.window, "data/config/menu.cfg")
+MenuState::MenuState(GameResources& resources):
+    resources(resources),
+    menu(resources.window, "data/config/menu.cfg")
 {
     menu.addItem("Play", std::bind(&MenuState::handlePlay, this));
     menu.addItem("Level Editor", std::bind(&MenuState::handleLevelEditor, this));
@@ -17,14 +17,14 @@ MenuState::MenuState(GameObjects& objects):
 
 void MenuState::onStart()
 {
-    objects.window.setView(objects.window.getDefaultView());
-    objects.music.play("menu");
+    resources.window.setView(resources.window.getDefaultView());
+    resources.music.play("menu");
 }
 
 void MenuState::handleEvents()
 {
     sf::Event event;
-    while (objects.window.pollEvent(event))
+    while (resources.window.pollEvent(event))
     {
         if (event.type == sf::Event::Closed)
             stateEvent.command = StateEvent::Exit;
@@ -36,14 +36,14 @@ void MenuState::handleEvents()
 void MenuState::update()
 {
     menu.update(dt);
-    objects.music.update();
+    resources.music.update();
 }
 
 void MenuState::draw()
 {
-    objects.window.clear();
-    objects.window.draw(menu);
-    objects.window.display();
+    resources.window.clear();
+    resources.window.draw(menu);
+    resources.window.display();
 }
 
 void MenuState::handlePlay()

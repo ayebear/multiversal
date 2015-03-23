@@ -36,6 +36,8 @@ class TileMapData
 
         // Important methods
         void resize(unsigned width, unsigned height, bool preserve = true);
+        unsigned width() const;
+        unsigned height() const;
         void useLayer(int layer);
         int getId(unsigned x, unsigned y) const;
         int getId(int layer, unsigned x, unsigned y) const;
@@ -92,10 +94,9 @@ class TileMapData
                 StateToVisualTrue
             };
 
-            TileInfo();
-            bool collision[4];
-            int stateToVisual[2];
-            bool stateToVisualUsed;
+            bool collision[4] {};
+            int stateToVisual[2] {};
+            bool stateToVisualUsed = false;
         };
 
         // Used to lookup information about a particular logical ID (tile type)

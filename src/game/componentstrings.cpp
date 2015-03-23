@@ -30,4 +30,5 @@ void bindComponentStrings(ocs::ObjectManager& entities)
     entities.bindStringToComponent<Components::Laser>("Laser");
     entities.bindStringToComponent<Components::TilePosition>("TilePosition");
     entities.bindStringToComponent<Components::Rotation>("Rotation");
+    entities.bindStringToComponent<Components::Switch>("Switch");
 }

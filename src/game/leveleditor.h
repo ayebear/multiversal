@@ -6,10 +6,12 @@
 
 #include "OCS/Objects.hpp"
 #include <SFML/Graphics.hpp>
+#include "actionhandler.h"
+#include "tilemap.h"
 
-class TileMapData;
-class TileMap;
-class TileMapChanger;
+class GameWorld;
+class Tile;
+class StateEvent;
 
 /*
 Handles the placing/editing/creating of tiles and objects in a level.
@@ -19,19 +21,48 @@ Also receives events for handling focus.
 class LevelEditor: public sf::Drawable
 {
     public:
-        LevelEditor(TileMapData& tileMapData, TileMap& tileMap, TileMapChanger& tileMapChanger, ocs::ObjectManager& entities);
+
+        LevelEditor(GameWorld& world, StateEvent& stateEvent);
         void handleEvent(const sf::Event& event);
         void update(float dt);
         void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
     private:
-        TileMapData& tileMapData;
-        TileMap& tileMap;
-        TileMapChanger& tileMapChanger;
-        ocs::ObjectManager& entities;
 
-        int currentTileType;
-        int currentLayer;
+        void loadConfig(const std::string& filename);
+        void save();
+        void load();
+        void test();
+        void undo();
+        void redo();
+        void clear();
+        void nextLevel();
+        void prevLevel();
+        void updateMousePos();
+        void paintTile(int visualId);
+        void updateBorder();
+        void updateCurrentTile();
+
+        GameWorld& world;
+        StateEvent& stateEvent;
+
+        // Settings
+        float panSpeed = 100;
+        float defaultZoom = 1;
+
+        // Other variables
+        ng::ActionHandler actions;
+        int currentLevel = 1;
+        int currentVisualId = 0;
+        int currentLayer = 0;
+        std::map<int, Tile> visualTiles; // Used to place tiles
+        sf::View view;
+        sf::Vector2f mousePos;
+        sf::RectangleShape border; // Border to show boundaries
+        sf::Vector2u tileSize;
+
+        // Current tile (hovers under mouse)
+        TileMap currentTile; // TODO: Use something less overkill
 };
 
 #endif

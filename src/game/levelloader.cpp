@@ -35,14 +35,30 @@ LevelLoader::Status LevelLoader::load(int levelId)
     if (levelId > TOTAL_LEVELS)
         return Status::Finished;
 
+    // Get data from test mode events
+    for (auto& event: es::Events::get<TestModeEvent>())
+    {
+        levelData = event.level;
+        std::cout << "\n\n*** IN TEST MODE ***\n\n\n";
+    }
+
     // Clear any leftover events from the previous level
     es::Events::clearAll();
 
-    // Build the level filename and load it
-    std::string filename(levelDir + std::to_string(levelId) + ".cfg");
-    if (level.load(filename))
+    if (levelData.empty())
     {
-        updateCurrentLevel(levelId);
+        // Build the level filename and load it
+        auto filename = getLevelFilename(levelId);
+        if (level.loadFromFile(filename))
+        {
+            updateCurrentLevel(levelId);
+            return Status::Success;
+        }
+    }
+    else
+    {
+        // Load the test level from memory
+        level.loadFromString(levelData);
         return Status::Success;
     }
 
@@ -78,6 +94,16 @@ bool LevelLoader::update()
     }
 
     return loadedLeved;
+}
+
+std::string LevelLoader::getLevelFilename(int levelId) const
+{
+    return (levelDir + std::to_string(levelId) + ".cfg");
+}
+
+void LevelLoader::clear()
+{
+    levelData.clear();
 }
 
 void LevelLoader::updateCurrentLevel(int levelId)

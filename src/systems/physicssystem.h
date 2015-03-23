@@ -34,6 +34,7 @@ class PhysicsSystem: public es::System
         int determineLayer(bool inAltWorld, bool aboveWindow, unsigned x, unsigned y) const;
         void updateTilePositionComponents();
         void updateOnPlatformState(ocs::ID entityId, int state);
+        void getCollidingTiles(const sf::FloatRect& entAABB, sf::Vector2u& start, sf::Vector2u& end);
 
         // These are used for gravity and falling
         static const sf::Vector2i maxVelocity;

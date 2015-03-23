@@ -2,18 +2,18 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "gamestate.h"
-#include "gameobjects.h"
+#include "gameresources.h"
 #include "events.h"
 #include "gameevents.h"
 #include "game.h"
 
-GameState::GameState(GameObjects& objects, Game& game):
-    objects(objects),
-    game(game)
+GameState::GameState(GameResources& resources):
+    resources(resources),
+    game(resources.window)
 {
     auto& actions = game.getWorld().actions;
     actions("Game", "restartLevel").setCallback([]{ es::Events::send(ReloadLevelEvent{}); });
-    actions("Game", "toggleMute").setCallback([&]{ objects.music.mute(); });
+    actions("Game", "toggleMute").setCallback([&]{ resources.music.mute(); });
     actions("Game", "popState").setCallback([&]{ stateEvent.command = StateEvent::Pop; });
 }
 
@@ -23,7 +23,7 @@ void GameState::onStart()
     game.initialize();
 
     // Start the game music
-    objects.music.play("game");
+    resources.music.play("game");
 }
 
 void GameState::handleEvents()
@@ -47,5 +47,5 @@ void GameState::update()
         es::Events::clear<GameFinishedEvent>();
     }
 
-    objects.music.update();
+    resources.music.update();
 }

@@ -3,7 +3,7 @@
 
 #include "actionhandler.h"
 
-namespace es
+namespace ng
 {
 
 ActionHandler::ActionHandler()

@@ -5,7 +5,7 @@
 #include "strlib.h"
 #include <iostream>
 
-namespace es
+namespace ng
 {
 
 bool Action::windowHasFocus = true;
@@ -189,7 +189,7 @@ void Action::parseString(const std::string& str)
         auto keyCombos = strlib::split(actionStr.back(), ",");
         for (auto& keyCombo: keyCombos)
         {
-            std::cout << "Key combo: " << keyCombo << "\n";
+            //std::cout << "Key combo: " << keyCombo << "\n";
             auto keyEvent = getKeyEvent(keyCombo);
             if (held || keyEvent.code != sf::Keyboard::Unknown)
                 keys.push_back(keyEvent);

@@ -7,7 +7,7 @@
 #include "events.h"
 #include "gameevents.h"
 
-MagicWindow::MagicWindow(es::ActionHandler& actions):
+MagicWindow::MagicWindow(ng::ActionHandler& actions):
     actions(actions),
     changed(false),
     visible(false),

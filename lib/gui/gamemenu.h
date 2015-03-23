@@ -8,7 +8,6 @@
 #include <functional>
 #include <string>
 #include <vector>
-#include "configfile.h"
 #include "colorcode.h"
 #include "spriteloader.h"
 #include "actionhandler.h"
@@ -54,8 +53,7 @@ class GameMenu: public sf::Drawable
         int getSelectedItem() const;
         void mapMousePos(const sf::Vector2i& pos);
         void selectMenuItem(int index);
-        void loadActions();
-        void loadSettings();
+        void loadSettings(const std::string& filename);
         sf::Color averageColors(const sf::Color& startColor, const sf::Color& endColor, float ratio) const;
         float interpolate(float start, float end, float ratio) const;
         void moveUp();
@@ -97,7 +95,6 @@ class GameMenu: public sf::Drawable
 
         // Main objects/variables
         sf::RenderWindow& window;
-        cfg::File config;
         int currentItem;
         std::vector<MenuItem> menuItems;
         sf::Vector2f mousePos;
@@ -106,7 +103,7 @@ class GameMenu: public sf::Drawable
         sf::Sprite backgroundSprite;
         sf::Sprite foregroundSprite;
         bool mouseMoved;
-        es::ActionHandler actions;
+        ng::ActionHandler actions;
 
         // Settings
         float transitionTime;

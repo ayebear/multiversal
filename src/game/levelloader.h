@@ -36,6 +36,12 @@ class LevelLoader
         // Returns true if a new level was loaded
         bool update();
 
+        // Returns the filename from a level ID
+        std::string getLevelFilename(int levelId) const;
+
+        // Erases the level string in memory (so it won't be in "test mode" anymore)
+        void clear();
+
     private:
 
         // Saves the configuration file storing the current level
@@ -48,6 +54,7 @@ class LevelLoader
         std::string levelDir;
         int currentLevel;
         cfg::File saveGameConfig;
+        std::string levelData;
 };
 
 #endif

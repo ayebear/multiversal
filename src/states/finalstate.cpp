@@ -2,18 +2,18 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "finalstate.h"
-#include "gameobjects.h"
+#include "gameresources.h"
 #include <iostream>
 
-FinalState::FinalState(GameObjects& objects):
-    objects(objects)
+FinalState::FinalState(GameResources& resources):
+    resources(resources)
 {
 }
 
 void FinalState::handleEvents()
 {
     sf::Event event;
-    while (objects.window.pollEvent(event))
+    while (resources.window.pollEvent(event))
     {
         if (event.type == sf::Event::Closed)
             stateEvent.command = StateEvent::Exit;

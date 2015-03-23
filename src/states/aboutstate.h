@@ -7,12 +7,12 @@
 #include "basestate.h"
 #include <SFML/Graphics.hpp>
 
-class GameObjects;
+class GameResources;
 
 class AboutState: public BaseState
 {
     public:
-        AboutState(GameObjects& objects);
+        AboutState(GameResources& resources);
 
         void handleEvents();
         void update();
@@ -21,7 +21,7 @@ class AboutState: public BaseState
     private:
         void setup();
 
-        GameObjects& objects;
+        GameResources& resources;
         std::vector<sf::Text> textList;
         sf::Sprite bgSprite;
         sf::Font font;

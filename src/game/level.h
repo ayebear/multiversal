@@ -58,17 +58,28 @@ class Level
         Level(TileMapData& tileMapData, TileMap& tileMap, TileMapChanger& tileMapChanger, ocs::ObjectManager& entities, MagicWindow& magicWindow);
 
         // Loads a level file
-        bool load(const std::string& filename);
+        bool loadFromFile(const std::string& filename);
+        void loadFromString(const std::string& data);
+
+        // Saves a level file
+        bool saveToFile(const std::string& filename) const;
+        void saveToString(std::string& data) const;
 
         // Returns an object ID from an object's name
         ocs::ID getObjectIdFromName(const std::string& name) const;
 
     private:
+        // Loading levels
+        void load(cfg::File& config);
         void loadLogicalLayer(cfg::File& config, int layer);
         void loadVisualLayer(cfg::File& config, int layer);
         void loadTileMap(cfg::File& config);
         void loadObjects(cfg::File& config);
-        void loadSwitches(cfg::File& config);
+
+        // Saving levels
+        void save(cfg::File& config) const;
+        void saveTileMap(cfg::File& config) const;
+        void saveObjects(cfg::File& config) const;
 
         static const cfg::File::ConfigMap defaultOptions;
 

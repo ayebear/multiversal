@@ -5,9 +5,9 @@
 #define GAMESTATE_H
 
 #include "basestate.h"
+#include "game.h"
 
-class GameObjects;
-class Game;
+class GameResources;
 
 /*
 The state for the playable game, which just holds an instance of the Game class.
@@ -15,7 +15,7 @@ The state for the playable game, which just holds an instance of the Game class.
 class GameState: public BaseState
 {
     public:
-        GameState(GameObjects& objects, Game& game);
+        GameState(GameResources& resources);
 
         void onStart();
         void handleEvents();
@@ -23,8 +23,8 @@ class GameState: public BaseState
         void draw() {} // Update() calls the render system to draw
 
     private:
-        GameObjects& objects;
-        Game& game;
+        GameResources& resources;
+        Game game;
 };
 
 #endif

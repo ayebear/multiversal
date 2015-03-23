@@ -21,9 +21,9 @@ Contains the class instances used by the game.
 */
 struct GameWorld
 {
-    GameWorld();
+    GameWorld(sf::RenderWindow& window);
 
-    es::ActionHandler actions;
+    ng::ActionHandler actions;
     TileMapData tileMapData;
     TileMap tileMap;
     TileMapChanger tileMapChanger;

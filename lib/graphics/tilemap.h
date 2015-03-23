@@ -11,7 +11,6 @@
 /*
 TODO:
     Change the order of stored vertices so they are contiguous (left to right)
-    Clean up and document the methods
 */
 
 /*
@@ -30,27 +29,57 @@ class TileMap: public sf::Drawable, public sf::Transformable
 {
     public:
         TileMap();
+
+        bool loadFromConfig(const std::string& filename);
+
+        // Loads a texture to use for the tile set
         bool loadTileset(const std::string& filename, unsigned tileWidth, unsigned tileHeight);
+
+        // Resizes all of the layers to the same size
         void resize(unsigned width, unsigned height);
-        void useLayer(int layer); // Sets the "current" layer
+
+        // Sets the "current" layer (so the layer doesn't have to always be specified)
+        void useLayer(int layer);
+
+        // Sets a tile to a certain "visual" ID
         void set(int layer, unsigned x, unsigned y, unsigned value);
         void set(unsigned x, unsigned y, unsigned value);
+
+        // Returns the visual ID of a tile
         unsigned operator()(int layer, unsigned x, unsigned y) const;
         unsigned operator()(unsigned x, unsigned y) const;
+
+        // The size of the tile map in pixels (3840x2160 for example)
         sf::Vector2u getPixelSize() const;
+
+        // The size of the tile map in tiles (32x24 for example)
         const sf::Vector2u& getMapSize() const;
+
+        // The size of a single tile in pixels (128x128 for example)
         const sf::Vector2u& getTileSize() const;
+
+        // Returns the bounding box rectangle of a tile
         sf::FloatRect getBoundingBox(unsigned x, unsigned y) const;
-        void getCollidingTiles(const sf::FloatRect& entAABB, sf::Vector2u& start, sf::Vector2u& end);
-        void drawLayer(sf::RenderTarget& target, int layer);
-        virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
         // Returns the graphical center position of a tile from coordinates
         template <typename T>
         sf::Vector2<T> getCenterPoint(unsigned x, unsigned y) const;
 
+        // Returns the graphical center position of a tile from a vector
         template <typename T1, typename T2>
         sf::Vector2<T1> getCenterPoint(const sf::Vector2<T2>& pos) const;
+
+        // Returns true if the coordinates are in bounds of the tile map
+        bool inBounds(int x, int y) const;
+
+        // Applies a color to all vertices
+        void setColor(const sf::Color& color);
+
+        // Draws a single layer of the tile map
+        void drawLayer(sf::RenderTarget& target, int layer);
+
+        // Draws all of the layers of the tile map in order
+        virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
     private:
         struct TileLayer
@@ -61,7 +90,7 @@ class TileMap: public sf::Drawable, public sf::Transformable
 
         void resize();
         void resize(TileLayer& layer);
-        bool inBounds(unsigned x, unsigned y) const;
+        void applyColor();
 
         unsigned totalTiles;
         sf::Vector2u mapSize; // In # of tiles
@@ -69,6 +98,7 @@ class TileMap: public sf::Drawable, public sf::Transformable
         sf::Texture texture; // The tile set
         std::map<int, TileLayer> tiles;
         TileLayer* currentLayer; // Points to the last layer used
+        sf::Color vertexColor; // Color applied to all vertices
 };
 
 template <typename T>

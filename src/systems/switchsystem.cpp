@@ -6,22 +6,27 @@
 #include "tilemapchanger.h"
 #include "logicaltiles.h"
 #include "events.h"
+#include "components.h"
 #include <iostream>
 
-SwitchSystem::SwitchSystem(TileMapData& tileMapData, TileMapChanger& tileMapChanger):
+SwitchSystem::SwitchSystem(TileMapData& tileMapData, TileMapChanger& tileMapChanger, ocs::ObjectManager& entities):
     tileMapData(tileMapData),
-    tileMapChanger(tileMapChanger)
+    tileMapChanger(tileMapChanger),
+    entities(entities)
 {
+}
+
+void SwitchSystem::initialize()
+{
+    // Populate switch objects map from Switch components
+    switchObjects.clear();
+    for (auto& switchComp: entities.getComponentArray<Components::Switch>())
+        switchObjects[switchComp.tileId] = switchComp.objectNames;
 }
 
 void SwitchSystem::update(float dt)
 {
     es::Events::clear<SwitchOutputEvent>();
-
-    // Get the initial switch maps
-    for (auto& event: es::Events::get<SwitchMapEvent>())
-        switchObjects.swap(event.switchObjects);
-    es::Events::clear<SwitchMapEvent>();
 
     // Update push-button switches
     for (int tileId: tileMapData[Tiles::PushButton])
@@ -57,11 +62,9 @@ void SwitchSystem::flipSwitch(int tileId, bool state)
     // then change everything connected to the switch
     if (tileMapChanger.changeState(tileId, state))
     {
-        // Create a switch output event
+        // Send a switch output event
         SwitchOutputEvent event;
         event.objectNames = switchObjects[tileId];
-
-        // Send the event
         es::Events::send(event);
 
         std::cout << "Flipped switch " << tileId << ".\n";

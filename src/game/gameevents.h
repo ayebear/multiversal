@@ -57,15 +57,6 @@ struct SwitchOutputEvent
     std::vector<std::string> objectNames;
 };
 
-using SwitchObjectMap = std::map<int, std::vector<std::string> >;
-
-// Used to update information of what switches are connected to
-struct SwitchMapEvent
-{
-    // Tile IDs of switches to lists of connected objects
-    SwitchObjectMap switchObjects;
-};
-
 struct MovingEvent
 {
     ocs::ID entityId;
@@ -94,6 +85,13 @@ struct SelectionFocusEvent
 struct ViewEvent
 {
     sf::View view;
+};
+
+// Sent from the level editor so the game will load this level in memory
+struct TestModeEvent
+{
+    // Contains an entire level as a string
+    std::string level;
 };
 
 #endif

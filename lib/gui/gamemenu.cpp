@@ -3,18 +3,17 @@
 
 #include "gamemenu.h"
 #include "vectors.h"
+#include "configfile.h"
 #include <iostream>
 
 GameMenu::GameMenu(sf::RenderWindow& window, const std::string& configFilename):
     window(window),
-    config(configFilename),
     currentItem(NO_SELECTION),
     mouseMoved(false)
 {
     view = window.getDefaultView();
     viewSize = view.getSize();
-    loadActions();
-    loadSettings();
+    loadSettings(configFilename);
 }
 
 void GameMenu::addItem(const std::string& name, CallbackType callback)
@@ -124,16 +123,16 @@ void GameMenu::selectMenuItem(int index)
         menuItems[index].callback();
 }
 
-void GameMenu::loadActions()
+void GameMenu::loadSettings(const std::string& filename)
 {
+    cfg::File config(filename);
+
+    // Load actions
     actions.loadSection(config.getSection("Controls"));
     actions["select"].setCallback([&](){selectMenuItem(currentItem);});
     actions["moveUp"].setCallback(std::bind(&GameMenu::moveUp, this));
     actions["moveDown"].setCallback(std::bind(&GameMenu::moveDown, this));
-}
 
-void GameMenu::loadSettings()
-{
     // Load general settings
     SpriteLoader::load(backgroundSprite, config("backgroundImage"), true);
     SpriteLoader::load(foregroundSprite, config("foregroundImage"), true);

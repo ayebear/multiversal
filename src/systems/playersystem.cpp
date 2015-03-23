@@ -7,7 +7,7 @@
 #include "level.h"
 #include <iostream>
 
-PlayerSystem::PlayerSystem(ocs::ObjectManager& entities, es::ActionHandler& actions, Level& level):
+PlayerSystem::PlayerSystem(ocs::ObjectManager& entities, ng::ActionHandler& actions, Level& level):
     entities(entities),
     actions(actions),
     level(level),

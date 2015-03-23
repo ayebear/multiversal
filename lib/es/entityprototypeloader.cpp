@@ -37,8 +37,7 @@ void EntityPrototypeLoader::extractParentInfo()
     {
         // Get inheritance information from section name
         std::string entityName;
-        std::vector<std::string> parentEntities;
-        splitNames(section.first, entityName, parentEntities);
+        auto parentEntities = splitNames(section.first, entityName);
 
         // Store parent list and copy original component data
         entToComp[entityName].parentNames.swap(parentEntities);
@@ -56,10 +55,9 @@ void EntityPrototypeLoader::loadAllEntities()
     }
 }
 
-void EntityPrototypeLoader::splitNames(const std::string& sectionName, std::string& entityName, std::vector<std::string>& parentEntities)
+std::vector<std::string> EntityPrototypeLoader::splitNames(const std::string& sectionName, std::string& entityName)
 {
-    std::vector<std::string> outerSplit;
-    strlib::split(sectionName, ":", outerSplit, false);
+    auto outerSplit = strlib::split(sectionName, ":");
 
     // Set the entity name (whether it has parents or not)
     if (!outerSplit.empty())
@@ -68,10 +66,12 @@ void EntityPrototypeLoader::splitNames(const std::string& sectionName, std::stri
     // Split and trim parent names (if there are any parents)
     if (outerSplit.size() == 2)
     {
-        strlib::split(outerSplit.back(), ",", parentEntities, false);
+        auto parentEntities = strlib::split(outerSplit.back(), ",");
         for (auto& parentName: parentEntities)
             strlib::trimWhitespace(parentName);
+        return parentEntities;
     }
+    return {};
 }
 
 void EntityPrototypeLoader::loadEntity(const std::string& entityName, const std::string& parentName)

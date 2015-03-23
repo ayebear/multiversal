@@ -22,7 +22,7 @@ class TileMapChanger
         void toggleState(int tileId);
 
         // Derives other tile layer information
-        void updateTile(int tileId);
+        void updateVisualTile(int tileId);
 
     private:
         TileMapData& tileMapData;

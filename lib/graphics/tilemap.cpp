@@ -2,11 +2,18 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "tilemap.h"
+#include "configfile.h"
 #include <iostream>
 
 TileMap::TileMap()
 {
     currentLayer = nullptr;
+}
+
+bool TileMap::loadFromConfig(const std::string& filename)
+{
+    cfg::File config(filename, cfg::File::Warnings | cfg::File::Errors);
+    return (config && loadTileset(config("texture"), config("tileWidth").toInt(), config("tileHeight").toInt()));
 }
 
 bool TileMap::loadTileset(const std::string& filename, unsigned tileWidth, unsigned tileHeight)
@@ -100,29 +107,15 @@ sf::FloatRect TileMap::getBoundingBox(unsigned x, unsigned y) const
     return sf::FloatRect(x * tileSize.x, y * tileSize.y, tileSize.x, tileSize.y);
 }
 
-void TileMap::getCollidingTiles(const sf::FloatRect& entAABB, sf::Vector2u& start, sf::Vector2u& end)
+bool TileMap::inBounds(int x, int y) const
 {
-    // Get the area to check collision against
-    auto startTemp = sf::Vector2i(entAABB.left / tileSize.x, entAABB.top / tileSize.y);
-    end = sf::Vector2u((entAABB.left + entAABB.width) / tileSize.x,
-                       (entAABB.top + entAABB.height) / tileSize.y);
+    return (x >= 0 && y >= 0 && x < static_cast<int>(mapSize.x) && y < static_cast<int>(mapSize.y));
+}
 
-    // Make sure this is within bounds
-    if (startTemp.y < 0)
-        startTemp.y = 0;
-    if (startTemp.x < 0)
-        startTemp.x = 0;
-    if (end.x > mapSize.x - 1)
-        end.x = mapSize.x - 1;
-    if (end.y > mapSize.y - 1)
-        end.y = mapSize.y - 1;
-
-    start = sf::Vector2u(startTemp.x, startTemp.y);
-
-    //std::cout << "start = (" << start.x << ", " << start.y << "); ";
-    //std::cout << "end = (" << end.x << ", " << end.y << ")\n";
-    //rect.setPosition(start.x * tileSize.x, start.y * tileSize.x);
-    //rect.setSize(sf::Vector2f((end.x - start.x + 1) * tileSize.x, (end.y - start.y + 1) * tileSize.y));
+void TileMap::setColor(const sf::Color& color)
+{
+    vertexColor = color;
+    applyColor();
 }
 
 void TileMap::drawLayer(sf::RenderTarget& target, int layer)
@@ -171,7 +164,11 @@ void TileMap::resize(TileLayer& layer)
     }
 }
 
-bool TileMap::inBounds(unsigned x, unsigned y) const
+void TileMap::applyColor()
 {
-    return (x >= 0 && y >= 0 && x < mapSize.x && y < mapSize.y);
+    for (auto& layer: tiles)
+    {
+        for (unsigned i = 0; i < layer.second.vertices.getVertexCount(); ++i)
+            layer.second.vertices[i].color = vertexColor;
+    }
 }

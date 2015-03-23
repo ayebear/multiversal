@@ -7,19 +7,19 @@
 #include "basestate.h"
 #include <SFML/Graphics.hpp>
 
-class GameObjects;
+class GameResources;
 
 class FinalState: public BaseState
 {
     public:
-        FinalState(GameObjects& objects);
+        FinalState(GameResources& resources);
 
         void handleEvents();
         void update();
         void draw();
 
     private:
-        GameObjects& objects;
+        GameResources& resources;
 };
 
 #endif

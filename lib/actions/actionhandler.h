@@ -9,7 +9,7 @@
 #include "action.h"
 #include "configfile.h"
 
-namespace es
+namespace ng
 {
 
 /*
@@ -17,7 +17,7 @@ This class handles SFML input and maps it to "actions" based on the input.
 An action can trigger a callback.
 
 Creating/updating actions is simple:
-es::ActionHandler actions;
+ng::ActionHandler actions;
 actions["action"] = "Input";
 
 Also supports loading actions from config files:

@@ -32,6 +32,16 @@ void TileMapData::resize(unsigned width, unsigned height, bool preserve)
         layer.resize(width, height, preserve);
 }
 
+unsigned TileMapData::width() const
+{
+    return tiles[0].width();
+}
+
+unsigned TileMapData::height() const
+{
+    return tiles[0].height();
+}
+
 void TileMapData::useLayer(int layer)
 {
     currentLayer = layer;
@@ -148,14 +158,4 @@ void TileMapData::loadTileInfo()
             }
         }
     }
-}
-
-TileMapData::TileInfo::TileInfo():
-    stateToVisualUsed(false)
-{
-    // Initialize arrays
-    for (bool& c: collision)
-        c = false;
-    for (int& v: stateToVisual)
-        v = 0;
 }

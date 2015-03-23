@@ -2,40 +2,53 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "leveleditorstate.h"
-#include "gameobjects.h"
-#include "game.h"
+#include "gameresources.h"
+#include "inputsystem.h"
+#include "events.h"
 
-LevelEditorState::LevelEditorState(GameObjects& objects, Game& game):
-    objects(objects),
-    game(game),
-    world(game.getWorld()),
-    editor(world.tileMapData, world.tileMap, world.tileMapChanger, world.entities)
+LevelEditorState::LevelEditorState(GameResources& resources):
+    resources(resources)
 {
+}
+
+void LevelEditorState::onStart()
+{
+    es::Events::clearAll();
+    if (!world)
+    {
+        std::cout << "\nLevel editor is loading...\n\n";
+        world = std::make_unique<GameWorld>(resources.window);
+        editor = std::make_unique<LevelEditor>(*world, stateEvent);
+        selection = std::make_unique<TileSelection>();
+        std::cout << "\nLevel editor is loaded.\n\n";
+    }
 }
 
 void LevelEditorState::handleEvents()
 {
-    sf::Event event;
-    while (objects.window.pollEvent(event))
+    world->systems.update<InputSystem>(dt);
+    for (auto& event: es::Events::get<sf::Event>())
     {
         if (event.type == sf::Event::Closed)
             stateEvent.command = StateEvent::Exit;
         else
         {
-            editor.handleEvent(event);
-            selection.handleEvent(event);
+            editor->handleEvent(event);
+            selection->handleEvent(event);
         }
     }
 }
 
 void LevelEditorState::update()
 {
-    editor.update(dt);
-    selection.update(dt);
+    editor->update(dt);
+    selection->update(dt);
 }
 
 void LevelEditorState::draw()
 {
-    objects.window.draw(editor);
-    objects.window.draw(selection);
+    resources.window.clear(sf::Color(128, 128, 128));
+    resources.window.draw(*editor);
+    resources.window.draw(*selection);
+    resources.window.display();
 }

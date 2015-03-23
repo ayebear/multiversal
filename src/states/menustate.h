@@ -7,12 +7,12 @@
 #include "basestate.h"
 #include "gamemenu.h"
 
-class GameObjects;
+class GameResources;
 
 class MenuState: public BaseState
 {
     public:
-        MenuState(GameObjects& objects);
+        MenuState(GameResources& resources);
 
         void onStart();
         void handleEvents();
@@ -25,7 +25,7 @@ class MenuState: public BaseState
         void handleAbout();
         void handleExit();
 
-        GameObjects& objects;
+        GameResources& resources;
         GameMenu menu;
 };
 

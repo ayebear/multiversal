@@ -7,11 +7,10 @@
 #include "basestate.h"
 #include "leveleditor.h"
 #include "tileselection.h"
-#include <SFML/Graphics.hpp>
+#include "gameworld.h"
+#include <memory>
 
-class GameObjects;
-class Game;
-class GameWorld;
+class GameResources;
 
 /*
 LevelEditor -> For placing tiles/objects in the level
@@ -19,7 +18,8 @@ LevelEditor -> For placing tiles/objects in the level
     View
 TileSelection -> For choosing tiles/objects
     TileMap
-    View
+    View (default)
+    View (for render texture)
     RenderTexture
 The selector sends events to the editor for the currently selected tile/object.
 SystemContainer& -> For the systems for the objects
@@ -27,18 +27,18 @@ SystemContainer& -> For the systems for the objects
 class LevelEditorState: public BaseState
 {
     public:
-        LevelEditorState(GameObjects& objects, Game& game);
+        LevelEditorState(GameResources& resources);
 
+        void onStart();
         void handleEvents();
         void update();
         void draw();
 
     private:
-        GameObjects& objects;
-        Game& game;
-        GameWorld& world;
-        LevelEditor editor;
-        TileSelection selection;
+        GameResources& resources;
+        std::unique_ptr<GameWorld> world;
+        std::unique_ptr<LevelEditor> editor;
+        std::unique_ptr<TileSelection> selection;
 };
 
 #endif

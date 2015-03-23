@@ -1,13 +1,13 @@
 // Copyright (C) 2014-2015 Eric Hebert (ayebear)
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
-#include "gameobjects.h"
+#include "gameresources.h"
 #include <iostream>
 
-const sf::Vector2u GameObjects::defaultResolution(1024, 768);
-const sf::Vector2u GameObjects::minResolution(640, 480);
+const sf::Vector2u GameResources::defaultResolution(1024, 768);
+const sf::Vector2u GameResources::minResolution(640, 480);
 
-const cfg::File::ConfigMap GameObjects::defaultOptions = {
+const cfg::File::ConfigMap GameResources::defaultOptions = {
     {"Window",{
         {"vsync", cfg::makeOption(true)},
         {"fullscreen", cfg::makeOption(false)},
@@ -18,7 +18,7 @@ const cfg::File::ConfigMap GameObjects::defaultOptions = {
     }
 };
 
-GameObjects::GameObjects(const std::string& windowTitle):
+GameResources::GameResources(const std::string& windowTitle):
     config("data/config/game.cfg", defaultOptions, cfg::File::Warnings | cfg::File::Errors),
     music("data/config/music.cfg")
     //sound("sounds.cfg")
@@ -34,12 +34,12 @@ GameObjects::GameObjects(const std::string& windowTitle):
     createWindow(windowTitle, windowWidth, windowHeight, fullscreen, vsync, autoResolution);
 }
 
-GameObjects::~GameObjects()
+GameResources::~GameResources()
 {
     window.close();
 }
 
-void GameObjects::createWindow(const std::string& windowTitle, unsigned windowWidth, unsigned windowHeight, bool fullscreen, bool vsync, bool autoResolution)
+void GameResources::createWindow(const std::string& windowTitle, unsigned windowWidth, unsigned windowHeight, bool fullscreen, bool vsync, bool autoResolution)
 {
     bool windowSizeValid = (windowWidth >= minResolution.x && windowHeight >= minResolution.y);
 

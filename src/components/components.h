@@ -19,27 +19,45 @@ namespace Components
 struct Position: public ocs::Component<Position>
 {
     float x, y;
+
     void deSerialize(const std::string& str)
     {
         serializer.deSerialize("% %", str, x, y);
+    }
+
+    std::string serialize()
+    {
+        return serializer.serialize("Position % %", x, y);
     }
 };
 
 struct Velocity: public ocs::Component<Velocity>
 {
     float x, y;
+
     void deSerialize(const std::string& str)
     {
         serializer.deSerialize("% %", str, x, y);
+    }
+
+    std::string serialize()
+    {
+        return serializer.serialize("Velocity % %", x, y);
     }
 };
 
 struct Size: public ocs::Component<Size>
 {
     unsigned x, y;
+
     void deSerialize(const std::string& str)
     {
         serializer.deSerialize("% %", str, x, y);
+    }
+
+    std::string serialize()
+    {
+        return serializer.serialize("Size % %", x, y);
     }
 };
 
@@ -52,9 +70,15 @@ struct AABB: public ocs::Component<AABB>
         // component does not change when the object moves around.
     std::vector<ocs::ID> collisions; // IDs of currently colliding objects
     std::vector<int> tileCollisions; // Tile IDs of currently colliding tiles (could be in alternate world)
+
     void deSerialize(const std::string& str)
     {
         serializer.deSerialize("% % % %", str, rect.left, rect.top, rect.width, rect.height);
+    }
+
+    std::string serialize()
+    {
+        return serializer.serialize("AABB % % % %", rect.left, rect.top, rect.width, rect.height);
     }
 
     // Returns a global AABB based on a position
@@ -77,22 +101,34 @@ struct AABB: public ocs::Component<AABB>
 struct Sprite: public ocs::Component<Sprite>
 {
     sf::Sprite sprite;
+    std::string filename;
+
     void deSerialize(const std::string& str)
     {
-        std::string filename;
-        serializer.deSerialize("%", str, filename);
+        filename = str;
         SpriteLoader::load(sprite, filename, true);
+    }
+
+    std::string serialize()
+    {
+        return "Sprite " + filename;
     }
 };
 
 struct AnimSprite: public ocs::Component<AnimSprite>
 {
     AnimatedSprite sprite;
+    std::string filename;
+
     void deSerialize(const std::string& str)
     {
-        std::string filename;
-        serializer.deSerialize("%", str, filename);
+        filename = str;
         sprite.loadFromConfig(filename);
+    }
+
+    std::string serialize()
+    {
+        return "AnimSprite " + filename;
     }
 };
 
@@ -102,21 +138,22 @@ Triggered by the "jump" action.
 */
 struct Jumpable: public ocs::Component<Jumpable>
 {
-    float jumpSpeed;
-
-    Jumpable(): jumpSpeed(0.0f) {}
+    float jumpSpeed{0.0f};
 
     void deSerialize(const std::string& str)
     {
         jumpSpeed = strlib::fromString<float>(str);
+    }
+
+    std::string serialize()
+    {
+        return "Jumpable " + strlib::toString(jumpSpeed);
     }
 };
 
 // Determines the state of a collidable object
 struct ObjectState: public ocs::Component<ObjectState>
 {
-    int state;
-
     enum State
     {
         OnPlatform = 0,
@@ -124,19 +161,27 @@ struct ObjectState: public ocs::Component<ObjectState>
         //Climbing // Will need this if ladders are made
     };
 
-    ObjectState(): state(OnPlatform) {}
+    int state{OnPlatform};
+
+    std::string serialize()
+    {
+        return "ObjectState";
+    }
 };
 
 // Allows an object to move left/right with input
 struct Movable: public ocs::Component<Movable>
 {
-    float velocity;
-
-    Movable(): velocity(0.0f) {}
+    float velocity{0.0f};
 
     void deSerialize(const std::string& str)
     {
         velocity = strlib::fromString<float>(str);
+    }
+
+    std::string serialize()
+    {
+        return "Movable " + strlib::toString(velocity);
     }
 };
 
@@ -144,19 +189,22 @@ struct Movable: public ocs::Component<Movable>
 struct Carrier: public ocs::Component<Carrier>
 {
     // ID of entity being carried
-    ocs::ID id;
+    ocs::ID id{0};
 
     // Where to position the object being carried
     sf::Vector2f offset;
 
     // If the carriable component is currently being carried
-    bool carrying;
-
-    Carrier(): id(0), carrying(false) {}
+    bool carrying{false};
 
     void deSerialize(const std::string& str)
     {
         serializer.deSerialize("% %", str, offset.x, offset.y);
+    }
+
+    std::string serialize()
+    {
+        return serializer.serialize("Carrier % %", offset.x, offset.y);
     }
 };
 
@@ -169,18 +217,26 @@ struct Gravity: public ocs::Component<Gravity>
     {
         serializer.deSerialize("% %", str, acceleration.x, acceleration.y);
     }
+
+    std::string serialize()
+    {
+        return serializer.serialize("Gravity % %", acceleration.x, acceleration.y);
+    }
 };
 
 // A simple boolean state component
 struct State: public ocs::Component<State>
 {
-    bool value;
-
-    State(): value(false), lastValue(false) {}
+    bool value{false};
 
     void deSerialize(const std::string& str)
     {
         value = strlib::strToBool(str);
+    }
+
+    std::string serialize()
+    {
+        return "State " + strlib::toString(value);
     }
 
     bool hasChanged()
@@ -194,16 +250,14 @@ struct State: public ocs::Component<State>
     }
 
     private:
-        bool lastValue;
+        bool lastValue{false};
 };
 
 // Holds a group of tile IDs (mainly used for state switching)
 struct TileGroup: public ocs::Component<TileGroup>
 {
-    bool initialState;
+    bool initialState{false};
     std::vector<int> tileIds;
-
-    TileGroup(): initialState(false) {}
 
     void deSerialize(const std::string& str)
     {
@@ -216,20 +270,32 @@ struct TileGroup: public ocs::Component<TileGroup>
             tileIds.erase(tileIds.begin());
         }
     }
+
+    std::string serialize()
+    {
+        std::ostringstream stream;
+        stream << "TileGroup " << initialState;
+        for (int id: tileIds)
+            stream << " " << id;
+        return stream.str();
+    }
 };
 
 // Holds a single tile ID, which gets converted to a position
 struct TilePosition: public ocs::Component<TilePosition>
 {
-    int id; // Unique tile ID
-    int layer; // Which world
+    int id{0}; // Unique tile ID
+    int layer{0}; // Which world
     sf::Vector2u pos; // Tile coordinates
-
-    TilePosition(): id(0), layer(0) {}
 
     void deSerialize(const std::string& str)
     {
-        id = fromString<int>(str);
+        id = strlib::fromString<int>(str);
+    }
+
+    std::string serialize()
+    {
+        return "TilePosition " + strlib::toString(id);
     }
 };
 
@@ -242,7 +308,38 @@ struct Rotation: public ocs::Component<Rotation>
 
     void deSerialize(const std::string& str)
     {
-        angle = fromString<float>(str);
+        angle = strlib::fromString<float>(str);
+    }
+
+    std::string serialize()
+    {
+        return "Rotation " + strlib::toString(angle);
+    }
+};
+
+// Holds a list of object names to be controlled by a switch
+struct Switch: public ocs::Component<Switch>
+{
+    int tileId{0};
+    std::vector<std::string> objectNames;
+
+    void deSerialize(const std::string& str)
+    {
+        objectNames = strlib::split(str, " ");
+        if (!objectNames.empty())
+        {
+            tileId = strlib::fromString<int>(objectNames.front());
+            objectNames.erase(objectNames.begin());
+        }
+    }
+
+    std::string serialize()
+    {
+        std::ostringstream stream;
+        stream << "Switch " << tileId;
+        for (const auto& name: objectNames)
+            stream << " " << name;
+        return stream.str();
     }
 };
 
@@ -250,23 +347,41 @@ struct Rotation: public ocs::Component<Rotation>
 
 // Flag for updating the camera
 // Note: Only works if the entity also has a position component
-struct CameraUpdater: public ocs::Component<CameraUpdater> {};
+struct CameraUpdater: public ocs::Component<CameraUpdater>
+{
+    std::string serialize() { return "CameraUpdater"; }
+};
 
 // Determines if the entity exists in the alternate world
-struct AltWorld: public ocs::Component<AltWorld> {};
+struct AltWorld: public ocs::Component<AltWorld>
+{
+    std::string serialize() { return "AltWorld"; }
+};
 
 // Determines if an entity should be drawn on top of everything
-struct DrawOnTop: public ocs::Component<DrawOnTop> {};
+struct DrawOnTop: public ocs::Component<DrawOnTop>
+{
+    std::string serialize() { return "DrawOnTop"; }
+};
 
 // Determines if an entity can be carried by another entity with a Carrier component
-struct Carryable: public ocs::Component<Carryable> {};
+struct Carryable: public ocs::Component<Carryable>
+{
+    std::string serialize() { return "Carryable"; }
+};
 
 // Determines if an entity should be shown in the window independent of which
 // world it is currently in. Example: The player entity has this component.
-struct AboveWindow: public ocs::Component<AboveWindow> {};
+struct AboveWindow: public ocs::Component<AboveWindow>
+{
+    std::string serialize() { return "AboveWindow"; }
+};
 
 // Determines if other entities can pass through this entity or not
-struct Rigid: public ocs::Component<Rigid> {};
+struct Rigid: public ocs::Component<Rigid>
+{
+    std::string serialize() { return "Rigid"; }
+};
 
 }
 

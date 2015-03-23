@@ -62,7 +62,7 @@ class SystemContainer
 
         // Returns a system pointer from the type (nullptr if it doesn't exist)
         template <typename T>
-        SystemPtr* getSystem();
+        System* getSystem();
 
         // Adds the type to the types table, and returns the index
         size_t getIndex(const std::type_index& type);
@@ -92,7 +92,7 @@ void SystemContainer::update(float dt)
 }
 
 template <typename T>
-SystemContainer::SystemPtr* SystemContainer::getSystem()
+System* SystemContainer::getSystem()
 {
     auto found = systemTypes.find(typeid(T));
     if (found != systemTypes.end())

@@ -58,7 +58,7 @@ class EntityPrototypeLoader
         void loadAllEntities();
 
         // Builds an inheritance list and extracts an entity name
-        void splitNames(const std::string& sectionName, std::string& entityName, std::vector<std::string>& parentEntities);
+        std::vector<std::string> splitNames(const std::string& sectionName, std::string& entityName);
 
         // Recursive function to load parent entity's components
         void loadEntity(const std::string& entityName, const std::string& parentName);

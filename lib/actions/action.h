@@ -11,7 +11,7 @@
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/Event.hpp>
 
-namespace es
+namespace ng
 {
 
 /*
