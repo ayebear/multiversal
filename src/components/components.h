@@ -7,8 +7,8 @@
 #include <vector>
 #include <SFML/Graphics.hpp>
 #include "OCS/Components.hpp"
-#include "animatedsprite.h"
-#include "spriteloader.h"
+#include "nage/graphics/animatedsprite.h"
+#include "nage/graphics/spriteloader.h"
 
 /*
 Contains commonly used components.

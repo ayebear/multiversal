@@ -4,7 +4,7 @@
 #ifndef LEVELEDITORSTATE_H
 #define LEVELEDITORSTATE_H
 
-#include "basestate.h"
+#include "nage/states/basestate.h"
 #include "leveleditor.h"
 #include "tileselection.h"
 #include "gameworld.h"

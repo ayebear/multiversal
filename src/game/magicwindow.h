@@ -6,7 +6,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <vector>
-#include "actionhandler.h"
+#include "nage/actions/actionhandler.h"
 
 /*
 TODO:

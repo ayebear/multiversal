@@ -6,8 +6,8 @@
 
 #include "OCS/Objects.hpp"
 #include <SFML/Graphics.hpp>
-#include "actionhandler.h"
-#include "tilemap.h"
+#include "nage/actions/actionhandler.h"
+#include "nage/graphics/tilemap.h"
 
 class GameWorld;
 class Tile;

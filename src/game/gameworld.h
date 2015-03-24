@@ -5,16 +5,16 @@
 #define GAMEWORLD_H
 
 #include "tilemapdata.h"
-#include "tilemap.h"
+#include "nage/graphics/tilemap.h"
 #include "tilemapchanger.h"
-#include "camera.h"
+#include "nage/graphics/camera.h"
 #include "level.h"
 #include "levelloader.h"
 #include "magicwindow.h"
 #include "OCS/Objects.hpp"
-#include "matrix.h"
+#include "nage/misc/matrix.h"
 #include "systemcontainer.h"
-#include "actionhandler.h"
+#include "nage/actions/actionhandler.h"
 
 /*
 Contains the class instances used by the game.

@@ -2,10 +2,10 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "camerasystem.h"
-#include "camera.h"
+#include "nage/graphics/camera.h"
 #include "events.h"
 #include "gameevents.h"
-#include "tilemap.h"
+#include "nage/graphics/tilemap.h"
 #include <iostream>
 
 CameraSystem::CameraSystem(Camera& camera, TileMap& tileMap):

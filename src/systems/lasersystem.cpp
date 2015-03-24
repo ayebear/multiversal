@@ -2,12 +2,12 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "lasersystem.h"
-#include "spriteloader.h"
+#include "nage/graphics/spriteloader.h"
 #include "tilemapdata.h"
-#include "tilemap.h"
+#include "nage/graphics/tilemap.h"
 #include "magicwindow.h"
 #include "logicaltiles.h"
-#include "vectors.h"
+#include "nage/graphics/vectors.h"
 #include "events.h"
 #include "gameevents.h"
 #include <cmath>

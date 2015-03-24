@@ -2,7 +2,7 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "tilemapchanger.h"
-#include "tilemap.h"
+#include "nage/graphics/tilemap.h"
 #include "tilemapdata.h"
 
 TileMapChanger::TileMapChanger(TileMapData& tileMapData, TileMap& tileMap):

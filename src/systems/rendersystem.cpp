@@ -2,10 +2,10 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "rendersystem.h"
-#include "tilemap.h"
-#include "camera.h"
+#include "nage/graphics/tilemap.h"
+#include "nage/graphics/camera.h"
 #include "magicwindow.h"
-#include "views.h"
+#include "nage/graphics/views.h"
 #include "lasercomponent.h"
 
 RenderSystem::RenderSystem(ocs::ObjectManager& entities, TileMap& tileMap, sf::RenderWindow& window, Camera& camera, MagicWindow& magicWindow):

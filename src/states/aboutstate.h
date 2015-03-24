@@ -4,7 +4,7 @@
 #ifndef ABOUTSTATE_H
 #define ABOUTSTATE_H
 
-#include "basestate.h"
+#include "nage/states/basestate.h"
 #include <SFML/Graphics.hpp>
 
 class GameResources;

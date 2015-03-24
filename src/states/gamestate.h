@@ -4,7 +4,7 @@
 #ifndef GAMESTATE_H
 #define GAMESTATE_H
 
-#include "basestate.h"
+#include "nage/states/basestate.h"
 #include "game.h"
 
 class GameResources;

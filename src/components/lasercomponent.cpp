@@ -2,7 +2,7 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "lasercomponent.h"
-#include "vectors.h"
+#include "nage/graphics/vectors.h"
 
 namespace Components
 {

@@ -3,7 +3,7 @@
 
 #include "physicssystem.h"
 #include "tilemapdata.h"
-#include "tilemap.h"
+#include "nage/graphics/tilemap.h"
 #include "magicwindow.h"
 #include "components.h"
 #include "events.h"

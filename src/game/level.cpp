@@ -6,7 +6,7 @@
 #include "events.h"
 #include "gameevents.h"
 #include "tilemapdata.h"
-#include "tilemap.h"
+#include "nage/graphics/tilemap.h"
 #include "tilemapchanger.h"
 #include "components.h"
 #include "logicaltiles.h"

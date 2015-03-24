@@ -3,9 +3,9 @@
 
 #include "aboutstate.h"
 #include "gameresources.h"
-#include "spriteloader.h"
-#include "colorcode.h"
-#include "vectors.h"
+#include "nage/graphics/spriteloader.h"
+#include "nage/graphics/colorcode.h"
+#include "nage/graphics/vectors.h"
 
 AboutState::AboutState(GameResources& resources):
     resources(resources)

@@ -2,7 +2,7 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "gameresources.h"
-#include "statestack.h"
+#include "nage/states/statestack.h"
 #include "menustate.h"
 #include "gamestate.h"
 #include "leveleditorstate.h"

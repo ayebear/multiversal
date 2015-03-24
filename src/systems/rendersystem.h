@@ -7,7 +7,7 @@
 #include <SFML/Graphics.hpp>
 #include "OCS/Objects.hpp"
 #include "components.h"
-#include "spriteloader.h"
+#include "nage/graphics/spriteloader.h"
 #include "system.h"
 
 class TileMap;

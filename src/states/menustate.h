@@ -4,8 +4,8 @@
 #ifndef MENUSTATE_H
 #define MENUSTATE_H
 
-#include "basestate.h"
-#include "gamemenu.h"
+#include "nage/states/basestate.h"
+#include "nage/gui/gamemenu.h"
 
 class GameResources;
 

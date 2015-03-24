@@ -3,7 +3,7 @@
 
 #include "magicwindow.h"
 #include <iostream>
-#include "views.h"
+#include "nage/graphics/views.h"
 #include "events.h"
 #include "gameevents.h"
 

@@ -6,8 +6,8 @@
 
 #include <SFML/Graphics.hpp>
 #include "configfile.h"
-#include "musicplayer.h"
-#include "soundplayer.h"
+#include "nage/audio/musicplayer.h"
+#include "nage/audio/soundplayer.h"
 
 /*
 This class contains the game specific resources:

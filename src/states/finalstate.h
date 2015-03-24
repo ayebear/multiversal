@@ -4,7 +4,7 @@
 #ifndef FINALSTATE_H
 #define FINALSTATE_H
 
-#include "basestate.h"
+#include "nage/states/basestate.h"
 #include <SFML/Graphics.hpp>
 
 class GameResources;

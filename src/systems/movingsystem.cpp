@@ -4,7 +4,7 @@
 #include "movingsystem.h"
 #include "events.h"
 #include "gameevents.h"
-#include "vectors.h"
+#include "nage/graphics/vectors.h"
 #include <iostream>
 
 MovingSystem::MovingSystem(ocs::ObjectManager& entities):

@@ -4,10 +4,10 @@
 #ifndef TILEMAPDATA_H
 #define TILEMAPDATA_H
 
-#include "matrix.h"
 #include <map>
 #include <set>
 #include <SFML/System/Vector2.hpp>
+#include "nage/misc/matrix.h"
 
 // Holds all of the information for a tile
 struct Tile

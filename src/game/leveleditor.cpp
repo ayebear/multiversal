@@ -6,8 +6,8 @@
 #include "gameevents.h"
 #include "gameworld.h"
 #include "configfile.h"
-#include "vectors.h"
-#include "stateevent.h"
+#include "nage/graphics/vectors.h"
+#include "nage/states/stateevent.h"
 
 #define BIND_ACTION(callback) actions[#callback].setCallback(std::bind(&LevelEditor::callback, this))
 
