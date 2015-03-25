@@ -7,15 +7,6 @@
 namespace Components
 {
 
-Moving::Moving():
-    isMoving(false),
-    loop(false),
-    currentPoint(0),
-    speed(0.0f),
-    distance(0.0f)
-{
-}
-
 void Moving::deSerialize(const std::string& str)
 {
     if (!str.empty())
@@ -27,13 +18,23 @@ void Moving::deSerialize(const std::string& str)
         auto pointStrings = strlib::split(pointStr, "|");
 
         // Parse the point values and store them in memory
-        for (auto& str: pointStrings)
+        for (const auto& str: pointStrings)
         {
             auto values = strlib::split<float>(str, ",");
             if (values.size() == 2)
                 points.emplace_back(values[0], values[1]);
         }
     }
+}
+
+std::string Moving::serialize()
+{
+    std::string pointStr;
+    for (const auto& point: points)
+        pointStr += serializer.serialize("%,%|", point.x, point.y);
+    if (!pointStr.empty())
+        pointStr.pop_back();
+    return serializer.serialize("Moving % % '%s'", loop, speed, pointStr);
 }
 
 }

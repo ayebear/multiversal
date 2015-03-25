@@ -24,14 +24,20 @@ Laser::Laser():
 void Laser::deSerialize(const std::string& str)
 {
     // Convert direction text to code
+    directionStr = str;
     unsigned directionCode = Up;
-    auto found = directionMap.find(str);
+    auto found = directionMap.find(directionStr);
     if (found != directionMap.end())
         directionCode = found->second;
 
     // Convert direction code to delta values
     direction.x = codeToDeltaX[directionCode];
     direction.y = codeToDeltaY[directionCode];
+}
+
+std::string Laser::serialize()
+{
+    return "Laser " + directionStr;
 }
 
 double Laser::getAngle(const sf::Vector2i& dir) const

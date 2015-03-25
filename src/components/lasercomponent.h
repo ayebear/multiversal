@@ -36,6 +36,7 @@ struct Laser: public ocs::Component<Laser>
     std::vector<Beam> beams;
     unsigned beamCount;
     sf::Vector2i direction;
+    std::string directionStr;
 
     Laser();
     void deSerialize(const std::string& str);
