@@ -31,10 +31,10 @@ std::string Moving::serialize()
 {
     std::string pointStr;
     for (const auto& point: points)
-        pointStr += serializer.serialize("%,%|", point.x, point.y);
+        pointStr += strlib::toString(point.x) + ',' + strlib::toString(point.y) + '|';
     if (!pointStr.empty())
         pointStr.pop_back();
-    return serializer.serialize("Moving % % '%s'", loop, speed, pointStr);
+    return serializer.serialize("Moving % % %s", loop, speed, pointStr);
 }
 
 }
