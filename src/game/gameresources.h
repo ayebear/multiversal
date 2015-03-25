@@ -27,8 +27,8 @@ class GameResources: sf::NonCopyable
         sf::Vector2u windowSize; // The current window size
         sf::RenderWindow window; // The main window
         cfg::File config; // The main configuration file
-        MusicPlayer music; // The music player
-        //SoundPlayer sound; // The sound effects player
+        ng::MusicPlayer music; // The music player
+        //ng::SoundPlayer sound; // The sound effects player
 
     private:
         void createWindow(const std::string& windowTitle, unsigned windowWidth, unsigned windowHeight, bool fullscreen, bool vsync, bool autoResolution);

@@ -8,7 +8,7 @@
 #include "nage/graphics/views.h"
 #include "lasercomponent.h"
 
-RenderSystem::RenderSystem(ocs::ObjectManager& entities, TileMap& tileMap, sf::RenderWindow& window, Camera& camera, MagicWindow& magicWindow):
+RenderSystem::RenderSystem(ocs::ObjectManager& entities, ng::TileMap& tileMap, sf::RenderWindow& window, ng::Camera& camera, MagicWindow& magicWindow):
     entities(entities),
     tileMap(tileMap),
     window(window),
@@ -32,7 +32,7 @@ void RenderSystem::update(float dt)
     // Draw the magic window
     texture = &magicWindow.getRenderTexture();
     texture->clear(sf::Color::Transparent);
-    auto windowViewPos = getViewPos(camera.getView("game"));
+    auto windowViewPos = ng::views::getViewPos(camera.getView("game"));
     magicWindow.setView(camera.accessView("background"), windowViewPos);
     texture->draw(sprites("background2"));
     magicWindow.setView(camera.accessView("game"), windowViewPos);

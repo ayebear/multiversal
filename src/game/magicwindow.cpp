@@ -138,8 +138,8 @@ void MagicWindow::setView(const sf::View& view, const sf::Vector2f& windowViewPo
     // Use the render texture position and size to calculate the new position
     // of the new view to use for the render texture.
 
-    auto viewRect = getViewRect(view);
-    auto textureViewRect = getViewRect(textureView);
+    auto viewRect = ng::views::getViewRect(view);
+    auto textureViewRect = ng::views::getViewRect(textureView);
     sf::Vector2f absolutePosition(position.x - windowViewPos.x, position.y - windowViewPos.y);
     textureViewRect.left = viewRect.left + absolutePosition.x;
     textureViewRect.top = viewRect.top + absolutePosition.y;

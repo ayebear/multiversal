@@ -11,6 +11,7 @@
 #include "components.h"
 #include "logicaltiles.h"
 #include "magicwindow.h"
+#include "OCS/Objects.hpp"
 
 const cfg::File::ConfigMap Level::defaultOptions = {
     {"", {
@@ -21,7 +22,7 @@ const cfg::File::ConfigMap Level::defaultOptions = {
     }
 };
 
-Level::Level(TileMapData& tileMapData, TileMap& tileMap, TileMapChanger& tileMapChanger, ocs::ObjectManager& entities, MagicWindow& magicWindow):
+Level::Level(TileMapData& tileMapData, ng::TileMap& tileMap, TileMapChanger& tileMapChanger, ocs::ObjectManager& entities, MagicWindow& magicWindow):
     tileMapData(tileMapData),
     tileMap(tileMap),
     tileMapChanger(tileMapChanger),

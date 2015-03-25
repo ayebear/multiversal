@@ -5,7 +5,7 @@
 #define TILEMAPCHANGER_H
 
 class TileMapData;
-class TileMap;
+namespace ng { class TileMap; }
 
 /*
 A simplified way to change the logical and visual tilemap simultaneously.
@@ -13,7 +13,7 @@ A simplified way to change the logical and visual tilemap simultaneously.
 class TileMapChanger
 {
     public:
-        TileMapChanger(TileMapData& tileMapData, TileMap& tileMap);
+        TileMapChanger(TileMapData& tileMapData, ng::TileMap& tileMap);
 
         // Returns true if the state of the tile changed from this call
         bool changeState(int tileId, bool state);
@@ -26,7 +26,7 @@ class TileMapChanger
 
     private:
         TileMapData& tileMapData;
-        TileMap& tileMap;
+        ng::TileMap& tileMap;
 };
 
 #endif

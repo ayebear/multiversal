@@ -9,8 +9,8 @@
 #include "OCS/Objects.hpp"
 #include "system.h"
 
+namespace ng { class TileMap; }
 class TileMapData;
-class TileMap;
 class MagicWindow;
 
 /*
@@ -20,7 +20,7 @@ It also detects and handles collision.
 class PhysicsSystem: public es::System
 {
     public:
-        PhysicsSystem(ocs::ObjectManager& entities, TileMapData& tileMapData, TileMap& tileMap, MagicWindow& magicWindow);
+        PhysicsSystem(ocs::ObjectManager& entities, TileMapData& tileMapData, ng::TileMap& tileMap, MagicWindow& magicWindow);
         void initialize();
         void update(float dt);
 
@@ -43,7 +43,7 @@ class PhysicsSystem: public es::System
         // References
         ocs::ObjectManager& entities;
         TileMapData& tileMapData;
-        TileMap& tileMap;
+        ng::TileMap& tileMap;
         MagicWindow& magicWindow;
 };
 

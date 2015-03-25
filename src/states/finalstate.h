@@ -9,7 +9,7 @@
 
 class GameResources;
 
-class FinalState: public BaseState
+class FinalState: public ng::BaseState
 {
     public:
         FinalState(GameResources& resources);

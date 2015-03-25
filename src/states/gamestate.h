@@ -12,7 +12,7 @@ class GameResources;
 /*
 The state for the playable game, which just holds an instance of the Game class.
 */
-class GameState: public BaseState
+class GameState: public ng::BaseState
 {
     public:
         GameState(GameResources& resources);

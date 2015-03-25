@@ -14,7 +14,7 @@ GameState::GameState(GameResources& resources):
     auto& actions = game.getWorld().actions;
     actions("Game", "restartLevel").setCallback([]{ es::Events::send(ReloadLevelEvent{}); });
     actions("Game", "toggleMute").setCallback([&]{ resources.music.mute(); });
-    actions("Game", "popState").setCallback([&]{ stateEvent.command = StateEvent::Pop; });
+    actions("Game", "popState").setCallback([&]{ stateEvent.command = ng::StateEvent::Pop; });
 }
 
 void GameState::onStart()
@@ -31,7 +31,7 @@ void GameState::handleEvents()
     for (auto& event: es::Events::get<sf::Event>())
     {
         if (event.type == sf::Event::Closed)
-            stateEvent.command = StateEvent::Exit;
+            stateEvent.command = ng::StateEvent::Exit;
     }
 }
 
@@ -42,7 +42,7 @@ void GameState::update()
     // Check if all levels have been completed
     if (es::Events::exists<GameFinishedEvent>())
     {
-        stateEvent.command = StateEvent::Change;
+        stateEvent.command = ng::StateEvent::Change;
         stateEvent.name = "Final";
         es::Events::clear<GameFinishedEvent>();
     }

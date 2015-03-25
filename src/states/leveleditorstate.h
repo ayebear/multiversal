@@ -24,7 +24,7 @@ TileSelection -> For choosing tiles/objects
 The selector sends events to the editor for the currently selected tile/object.
 SystemContainer& -> For the systems for the objects
 */
-class LevelEditorState: public BaseState
+class LevelEditorState: public ng::BaseState
 {
     public:
         LevelEditorState(GameResources& resources);

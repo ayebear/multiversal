@@ -30,7 +30,7 @@ void LevelEditorState::handleEvents()
     for (auto& event: es::Events::get<sf::Event>())
     {
         if (event.type == sf::Event::Closed)
-            stateEvent.command = StateEvent::Exit;
+            stateEvent.command = ng::StateEvent::Exit;
         else
         {
             editor->handleEvent(event);

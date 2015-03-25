@@ -7,8 +7,11 @@
 #include <SFML/Graphics.hpp>
 #include "system.h"
 
-class Camera;
-class TileMap;
+namespace ng
+{
+    class Camera;
+    class TileMap;
+}
 
 /*
 This class handles updating the camera (which contains all of the views).
@@ -16,13 +19,13 @@ This class handles updating the camera (which contains all of the views).
 class CameraSystem: public es::System
 {
     public:
-        CameraSystem(Camera& camera, TileMap& tileMap);
+        CameraSystem(ng::Camera& camera, ng::TileMap& tileMap);
         void initialize();
         void update(float dt);
 
     private:
-        Camera& camera;
-        TileMap& tileMap;
+        ng::Camera& camera;
+        ng::TileMap& tileMap;
 };
 
 #endif

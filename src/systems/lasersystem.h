@@ -10,8 +10,8 @@
 #include "components.h"
 #include "lasercomponent.h"
 
+namespace ng { class TileMap; }
 class TileMapData;
-class TileMap;
 class MagicWindow;
 
 /*
@@ -21,7 +21,7 @@ Also handles the collision and redirection of the beams.
 class LaserSystem: public es::System
 {
     public:
-        LaserSystem(ocs::ObjectManager& entities, TileMapData& tileMapData, TileMap& tileMap, MagicWindow& magicWindow);
+        LaserSystem(ocs::ObjectManager& entities, TileMapData& tileMapData, ng::TileMap& tileMap, MagicWindow& magicWindow);
         void initialize();
         void update(float dt);
 
@@ -52,7 +52,7 @@ class LaserSystem: public es::System
         // References
         ocs::ObjectManager& entities;
         TileMapData& tileMapData;
-        TileMap& tileMap;
+        ng::TileMap& tileMap;
         MagicWindow& magicWindow;
 
         // Game/level information

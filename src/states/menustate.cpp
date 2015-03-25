@@ -27,7 +27,7 @@ void MenuState::handleEvents()
     while (resources.window.pollEvent(event))
     {
         if (event.type == sf::Event::Closed)
-            stateEvent.command = StateEvent::Exit;
+            stateEvent.command = ng::StateEvent::Exit;
         else
             menu.handleEvent(event);
     }
@@ -50,22 +50,22 @@ void MenuState::handlePlay()
 {
     std::cout << "Play pressed\n";
     stateEvent.name = "Game";
-    stateEvent.command = StateEvent::Push;
+    stateEvent.command = ng::StateEvent::Push;
 }
 
 void MenuState::handleLevelEditor()
 {
     stateEvent.name = "LevelEditor";
-    stateEvent.command = StateEvent::Push;
+    stateEvent.command = ng::StateEvent::Push;
 }
 
 void MenuState::handleAbout()
 {
     stateEvent.name = "About";
-    stateEvent.command = StateEvent::Push;
+    stateEvent.command = ng::StateEvent::Push;
 }
 
 void MenuState::handleExit()
 {
-    stateEvent.command = StateEvent::Exit;
+    stateEvent.command = ng::StateEvent::Exit;
 }

@@ -5,6 +5,7 @@
 #include "level.h"
 #include "events.h"
 #include "gameevents.h"
+#include <iostream>
 
 const int LevelLoader::TOTAL_LEVELS = 1;
 

@@ -70,7 +70,7 @@ class TileMapData
         // Level specific ----------------------------------------------------
 
         // Tile map
-        Matrix<Tile> tiles[2];
+        ng::Matrix<Tile> tiles[2];
         int currentLayer;
 
         // Map of logical IDs to lists of tile IDs

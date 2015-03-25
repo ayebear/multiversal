@@ -10,8 +10,12 @@
 #include "nage/graphics/spriteloader.h"
 #include "system.h"
 
-class TileMap;
-class Camera;
+namespace ng
+{
+    class TileMap;
+    class Camera;
+}
+
 class MagicWindow;
 
 /*
@@ -21,7 +25,7 @@ It will render all of the drawable objects like the tile map, and drawable compo
 class RenderSystem: public es::System
 {
     public:
-        RenderSystem(ocs::ObjectManager& entities, TileMap& tileMap, sf::RenderWindow& window, Camera& camera, MagicWindow& magicWindow);
+        RenderSystem(ocs::ObjectManager& entities, ng::TileMap& tileMap, sf::RenderWindow& window, ng::Camera& camera, MagicWindow& magicWindow);
         void update(float dt);
 
     private:
@@ -36,13 +40,13 @@ class RenderSystem: public es::System
 
         // References to various things to draw
         ocs::ObjectManager& entities;
-        TileMap& tileMap;
+        ng::TileMap& tileMap;
         sf::RenderWindow& window;
-        Camera& camera;
+        ng::Camera& camera;
         MagicWindow& magicWindow;
         sf::RenderTexture* texture;
 
-        SpriteLoader sprites;
+        ng::SpriteLoader sprites;
 };
 
 // Draws either an animated sprite or regular sprite component

@@ -106,7 +106,7 @@ struct Sprite: public ocs::Component<Sprite>
     void deSerialize(const std::string& str)
     {
         filename = str;
-        SpriteLoader::load(sprite, filename, true);
+        ng::SpriteLoader::load(sprite, filename, true);
     }
 
     std::string serialize()
@@ -117,7 +117,7 @@ struct Sprite: public ocs::Component<Sprite>
 
 struct AnimSprite: public ocs::Component<AnimSprite>
 {
-    AnimatedSprite sprite;
+    ng::AnimatedSprite sprite;
     std::string filename;
 
     void deSerialize(const std::string& str)

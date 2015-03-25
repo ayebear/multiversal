@@ -14,14 +14,14 @@
 
 const char* LaserSystem::textureFilename = "data/images/beam.png";
 
-LaserSystem::LaserSystem(ocs::ObjectManager& entities, TileMapData& tileMapData, TileMap& tileMap, MagicWindow& magicWindow):
+LaserSystem::LaserSystem(ocs::ObjectManager& entities, TileMapData& tileMapData, ng::TileMap& tileMap, MagicWindow& magicWindow):
     entities(entities),
     tileMapData(tileMapData),
     tileMap(tileMap),
     magicWindow(magicWindow)
 {
-    SpriteLoader::preloadTexture(textureFilename);
-    auto& texture = SpriteLoader::getTexture(textureFilename);
+    ng::SpriteLoader::preloadTexture(textureFilename);
+    auto& texture = ng::SpriteLoader::getTexture(textureFilename);
     texture.setSmooth(true);
     beamWidth = texture.getSize().x;
 }
@@ -125,7 +125,7 @@ LaserSystem::PointInfo LaserSystem::findPoint()
 void LaserSystem::addBeams(Components::Laser& laser, Components::TilePosition& tilePos)
 {
     // Setup everything
-    currentPosition = vectors::cast<int>(tilePos.pos);
+    currentPosition = ng::vectors::cast<int>(tilePos.pos);
     currentDirection = laser.direction;
 
     // Current layer is the starting layer of the beam
@@ -151,19 +151,19 @@ void LaserSystem::addBeams(Components::Laser& laser, Components::TilePosition& t
             // Setup a new sprite with the beam texture
             laser.beams.emplace_back();
             beam = &laser.beams.back();
-            SpriteLoader::load(beam->sprite, textureFilename, true);
+            ng::SpriteLoader::load(beam->sprite, textureFilename, true);
         }
         ++(laser.beamCount);
 
         beam->sprite.setOrigin(beamWidth / 2, 0);
 
         // Calculate and set the beam length
-        float beamLength = vectors::distance(startPoint, endPoint.position);
+        float beamLength = ng::vectors::distance(startPoint, endPoint.position);
         beam->sprite.setScale(1, beamLength);
 
         // Set the beam's position and rotation
         beam->sprite.setPosition(startPoint);
-        beam->sprite.setRotation(vectors::rotateAngle(laser.getAngle(currentDirection), 180.0));
+        beam->sprite.setRotation(ng::vectors::rotateAngle(laser.getAngle(currentDirection), 180.0));
 
         // Set the beam's layer
         beam->layer = currentLayer;

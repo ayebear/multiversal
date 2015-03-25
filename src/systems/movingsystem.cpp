@@ -55,7 +55,7 @@ void MovingSystem::update(float dt)
                 sf::Vector2f currentPos(position->x, position->y);
 
                 // Check if the object has moved far enough for the next point
-                if (vectors::distance(moving.startPos, currentPos) >= moving.distance)
+                if (ng::vectors::distance(moving.startPos, currentPos) >= moving.distance)
                 {
                     // Lock in the position
                     auto& destination = moving.points[moving.currentPoint];
@@ -102,13 +102,13 @@ void MovingSystem::calculateVelocity(Components::Moving& moving, Components::Pos
     sf::Vector2f diff = end - start;
 
     // Normalize vector (make unit vector) by dividing length
-    vectors::normalize(diff);
+    ng::vectors::normalize(diff);
 
     // Multiply unit vector by speed to get velocity
     moving.velocity = diff * moving.speed;
 
     // Calculate the distance to the end point
-    moving.distance = vectors::distance(start, end);
+    moving.distance = ng::vectors::distance(start, end);
 
     // Save the starting position
     moving.startPos = sf::Vector2f(position.x, position.y);

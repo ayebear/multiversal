@@ -36,7 +36,7 @@ void Laser::deSerialize(const std::string& str)
 
 double Laser::getAngle(const sf::Vector2i& dir) const
 {
-    return vectors::rotateAngle(vectors::getAngle(dir), 90.0);
+    return ng::vectors::rotateAngle(ng::vectors::getAngle(dir), 90.0);
 }
 
 }

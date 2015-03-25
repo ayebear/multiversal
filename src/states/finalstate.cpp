@@ -16,7 +16,7 @@ void FinalState::handleEvents()
     while (resources.window.pollEvent(event))
     {
         if (event.type == sf::Event::Closed)
-            stateEvent.command = StateEvent::Exit;
+            stateEvent.command = ng::StateEvent::Exit;
     }
 }
 
@@ -27,7 +27,7 @@ void FinalState::update()
     std::cout << "=================================================\n\n";
 
     // Temporarily disable this state until it is fully implemented
-    stateEvent.command = StateEvent::Pop;
+    stateEvent.command = ng::StateEvent::Pop;
 }
 
 void FinalState::draw()

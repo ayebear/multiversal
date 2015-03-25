@@ -9,7 +9,7 @@
 
 class GameResources;
 
-class MenuState: public BaseState
+class MenuState: public ng::BaseState
 {
     public:
         MenuState(GameResources& resources);
@@ -26,7 +26,7 @@ class MenuState: public BaseState
         void handleExit();
 
         GameResources& resources;
-        GameMenu menu;
+        ng::GameMenu menu;
 };
 
 #endif

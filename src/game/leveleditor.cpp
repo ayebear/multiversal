@@ -11,7 +11,7 @@
 
 #define BIND_ACTION(callback) actions[#callback].setCallback(std::bind(&LevelEditor::callback, this))
 
-LevelEditor::LevelEditor(GameWorld& world, StateEvent& stateEvent):
+LevelEditor::LevelEditor(GameWorld& world, ng::StateEvent& stateEvent):
     world(world),
     stateEvent(stateEvent)
 {
@@ -109,7 +109,7 @@ void LevelEditor::loadConfig(const std::string& filename)
     // Load controls and setup actions
     actions.loadSection(config.getSection("Controls"), "");
     actions["toggleLayer"].setCallback([&]{ currentLayer = !currentLayer; });
-    actions["popState"].setCallback([&]{ stateEvent.command = StateEvent::Pop; });
+    actions["popState"].setCallback([&]{ stateEvent.command = ng::StateEvent::Pop; });
     BIND_ACTION(save);
     BIND_ACTION(load);
     BIND_ACTION(test);
@@ -157,7 +157,7 @@ void LevelEditor::load()
 void LevelEditor::test()
 {
     // Push GameState and send a test event
-    stateEvent.command = StateEvent::Push;
+    stateEvent.command = ng::StateEvent::Push;
     stateEvent.name = "Game";
     TestModeEvent event;
     world.level.saveToString(event.level);
@@ -220,7 +220,7 @@ void LevelEditor::paintTile(int visualId)
 
 void LevelEditor::updateBorder()
 {
-    border.setSize(vectors::cast<float>(world.tileMap.getPixelSize()));
+    border.setSize(ng::vectors::cast<float>(world.tileMap.getPixelSize()));
     border.setFillColor(sf::Color::Transparent);
     border.setOutlineColor(sf::Color::Green);
     border.setOutlineThickness(32);

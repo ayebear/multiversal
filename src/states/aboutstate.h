@@ -9,7 +9,7 @@
 
 class GameResources;
 
-class AboutState: public BaseState
+class AboutState: public ng::BaseState
 {
     public:
         AboutState(GameResources& resources);

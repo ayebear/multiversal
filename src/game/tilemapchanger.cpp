@@ -5,7 +5,7 @@
 #include "nage/graphics/tilemap.h"
 #include "tilemapdata.h"
 
-TileMapChanger::TileMapChanger(TileMapData& tileMapData, TileMap& tileMap):
+TileMapChanger::TileMapChanger(TileMapData& tileMapData, ng::TileMap& tileMap):
     tileMapData(tileMapData),
     tileMap(tileMap)
 {

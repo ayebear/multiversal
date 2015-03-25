@@ -7,10 +7,11 @@
 #include <string>
 #include <SFML/System/Vector2.hpp>
 #include "configfile.h"
-#include "OCS/Objects.hpp"
+#include "OCS/Misc/Config.hpp"
 
+namespace ocs { class ObjectManager; }
+namespace ng { class TileMap; }
 class TileMapData;
-class TileMap;
 class TileMapChanger;
 class MagicWindow;
 
@@ -55,7 +56,7 @@ The current level file format looks like this:
 class Level
 {
     public:
-        Level(TileMapData& tileMapData, TileMap& tileMap, TileMapChanger& tileMapChanger, ocs::ObjectManager& entities, MagicWindow& magicWindow);
+        Level(TileMapData& tileMapData, ng::TileMap& tileMap, TileMapChanger& tileMapChanger, ocs::ObjectManager& entities, MagicWindow& magicWindow);
 
         // Loads a level file
         bool loadFromFile(const std::string& filename);
@@ -84,7 +85,7 @@ class Level
         static const cfg::File::ConfigMap defaultOptions;
 
         TileMapData& tileMapData; // Logical tile map
-        TileMap& tileMap; // Visual tile map
+        ng::TileMap& tileMap; // Visual tile map
         TileMapChanger& tileMapChanger;
         ocs::ObjectManager& entities;
         MagicWindow& magicWindow;

@@ -39,6 +39,7 @@ struct Laser: public ocs::Component<Laser>
 
     Laser();
     void deSerialize(const std::string& str);
+    std::string serialize();
     double getAngle(const sf::Vector2i& dir) const;
 };
 

@@ -11,7 +11,7 @@
 
 class GameWorld;
 class Tile;
-class StateEvent;
+namespace ng { class StateEvent; }
 
 /*
 Handles the placing/editing/creating of tiles and objects in a level.
@@ -22,7 +22,7 @@ class LevelEditor: public sf::Drawable
 {
     public:
 
-        LevelEditor(GameWorld& world, StateEvent& stateEvent);
+        LevelEditor(GameWorld& world, ng::StateEvent& stateEvent);
         void handleEvent(const sf::Event& event);
         void update(float dt);
         void draw(sf::RenderTarget& target, sf::RenderStates states) const;
@@ -44,7 +44,7 @@ class LevelEditor: public sf::Drawable
         void updateCurrentTile();
 
         GameWorld& world;
-        StateEvent& stateEvent;
+        ng::StateEvent& stateEvent;
 
         // Settings
         float panSpeed = 100;
@@ -62,7 +62,7 @@ class LevelEditor: public sf::Drawable
         sf::Vector2u tileSize;
 
         // Current tile (hovers under mouse)
-        TileMap currentTile; // TODO: Use something less overkill
+        ng::TileMap currentTile; // TODO: Use something less overkill
 };
 
 #endif

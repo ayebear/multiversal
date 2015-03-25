@@ -25,9 +25,9 @@ struct GameWorld
 
     ng::ActionHandler actions;
     TileMapData tileMapData;
-    TileMap tileMap;
+    ng::TileMap tileMap;
     TileMapChanger tileMapChanger;
-    Camera camera;
+    ng::Camera camera;
     Level level;
     LevelLoader levelLoader;
     MagicWindow magicWindow;

@@ -12,7 +12,7 @@
 const sf::Vector2i PhysicsSystem::maxVelocity(1600, 3200);
 const sf::Vector2i PhysicsSystem::gravityConstant(640, 640);
 
-PhysicsSystem::PhysicsSystem(ocs::ObjectManager& entities, TileMapData& tileMapData, TileMap& tileMap, MagicWindow& magicWindow):
+PhysicsSystem::PhysicsSystem(ocs::ObjectManager& entities, TileMapData& tileMapData, ng::TileMap& tileMap, MagicWindow& magicWindow):
     entities(entities),
     tileMapData(tileMapData),
     tileMap(tileMap),
