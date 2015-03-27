@@ -29,7 +29,7 @@ class LevelEditor: public sf::Drawable
 
     private:
 
-        void loadConfig(const std::string& filename);
+        // Action callback methods
         void save();
         void load();
         void test();
@@ -38,10 +38,13 @@ class LevelEditor: public sf::Drawable
         void clear();
         void nextLevel();
         void prevLevel();
+
+        void loadConfig(const std::string& filename);
         void updateMousePos();
         void paintTile(int visualId);
         void updateBorder();
         void updateCurrentTile();
+        void resize(int deltaX, int deltaY);
 
         GameWorld& world;
         ng::StateEvent& stateEvent;

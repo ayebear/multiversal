@@ -95,7 +95,7 @@ void PlayerSystem::handleAction()
     auto aabb = entities.getComponent<Components::AABB>(playerId);
     if (position && aabb)
     {
-        std::cout << "Action key was pressed. Locations: ";
+        std::cout << "Action key pressed: (" << position->x << ", " << position->y << "), Locations: ";
         for (int location: aabb->tileCollisions)
             std::cout << location << ' ';
         std::cout << '\n';

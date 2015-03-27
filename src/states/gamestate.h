@@ -5,12 +5,13 @@
 #define GAMESTATE_H
 
 #include "nage/states/basestate.h"
-#include "game.h"
+#include "gameworld.h"
 
 class GameResources;
 
 /*
-The state for the playable game, which just holds an instance of the Game class.
+The state for the playable game.
+Contains the game world, objects, and systems.
 */
 class GameState: public ng::BaseState
 {
@@ -24,7 +25,7 @@ class GameState: public ng::BaseState
 
     private:
         GameResources& resources;
-        Game game;
+        GameWorld world;
 };
 
 #endif

@@ -37,3 +37,22 @@ void TileMapChanger::updateVisualTile(int tileId)
     tileMap.set(tileMapData.getLayer(tileId), tileMapData.getX(tileId),
         tileMapData.getY(tileId), tileMapData(tileId).visualId);
 }
+
+void TileMapChanger::resize(unsigned width, unsigned height)
+{
+    tileMap.resize(width, height);
+    tileMapData.resize(width, height);
+    tileMapData.deriveTiles();
+
+    // Update the visual tile map from the logical tile map
+    for (unsigned layer = 0; layer <= 1; ++layer)
+    {
+        tileMap.useLayer(layer);
+        tileMapData.useLayer(layer);
+        for (unsigned y = 0; y < height; ++y)
+        {
+            for (unsigned x = 0; x < width; ++x)
+                tileMap.set(x, y, tileMapData(x, y).visualId);
+        }
+    }
+}

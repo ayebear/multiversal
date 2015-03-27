@@ -9,23 +9,27 @@
 #include "nage/graphics/vectors.h"
 #include "nage/states/stateevent.h"
 
-#define BIND_ACTION(callback) actions[#callback].setCallback(std::bind(&LevelEditor::callback, this))
-
 LevelEditor::LevelEditor(GameWorld& world, ng::StateEvent& stateEvent):
     world(world),
     stateEvent(stateEvent)
 {
     view = world.camera.getView("window");
     loadConfig("data/config/level_editor.cfg");
-    updateBorder();
     tileSize = world.tileMap.getTileSize();
+    resize(32, 12);
+
+    // Setup border
+    border.setFillColor(sf::Color::Transparent);
+    border.setOutlineColor(sf::Color::Blue);
+    border.setOutlineThickness(24);
+    updateBorder();
 
     // Using a TileMap to display the current tile
     // TODO: Make something simpler to use tiles from tile sets
     currentTile.loadFromConfig("data/config/tilemap.cfg");
     currentTile.resize(1, 1);
     currentTile.useLayer(0);
-    currentTile.setColor(sf::Color(255, 255, 255, 192));
+    currentTile.setColor(sf::Color(255, 255, 255, 128));
     currentVisualId = 1;
     updateCurrentTile();
 }
@@ -92,58 +96,6 @@ void LevelEditor::draw(sf::RenderTarget& target, sf::RenderStates states) const
     target.draw(currentTile);
 }
 
-void LevelEditor::loadConfig(const std::string& filename)
-{
-    cfg::File config(filename);
-    if (!config)
-    {
-        std::cerr << "Error loading " << filename << ".\n";
-        return;
-    }
-
-    // Load general settings
-    panSpeed = config("panSpeed").toFloat();
-    defaultZoom = config("defaultZoom").toFloat();
-    view.zoom(defaultZoom);
-
-    // Load controls and setup actions
-    actions.loadSection(config.getSection("Controls"), "");
-    actions["toggleLayer"].setCallback([&]{ currentLayer = !currentLayer; });
-    actions["popState"].setCallback([&]{ stateEvent.command = ng::StateEvent::Pop; });
-    BIND_ACTION(save);
-    BIND_ACTION(load);
-    BIND_ACTION(test);
-    BIND_ACTION(undo);
-    BIND_ACTION(redo);
-    BIND_ACTION(clear);
-    BIND_ACTION(nextLevel);
-    BIND_ACTION(prevLevel);
-
-    // Load visual tile reverse lookup table
-    for (auto& option: config.getSection("VisualTiles"))
-    {
-        int visualId = strlib::fromString<int>(option.first);
-        auto values = strlib::split<int>(option.second, " ");
-
-        // Setup tile
-        auto& tile = visualTiles[visualId];
-        tile.logicalId = 0;
-        tile.visualId = visualId;
-        tile.collidable = false;
-        tile.blocksLaser = false;
-        tile.state = false;
-
-        // Extract information
-        if (!values.empty())
-        {
-            tile.logicalId = values.front();
-            if (values.size() >= 2)
-                tile.state = (values[1] != 0);
-            world.tileMapData.updateCollision(tile);
-        }
-    }
-}
-
 void LevelEditor::save()
 {
     world.level.saveToFile("data/levels/test.cfg");
@@ -152,6 +104,7 @@ void LevelEditor::save()
 void LevelEditor::load()
 {
     world.level.loadFromFile(world.levelLoader.getLevelFilename(currentLevel));
+    updateBorder();
 }
 
 void LevelEditor::test()
@@ -193,6 +146,62 @@ void LevelEditor::prevLevel()
     load();
 }
 
+void LevelEditor::loadConfig(const std::string& filename)
+{
+    cfg::File config(filename);
+    if (!config)
+    {
+        std::cerr << "Error loading " << filename << ".\n";
+        return;
+    }
+
+    // Load general settings
+    panSpeed = config("panSpeed").toFloat();
+    defaultZoom = config("defaultZoom").toFloat();
+    view.zoom(defaultZoom);
+
+    // Load controls and setup actions
+    actions.loadSection(config.getSection("Controls"), "");
+    actions["toggleLayer"].setCallback([&]{ currentLayer = !currentLayer; });
+    actions["popState"].setCallback([&]{ stateEvent.command = ng::StateEvent::Pop; });
+    actions["growX"].setCallback([&]{ resize(1, 0); });
+    actions["growY"].setCallback([&]{ resize(0, 1); });
+    actions["shrinkX"].setCallback([&]{ resize(-1, 0); });
+    actions["shrinkY"].setCallback([&]{ resize(0, -1); });
+    ng_bindAction(actions, save);
+    ng_bindAction(actions, load);
+    ng_bindAction(actions, test);
+    ng_bindAction(actions, undo);
+    ng_bindAction(actions, redo);
+    ng_bindAction(actions, clear);
+    ng_bindAction(actions, nextLevel);
+    ng_bindAction(actions, prevLevel);
+
+    // Load visual tile reverse lookup table
+    for (auto& option: config.getSection("VisualTiles"))
+    {
+        int visualId = strlib::fromString<int>(option.first);
+        auto values = strlib::split<int>(option.second, " ");
+
+        // Setup tile
+        auto& tile = visualTiles[visualId];
+        tile.logicalId = 0;
+        tile.visualId = visualId;
+        tile.collidable = false;
+        tile.blocksLaser = false;
+        tile.state = false;
+
+        // Extract information
+        if (!values.empty())
+        {
+            tile.logicalId = values.front();
+            if (values.size() >= 2)
+                tile.state = (values[1] != 0);
+            world.tileMapData.updateCollision(tile);
+        }
+    }
+}
+
 void LevelEditor::updateMousePos()
 {
     for (auto& event: es::Events::get<MousePosEvent>())
@@ -221,12 +230,16 @@ void LevelEditor::paintTile(int visualId)
 void LevelEditor::updateBorder()
 {
     border.setSize(ng::vectors::cast<float>(world.tileMap.getPixelSize()));
-    border.setFillColor(sf::Color::Transparent);
-    border.setOutlineColor(sf::Color::Green);
-    border.setOutlineThickness(32);
 }
 
 void LevelEditor::updateCurrentTile()
 {
     currentTile.set(0, 0, currentVisualId);
+}
+
+void LevelEditor::resize(int deltaX, int deltaY)
+{
+    auto mapSize = world.tileMap.getMapSize();
+    world.tileMapChanger.resize(mapSize.x + deltaX, mapSize.y + deltaY);
+    updateBorder();
 }

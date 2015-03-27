@@ -76,6 +76,7 @@ class Level
         void loadVisualLayer(cfg::File& config, int layer);
         void loadTileMap(cfg::File& config);
         void loadObjects(cfg::File& config);
+        void addPlayerObject();
 
         // Saving levels
         void save(cfg::File& config) const;

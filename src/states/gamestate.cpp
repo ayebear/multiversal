@@ -5,22 +5,23 @@
 #include "gameresources.h"
 #include "events.h"
 #include "gameevents.h"
-#include "game.h"
 
 GameState::GameState(GameResources& resources):
     resources(resources),
-    game(resources.window)
+    world(resources.window)
 {
-    auto& actions = game.getWorld().actions;
-    actions("Game", "restartLevel").setCallback([]{ es::Events::send(ReloadLevelEvent{}); });
-    actions("Game", "toggleMute").setCallback([&]{ resources.music.mute(); });
-    actions("Game", "popState").setCallback([&]{ stateEvent.command = ng::StateEvent::Pop; });
+    world.actions("Game", "restartLevel").setCallback([]{ es::Events::send(ReloadLevelEvent{}); });
+    world.actions("Game", "toggleMute").setCallback([&]{ resources.music.mute(); });
+    world.actions("Game", "popState").setCallback([&]{ stateEvent.command = ng::StateEvent::Pop; });
 }
 
 void GameState::onStart()
 {
-    // Load a new level (or resumes from last save)
-    game.initialize();
+    // Load a new level, resumes from last save, or loads a test level
+    if (!es::Events::exists<TestModeEvent>())
+        world.levelLoader.clear();
+    world.levelLoader.load();
+    world.systems.initializeAll();
 
     // Start the game music
     resources.music.play("game");
@@ -37,7 +38,24 @@ void GameState::handleEvents()
 
 void GameState::update()
 {
-    game.update(dt);
+    // Load the next level if needed
+    if (world.levelLoader.update())
+        world.systems.initializeAll();
+
+    // Update the game view
+    es::Events::send(ViewEvent{world.camera.getView("game")});
+
+    es::Events::clear<ActionKeyEvent>();
+
+    // Handle the events
+    for (auto& event: es::Events::get<sf::Event>())
+        world.actions.handleEvent(event);
+
+    // Update all of the systems
+    world.systems.updateAll(dt);
+
+    // Update the magic window
+    world.magicWindow.update();
 
     // Check if all levels have been completed
     if (es::Events::exists<GameFinishedEvent>())

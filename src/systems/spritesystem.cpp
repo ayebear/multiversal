@@ -16,13 +16,15 @@ void SpriteSystem::update(float dt)
     // Update sprites
     for (auto& sprite: entities.getComponentArray<Components::Sprite>())
     {
+        auto id = sprite.getOwnerID();
+
         // Update position
-        auto position = entities.getComponent<Components::Position>(sprite.getOwnerID());
+        auto position = entities.getComponent<Components::Position>(id);
         if (position)
             sprite.sprite.setPosition(position->x, position->y);
 
         // Update rotation
-        auto rotation = entities.getComponent<Components::Rotation>(sprite.getOwnerID());
+        auto rotation = entities.getComponent<Components::Rotation>(id);
         if (rotation)
             sprite.sprite.setRotation(rotation->angle);
     }
@@ -30,13 +32,15 @@ void SpriteSystem::update(float dt)
     // Update animated sprites
     for (auto& animSprite: entities.getComponentArray<Components::AnimSprite>())
     {
+        auto id = animSprite.getOwnerID();
+
         // Update position
-        auto position = entities.getComponent<Components::Position>(animSprite.getOwnerID());
+        auto position = entities.getComponent<Components::Position>(id);
         if (position)
             animSprite.sprite.setPosition(position->x, position->y);
 
         // Update rotation
-        auto rotation = entities.getComponent<Components::Rotation>(animSprite.getOwnerID());
+        auto rotation = entities.getComponent<Components::Rotation>(id);
         if (rotation)
             animSprite.sprite.setRotation(rotation->angle);
 

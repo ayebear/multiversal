@@ -12,11 +12,11 @@
 // Holds all of the information for a tile
 struct Tile
 {
-    int logicalId;
-    int visualId;
-    bool collidable;
-    bool blocksLaser;
-    bool state;
+    int logicalId{};
+    int visualId{};
+    bool collidable{};
+    bool blocksLaser{};
+    bool state{};
 };
 
 /*

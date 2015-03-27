@@ -20,6 +20,9 @@ struct Position: public ocs::Component<Position>
 {
     float x, y;
 
+    Position() {}
+    Position(float x, float y): x(x), y(y) {}
+
     void deSerialize(const std::string& str)
     {
         serializer.deSerialize("% %", str, x, y);

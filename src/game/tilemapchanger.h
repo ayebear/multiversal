@@ -24,6 +24,9 @@ class TileMapChanger
         // Derives other tile layer information
         void updateVisualTile(int tileId);
 
+        // Resizes both tile maps, and re-populates the visual tiles
+        void resize(unsigned width, unsigned height);
+
     private:
         TileMapData& tileMapData;
         ng::TileMap& tileMap;

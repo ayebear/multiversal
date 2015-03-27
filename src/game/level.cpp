@@ -176,14 +176,6 @@ void Level::loadTileMap(cfg::File& config)
     // Derive the remaining layer data (this basically initializes the layers)
     tileMapData.deriveTiles();
 
-    // Set any of the tiles' states to true if specified
-    config.useSection();
-    for (auto& option: config("trueStates"))
-    {
-        int tileId = option.toInt();
-        tileMapChanger.changeState(tileId, true);
-    }
-
     // Use the real world as the current layer
     tileMap.useLayer(0);
 }
@@ -191,6 +183,8 @@ void Level::loadTileMap(cfg::File& config)
 void Level::loadObjects(cfg::File& config)
 {
     entities.destroyAllObjects();
+    objectNamesToIds.clear();
+    bool playerCreated = false;
 
     // Create objects from level file
     for (auto& option: config.getSection("Objects"))
@@ -207,6 +201,8 @@ void Level::loadObjects(cfg::File& config)
 
         // Keep its unique name in a lookup table
         objectNamesToIds[names.front()] = id;
+        if (names.front() == "player")
+            playerCreated = true;
 
         // Update all specified components
         for (auto& componentStr: option.second)
@@ -232,6 +228,17 @@ void Level::loadObjects(cfg::File& config)
                 std::cerr << "ERROR: Cannot process '" << compStr << "'.\n";
         }
     }
+
+    if (!playerCreated)
+        addPlayerObject();
+}
+
+void Level::addPlayerObject()
+{
+    auto id = entities.createObject("Player");
+    objectNamesToIds["player"] = id;
+    const auto& tileSize = tileMap.getTileSize();
+    entities.addComponents(id, Components::Position(tileSize.x, tileSize.y));
 }
 
 void Level::saveTileMap(cfg::File& config) const
@@ -280,6 +287,7 @@ void Level::saveObjects(cfg::File& config) const
         // Serialize all of the components of this object
         auto& option = config(object.first);
         auto components = entities.serializeObject(object.second);
+        std::sort(components.begin(), components.end());
         for (const auto& str: components)
             option.push() = str;
     }
