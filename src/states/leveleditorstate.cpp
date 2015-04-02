@@ -19,7 +19,7 @@ void LevelEditorState::onStart()
         std::cout << "\nLevel editor is loading...\n\n";
         world = std::make_unique<GameWorld>(resources.window);
         editor = std::make_unique<LevelEditor>(*world, stateEvent);
-        selection = std::make_unique<TileSelection>();
+        selection = std::make_unique<SelectionGUI>(*world, resources.window);
         std::cout << "\nLevel editor is loaded.\n\n";
     }
 }
@@ -33,8 +33,8 @@ void LevelEditorState::handleEvents()
             stateEvent.command = ng::StateEvent::Exit;
         else
         {
-            editor->handleEvent(event);
-            selection->handleEvent(event);
+            if (!selection->handleEvent(event))
+                editor->handleEvent(event);
         }
     }
 }

@@ -2,6 +2,7 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "componentstrings.h"
+#include "OCS/Objects.hpp"
 #include "components.h"
 #include "movingcomponent.h"
 #include "lasercomponent.h"

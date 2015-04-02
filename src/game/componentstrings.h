@@ -4,7 +4,7 @@
 #ifndef COMPONENTSTRINGS_H
 #define COMPONENTSTRINGS_H
 
-#include "OCS/Objects.hpp"
+namespace ocs { class ObjectManager; }
 
 void bindComponentStrings(ocs::ObjectManager& entities);
 

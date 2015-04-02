@@ -43,11 +43,6 @@ The current level file format looks like this:
     ...
     }
 
-    [SwitchObjects]
-    123 = {
-        "nameOfObjectToSwitch"
-    }
-
     [Objects]
     name:Type = {
         "Component 321 100"
@@ -56,6 +51,8 @@ The current level file format looks like this:
 class Level
 {
     public:
+        using ObjectNameMap = std::map<std::string, ocs::ID>;
+
         Level(TileMapData& tileMapData, ng::TileMap& tileMap, TileMapChanger& tileMapChanger, ocs::ObjectManager& entities, MagicWindow& magicWindow);
 
         // Loads a level file
@@ -69,6 +66,9 @@ class Level
         // Returns an object ID from an object's name
         ocs::ID getObjectIdFromName(const std::string& name) const;
 
+        // Loads objects from a section in a config file
+        void loadObjects(cfg::File::Section& section, ocs::ObjectManager& entities, ObjectNameMap& objectNames) const;
+
     private:
         // Loading levels
         void load(cfg::File& config);
@@ -76,7 +76,6 @@ class Level
         void loadVisualLayer(cfg::File& config, int layer);
         void loadTileMap(cfg::File& config);
         void loadObjects(cfg::File& config);
-        void addPlayerObject();
 
         // Saving levels
         void save(cfg::File& config) const;
@@ -91,7 +90,7 @@ class Level
         ocs::ObjectManager& entities;
         MagicWindow& magicWindow;
 
-        std::map<std::string, ocs::ID> objectNamesToIds;
+        ObjectNameMap objectNamesToIds;
 };
 
 #endif

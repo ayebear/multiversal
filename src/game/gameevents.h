@@ -65,6 +65,7 @@ struct MovingEvent
 
 struct GameFinishedEvent {};
 
+// These events are used by the level editor
 struct TileSelectionEvent
 {
     int tileId;
@@ -73,12 +74,7 @@ struct TileSelectionEvent
 struct ObjectSelectionEvent
 {
     ocs::ID objectId;
-};
-
-// Used to switch focus on/off between level editor and selection screen
-struct SelectionFocusEvent
-{
-    bool focus;
+    // TODO: Determine if the object name will be easier to use
 };
 
 // Used for updating the input system's view

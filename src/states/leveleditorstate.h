@@ -6,7 +6,7 @@
 
 #include "nage/states/basestate.h"
 #include "leveleditor.h"
-#include "tileselection.h"
+#include "selectiongui.h"
 #include "gameworld.h"
 #include <memory>
 
@@ -16,7 +16,7 @@ class GameResources;
 LevelEditor -> For placing tiles/objects in the level
     TileMap
     View
-TileSelection -> For choosing tiles/objects
+SelectionGUI -> For choosing tiles/objects
     TileMap
     View (default)
     View (for render texture)
@@ -38,7 +38,7 @@ class LevelEditorState: public ng::BaseState
         GameResources& resources;
         std::unique_ptr<GameWorld> world;
         std::unique_ptr<LevelEditor> editor;
-        std::unique_ptr<TileSelection> selection;
+        std::unique_ptr<SelectionGUI> selection;
 };
 
 #endif

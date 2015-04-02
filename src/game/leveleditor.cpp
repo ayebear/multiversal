@@ -37,23 +37,19 @@ LevelEditor::LevelEditor(GameWorld& world, ng::StateEvent& stateEvent):
 void LevelEditor::handleEvent(const sf::Event& event)
 {
     actions.handleEvent(event);
-
-    // Handle switching tiles with the mouse wheel
-    if (event.type == sf::Event::MouseWheelMoved)
-    {
-        currentVisualId += event.mouseWheel.delta;
-        if (currentVisualId < 0)
-            currentVisualId = 0;
-        int visualTileCount = visualTiles.size();
-        if (currentVisualId >= visualTileCount)
-            currentVisualId = visualTileCount - 1;
-        updateCurrentTile();
-    }
 }
 
 void LevelEditor::update(float dt)
 {
     updateMousePos();
+
+    // Handle switching current tile (from selection GUI)
+    for (auto& event: es::Events::get<TileSelectionEvent>())
+    {
+        currentVisualId = event.tileId;
+        updateCurrentTile();
+    }
+    es::Events::clear<TileSelectionEvent>();
 
     // Handle painting tiles
     if (ng::Action::windowHasFocus)
@@ -156,8 +152,8 @@ void LevelEditor::loadConfig(const std::string& filename)
     }
 
     // Load general settings
-    panSpeed = config("panSpeed").toFloat();
-    defaultZoom = config("defaultZoom").toFloat();
+    panSpeed = 2400;
+    defaultZoom = 4;
     view.zoom(defaultZoom);
 
     // Load controls and setup actions
@@ -200,6 +196,9 @@ void LevelEditor::loadConfig(const std::string& filename)
             world.tileMapData.updateCollision(tile);
         }
     }
+
+    // Load the object palette
+    world.level.loadObjects(config.getSection("Objects"), entities, objectNames);
 }
 
 void LevelEditor::updateMousePos()

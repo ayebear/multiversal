@@ -20,7 +20,7 @@ LevelLoader::LevelLoader(Level& level, const std::string& levelDir):
     level(level),
     levelDir(levelDir),
     currentLevel(1),
-    saveGameConfig("user/savegame.cfg", defaultSaveGameOptions, cfg::File::Autosave)
+    saveGameConfig("user/savegame.cfg", defaultSaveGameOptions)
 {
     if (saveGameConfig)
         currentLevel = saveGameConfig("currentLevel").toInt();
@@ -40,11 +40,13 @@ LevelLoader::Status LevelLoader::load(int levelId)
     for (auto& event: es::Events::get<TestModeEvent>())
     {
         levelData = event.level;
-        std::cout << "\n\n*** IN TEST MODE ***\n\n\n";
+        std::cout << "\n*** IN TEST MODE ***\n\n";
     }
 
     // Clear any leftover events from the previous level
     es::Events::clearAll();
+
+    auto status = Status::Error;
 
     if (levelData.empty())
     {
@@ -53,17 +55,17 @@ LevelLoader::Status LevelLoader::load(int levelId)
         if (level.loadFromFile(filename))
         {
             updateCurrentLevel(levelId);
-            return Status::Success;
+            status = Status::Success;
         }
     }
     else
     {
         // Load the test level from memory
         level.loadFromString(levelData);
-        return Status::Success;
+        status = Status::Success;
     }
 
-    return Status::Error;
+    return status;
 }
 
 LevelLoader::Status LevelLoader::loadNext()

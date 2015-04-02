@@ -103,6 +103,64 @@ ocs::ID Level::getObjectIdFromName(const std::string& name) const
     return id;
 }
 
+void Level::loadObjects(cfg::File::Section& section, ocs::ObjectManager& entities, ObjectNameMap& objectNames) const
+{
+    entities.destroyAllObjects();
+    objectNames.clear();
+    bool playerCreated = false;
+
+    // Create objects from level file
+    for (auto& option: section)
+    {
+        // Extract object name and type
+        auto names = strlib::split(option.first, ":");
+
+        // Create an object (with the type if specified)
+        ocs::ID id;
+        if (names.size() == 2)
+            id = entities.createObject(names.back());
+        else
+            id = entities.createObject();
+
+        // Keep its unique name in a lookup table
+        objectNames[names.front()] = id;
+        if (names.front() == "player")
+            playerCreated = true;
+
+        // Update all specified components
+        for (auto& componentStr: option.second)
+        {
+            const auto& compStr = componentStr.toString();
+            if (compStr.empty())
+                continue;
+            auto separator = compStr.find(' ');
+            if (separator != std::string::npos && separator > 0 && separator + 1 < compStr.size())
+            {
+                // Extract the component's name and data
+                auto componentName = compStr.substr(0, separator);
+                auto componentData = compStr.substr(separator + 1);
+                std::cout << "Component: '" << componentName << "', Data: '" << componentData << "'\n";
+                entities.updateComponentFromString(id, componentName, componentData);
+            }
+            else if (separator == std::string::npos)
+            {
+                std::cout << "Component: '" << compStr << "'\n";
+                entities.updateComponentFromString(id, compStr, "");
+            }
+            else
+                std::cerr << "ERROR: Cannot process '" << compStr << "'.\n";
+        }
+    }
+
+    if (!playerCreated)
+    {
+        auto id = entities.createObject("Player");
+        objectNames["player"] = id;
+        const auto& tileSize = tileMap.getTileSize();
+        entities.addComponents(id, Components::Position(tileSize.x, tileSize.y));
+    }
+}
+
 void Level::loadLogicalLayer(cfg::File& config, int layer)
 {
     int y = 0;
@@ -182,63 +240,7 @@ void Level::loadTileMap(cfg::File& config)
 
 void Level::loadObjects(cfg::File& config)
 {
-    entities.destroyAllObjects();
-    objectNamesToIds.clear();
-    bool playerCreated = false;
-
-    // Create objects from level file
-    for (auto& option: config.getSection("Objects"))
-    {
-        // Extract object name and type
-        auto names = strlib::split(option.first, ":");
-
-        // Create an object (with the type if specified)
-        ocs::ID id;
-        if (names.size() == 2)
-            id = entities.createObject(names.back());
-        else
-            id = entities.createObject();
-
-        // Keep its unique name in a lookup table
-        objectNamesToIds[names.front()] = id;
-        if (names.front() == "player")
-            playerCreated = true;
-
-        // Update all specified components
-        for (auto& componentStr: option.second)
-        {
-            const auto& compStr = componentStr.toString();
-            if (compStr.empty())
-                continue;
-            auto separator = compStr.find(' ');
-            if (separator != std::string::npos && separator > 0 && separator + 1 < compStr.size())
-            {
-                // Extract the component's name and data
-                auto componentName = compStr.substr(0, separator);
-                auto componentData = compStr.substr(separator + 1);
-                std::cout << "Component: '" << componentName << "', Data: '" << componentData << "'\n";
-                entities.updateComponentFromString(id, componentName, componentData);
-            }
-            else if (separator == std::string::npos)
-            {
-                std::cout << "Component: '" << compStr << "'\n";
-                entities.updateComponentFromString(id, compStr, "");
-            }
-            else
-                std::cerr << "ERROR: Cannot process '" << compStr << "'.\n";
-        }
-    }
-
-    if (!playerCreated)
-        addPlayerObject();
-}
-
-void Level::addPlayerObject()
-{
-    auto id = entities.createObject("Player");
-    objectNamesToIds["player"] = id;
-    const auto& tileSize = tileMap.getTileSize();
-    entities.addComponents(id, Components::Position(tileSize.x, tileSize.y));
+    loadObjects(config.getSection("Objects"), entities, objectNamesToIds);
 }
 
 void Level::saveTileMap(cfg::File& config) const

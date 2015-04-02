@@ -8,6 +8,7 @@
 #include <SFML/Graphics.hpp>
 #include "nage/actions/actionhandler.h"
 #include "nage/graphics/tilemap.h"
+#include "level.h"
 
 class GameWorld;
 class Tile;
@@ -65,7 +66,11 @@ class LevelEditor: public sf::Drawable
         sf::Vector2u tileSize;
 
         // Current tile (hovers under mouse)
-        ng::TileMap currentTile; // TODO: Use something less overkill
+        ng::TileMap currentTile;
+
+        // Object palette and placing
+        ocs::ObjectManager entities;
+        Level::ObjectNameMap objectNames;
 };
 
 #endif

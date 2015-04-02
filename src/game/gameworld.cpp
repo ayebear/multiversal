@@ -68,5 +68,5 @@ GameWorld::GameWorld(sf::RenderWindow& window):
     camera.setView("game2", magicWindowView);
     camera.setView("background2", magicWindowView, 0.5f);
 
-    std::cout << "GameWorld is now loaded.\n";
+    std::cout << "GameWorld is now initialized.\n";
 }

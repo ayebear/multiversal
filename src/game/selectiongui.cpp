@@ -1,0 +1,211 @@
+// Copyright (C) 2014-2015 Eric Hebert (ayebear)
+// This code is licensed under GPLv3, see LICENSE.txt for details.
+
+#include "selectiongui.h"
+#include "gameworld.h"
+#include "nage/graphics/vectors.h"
+#include "events.h"
+#include "gameevents.h"
+
+SelectionGUI::SelectionGUI(GameWorld& world, sf::RenderWindow& window):
+    world(world),
+    window(window)
+{
+    // Calculate views and sizes
+    view = world.camera.getView("window");
+    tileSize = world.tileMap.getTileSize();
+    borderSize = sf::Vector2f(WIDTH_PIXELS + (PADDING * 2),
+                              view.getSize().y - (PADDING * 2));
+    float textureHeight = borderSize.y - BUTTON_HEIGHT - (PADDING * 4);
+    float viewWidth = tileSize.x * TILE_COLUMNS;
+    float viewHeight = (textureHeight / WIDTH_PIXELS) * viewWidth;
+
+    // Load tiles and objects
+    setupTiles();
+    setupObjects();
+
+    // Setup render texture
+    textureView.reset(sf::FloatRect(0, 0, viewWidth, viewHeight));
+    texture.create(WIDTH_PIXELS, textureHeight);
+    texturePos = sf::Vector2f(PADDING * 2, BUTTON_HEIGHT + (PADDING * 4));
+    sprite.setPosition(texturePos);
+    sprite.setTexture(texture.getTexture());
+
+    // Setup selection box
+    currentSelection.setSize(ng::vectors::cast<float>(tileSize));
+    currentSelection.setFillColor(sf::Color::Transparent);
+    currentSelection.setOutlineColor(sf::Color::Red);
+    currentSelection.setOutlineThickness(-16);
+
+    // Setup hover selection box
+    hoverSelection = currentSelection;
+    hoverSelection.setOutlineColor(sf::Color(255, 0, 0, 128));
+
+    // Setup border
+    border.setPosition(PADDING, PADDING);
+    border.setSize(borderSize);
+    border.setFillColor(sf::Color(64, 64, 64, 192));
+    border.setOutlineColor(sf::Color(0, 0, 255, 192));
+    border.setOutlineThickness(PADDING);
+
+    // Setup tabs
+    font.loadFromFile("data/fonts/Ubuntu-B.ttf");
+    const sf::Vector2u tabSize(BUTTON_WIDTH, BUTTON_HEIGHT);
+    auto& tilesTab = tabs["tiles"];
+    auto& objectsTab = tabs["objects"];
+    tilesTab.setup(font, sf::Vector2f(PADDING * 2, PADDING * 2), tabSize, "Tiles");
+    tilesTab.setFontSize(24);
+    tilesTab.setPressedCallback([&](ng::Button& b){ handleTilesTab(); });
+    objectsTab.setup(font, sf::Vector2f(BUTTON_WIDTH + PADDING * 4, PADDING * 2), tabSize, "Objects");
+    objectsTab.setFontSize(24);
+    objectsTab.setPressedCallback([&](ng::Button& b){ handleObjectsTab(); });
+}
+
+bool SelectionGUI::handleEvent(const sf::Event& event)
+{
+    bool eventHandled = false;
+
+    // Handle switching tabs
+    tabs.handleMouseEvent(event, guiMousePos);
+
+    // Handle selecting tiles/objects
+    // TODO: Simplify this
+    bool clicked = (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left);
+    bool mouseMoved = (event.type == sf::Event::MouseMoved);
+    if (clicked || mouseMoved)
+    {
+        sf::Vector2i eventMousePos;
+        if (clicked)
+            eventMousePos = sf::Vector2i(event.mouseButton.x, event.mouseButton.y);
+        else
+            eventMousePos = sf::Vector2i(event.mouseMove.x, event.mouseMove.y);
+        handleMouseEvent(eventMousePos, clicked);
+    }
+
+    return eventHandled;
+}
+
+void SelectionGUI::update(float dt)
+{
+    //bool eventHandled = false;
+
+    // Update mouse position
+    rawMousePos = sf::Mouse::getPosition(window);
+    guiMousePos = window.mapPixelToCoords(rawMousePos, view);
+    textureMousePos = window.mapPixelToCoords(rawMousePos, textureView);
+
+    // Draw to render texture
+    texture.setView(textureView);
+    texture.clear(sf::Color::Transparent);
+    if (state == TabState::Tiles)
+    {
+        texture.draw(tiles);
+        texture.draw(currentSelection);
+        texture.draw(hoverSelection);
+    }
+    /*else if (state == TabState::Objects)
+        target.draw(objects);*/
+    texture.display();
+
+    sprite.setTexture(texture.getTexture());
+
+    //return eventHandled;
+}
+
+void SelectionGUI::draw(sf::RenderTarget& target, sf::RenderStates states) const
+{
+    target.setView(view);
+    target.draw(border);
+    target.draw(tabs);
+    target.draw(sprite);
+}
+
+void SelectionGUI::setupTiles()
+{
+    // Setup tile map
+    tiles.loadFromConfig("data/config/tilemap.cfg");
+    unsigned tileTypes = tiles.getTotalTypes();
+    unsigned rows = tileTypes / TILE_COLUMNS;
+    tiles.resize(TILE_COLUMNS, rows);
+    tiles.useLayer(0);
+
+    // Generate tiles
+    unsigned id = 0;
+    for (unsigned y = 0; y < rows && id < tileTypes; ++y)
+    {
+        for (unsigned x = 0; x < TILE_COLUMNS && id < tileTypes; ++x)
+        {
+            tiles.set(x, y, id);
+            ++id;
+        }
+    }
+}
+
+void SelectionGUI::setupObjects()
+{
+
+}
+
+bool SelectionGUI::withinBorder(const sf::Vector2f& pos) const
+{
+    return border.getGlobalBounds().contains(pos);
+}
+
+bool SelectionGUI::withinTexture(const sf::Vector2f& pos) const
+{
+    return sprite.getGlobalBounds().contains(pos);
+}
+
+void SelectionGUI::handleTilesTab()
+{
+    state = TabState::Tiles;
+}
+
+void SelectionGUI::handleObjectsTab()
+{
+    state = TabState::Objects;
+}
+
+void SelectionGUI::handleMouseEvent(const sf::Vector2i& pos, bool clicked)
+{
+    auto eventMousePos = pos;
+    auto mousePosGui = window.mapPixelToCoords(eventMousePos, view);
+
+    // Adjust mouse position for texture
+    eventMousePos.x -= texturePos.x;
+    eventMousePos.y -= texturePos.y;
+    auto mousePosTex = texture.mapPixelToCoords(eventMousePos);
+
+    if (withinTexture(mousePosGui))
+        select(mousePosTex, clicked);
+}
+
+void SelectionGUI::select(const sf::Vector2f& pos, bool clicked)
+{
+    sf::Vector2u tilePos(pos.x / tileSize.x, pos.y / tileSize.y);
+    if (state == TabState::Tiles)
+    {
+        if (tiles.inBounds(tilePos.x, tilePos.y))
+        {
+            //std::cout << "tilePos = (" << tilePos.x << ", " << tilePos.y << ")\n";
+
+            // Calculate position to move selection box
+            sf::Vector2f selectionPos(tilePos.x * tileSize.x, tilePos.y * tileSize.y);
+            hoverSelection.setPosition(selectionPos);
+
+            if (clicked)
+            {
+                // Update current selection
+                currentSelection.setPosition(selectionPos);
+
+                // Send event with new visual tile ID
+                int visualId = tiles(tilePos.x, tilePos.y);
+                es::Events::send(TileSelectionEvent{visualId});
+            }
+        }
+    }
+    else if (state == TabState::Objects)
+    {
+
+    }
+}
