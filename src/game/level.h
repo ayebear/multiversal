@@ -28,20 +28,12 @@ The current level file format looks like this:
     version = 1
 
     [Real]
-    visual = {
-    ...
-    }
-    logical = {
-    ...
-    }
+    visual = { ... }
+    logical = { ... }
 
     [Alternate]
-    visual = {
-    ...
-    }
-    logical = {
-    ...
-    }
+    visual = { ... }
+    logical = { ... }
 
     [Objects]
     name:Type = {
@@ -51,9 +43,10 @@ The current level file format looks like this:
 class Level
 {
     public:
+
         using ObjectNameMap = std::map<std::string, ocs::ID>;
 
-        Level(TileMapData& tileMapData, ng::TileMap& tileMap, TileMapChanger& tileMapChanger, ocs::ObjectManager& entities, MagicWindow& magicWindow);
+        Level(TileMapData& tileMapData, ng::TileMap& tileMap, TileMapChanger& tileMapChanger, ocs::ObjectManager& objects, MagicWindow& magicWindow);
 
         // Loads a level file
         bool loadFromFile(const std::string& filename);
@@ -66,10 +59,20 @@ class Level
         // Returns an object ID from an object's name
         ocs::ID getObjectIdFromName(const std::string& name) const;
 
+        // Registers an object name to an ID
+        void registerObjectName(ocs::ID objectId, const std::string& name);
+
         // Loads objects from a section in a config file
-        void loadObjects(cfg::File::Section& section, ocs::ObjectManager& entities, ObjectNameMap& objectNames) const;
+        void loadObjects(cfg::File::Section& section, ocs::ObjectManager& objects, ObjectNameMap& objectNames, bool player = true) const;
+
+        // Resets tilemaps and objects (but keeps player object)
+        void clear();
 
     private:
+
+        // Creates a player object
+        void createPlayer(ocs::ObjectManager& objects, ObjectNameMap& objectNames) const;
+
         // Loading levels
         void load(cfg::File& config);
         void loadLogicalLayer(cfg::File& config, int layer);
@@ -87,7 +90,7 @@ class Level
         TileMapData& tileMapData; // Logical tile map
         ng::TileMap& tileMap; // Visual tile map
         TileMapChanger& tileMapChanger;
-        ocs::ObjectManager& entities;
+        ocs::ObjectManager& objects;
         MagicWindow& magicWindow;
 
         ObjectNameMap objectNamesToIds;

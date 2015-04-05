@@ -69,7 +69,6 @@ bool SelectionGUI::handleEvent(const sf::Event& event)
     tabs.handleMouseEvent(event, guiMousePos);
 
     // Handle selecting tiles/objects
-    // TODO: Simplify this
     bool clicked = (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left);
     bool mouseMoved = (event.type == sf::Event::MouseMoved);
     if (clicked || mouseMoved)
@@ -79,16 +78,14 @@ bool SelectionGUI::handleEvent(const sf::Event& event)
             eventMousePos = sf::Vector2i(event.mouseButton.x, event.mouseButton.y);
         else
             eventMousePos = sf::Vector2i(event.mouseMove.x, event.mouseMove.y);
-        handleMouseEvent(eventMousePos, clicked);
+        eventHandled = handleMouseEvent(eventMousePos, clicked);
     }
 
     return eventHandled;
 }
 
-void SelectionGUI::update(float dt)
+bool SelectionGUI::update(float dt)
 {
-    //bool eventHandled = false;
-
     // Update mouse position
     rawMousePos = sf::Mouse::getPosition(window);
     guiMousePos = window.mapPixelToCoords(rawMousePos, view);
@@ -101,7 +98,8 @@ void SelectionGUI::update(float dt)
     {
         texture.draw(tiles);
         texture.draw(currentSelection);
-        texture.draw(hoverSelection);
+        if (showHover)
+            texture.draw(hoverSelection);
     }
     /*else if (state == TabState::Objects)
         target.draw(objects);*/
@@ -109,7 +107,7 @@ void SelectionGUI::update(float dt)
 
     sprite.setTexture(texture.getTexture());
 
-    //return eventHandled;
+    return withinBorder(guiMousePos);
 }
 
 void SelectionGUI::draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -166,8 +164,9 @@ void SelectionGUI::handleObjectsTab()
     state = TabState::Objects;
 }
 
-void SelectionGUI::handleMouseEvent(const sf::Vector2i& pos, bool clicked)
+bool SelectionGUI::handleMouseEvent(const sf::Vector2i& pos, bool clicked)
 {
+    bool handled = false;
     auto eventMousePos = pos;
     auto mousePosGui = window.mapPixelToCoords(eventMousePos, view);
 
@@ -176,8 +175,16 @@ void SelectionGUI::handleMouseEvent(const sf::Vector2i& pos, bool clicked)
     eventMousePos.y -= texturePos.y;
     auto mousePosTex = texture.mapPixelToCoords(eventMousePos);
 
+    showHover = false;
     if (withinTexture(mousePosGui))
+    {
         select(mousePosTex, clicked);
+        handled = true;
+    }
+    else if (withinBorder(mousePosGui))
+        handled = true;
+
+    return handled;
 }
 
 void SelectionGUI::select(const sf::Vector2f& pos, bool clicked)
@@ -192,6 +199,7 @@ void SelectionGUI::select(const sf::Vector2f& pos, bool clicked)
             // Calculate position to move selection box
             sf::Vector2f selectionPos(tilePos.x * tileSize.x, tilePos.y * tileSize.y);
             hoverSelection.setPosition(selectionPos);
+            showHover = true;
 
             if (clicked)
             {

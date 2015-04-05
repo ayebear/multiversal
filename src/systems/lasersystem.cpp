@@ -14,8 +14,8 @@
 
 const char* LaserSystem::textureFilename = "data/images/beam.png";
 
-LaserSystem::LaserSystem(ocs::ObjectManager& entities, TileMapData& tileMapData, ng::TileMap& tileMap, MagicWindow& magicWindow):
-    entities(entities),
+LaserSystem::LaserSystem(ocs::ObjectManager& objects, TileMapData& tileMapData, ng::TileMap& tileMap, MagicWindow& magicWindow):
+    objects(objects),
     tileMapData(tileMapData),
     tileMap(tileMap),
     magicWindow(magicWindow)
@@ -32,9 +32,9 @@ void LaserSystem::initialize()
     mapSize = tileMap.getMapSize();
 
     // Update the rotation components based on the direction of the lasers
-    for (auto& laser: entities.getComponentArray<Components::Laser>())
+    for (auto& laser: objects.getComponentArray<Components::Laser>())
     {
-        auto rotation = entities.getComponent<Components::Rotation>(laser.getOwnerID());
+        auto rotation = objects.getComponent<Components::Rotation>(laser.getOwnerID());
         if (rotation)
             rotation->angle = laser.getAngle(laser.direction);
     }
@@ -48,10 +48,10 @@ void LaserSystem::update(float dt)
         laserSensorsToDisable.insert(tileId);
 
     // Update laser beams
-    for (auto& laser: entities.getComponentArray<Components::Laser>())
+    for (auto& laser: objects.getComponentArray<Components::Laser>())
     {
-        auto tilePos = entities.getComponent<Components::TilePosition>(laser.getOwnerID());
-        auto state = entities.getComponent<Components::State>(laser.getOwnerID());
+        auto tilePos = objects.getComponent<Components::TilePosition>(laser.getOwnerID());
+        auto state = objects.getComponent<Components::State>(laser.getOwnerID());
         if (tilePos && state && state->value)
             addBeams(laser, *tilePos);
         else

@@ -17,6 +17,8 @@ struct Tile
     bool collidable{};
     bool blocksLaser{};
     bool state{};
+
+    void reset();
 };
 
 /*

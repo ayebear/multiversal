@@ -32,6 +32,7 @@ class MagicWindow: public sf::Drawable, public sf::Transformable
     static const unsigned DEFAULT_BLOCK_SIZE = 5;
     static const unsigned MAX_BLOCK_SIZE = 5;
     static const unsigned MIN_BLOCK_SIZE = 2;
+    static const unsigned TEXTURE_COUNT = MAX_BLOCK_SIZE - MIN_BLOCK_SIZE + 1;
 
     public:
         MagicWindow(ng::ActionHandler& actions);
@@ -65,7 +66,7 @@ class MagicWindow: public sf::Drawable, public sf::Transformable
     private:
 
         void setSize(const sf::Vector2f& newSize);
-        void updateTextures();
+        void createTextures();
         void handleResize(int delta);
 
         ng::ActionHandler& actions;
@@ -86,7 +87,8 @@ class MagicWindow: public sf::Drawable, public sf::Transformable
         // Graphics
         sf::RectangleShape border;
         sf::RectangleShape preview;
-        std::vector<sf::RenderTexture> textures;
+        static std::vector<sf::RenderTexture> textures;
+        static bool createdTextures;
         sf::View textureView; // Stays the size of the texture
 };
 

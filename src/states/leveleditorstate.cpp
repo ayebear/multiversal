@@ -41,8 +41,8 @@ void LevelEditorState::handleEvents()
 
 void LevelEditorState::update()
 {
-    editor->update(dt);
-    selection->update(dt);
+    bool withinBorder = selection->update(dt);
+    editor->update(dt, withinBorder);
 }
 
 void LevelEditorState::draw()

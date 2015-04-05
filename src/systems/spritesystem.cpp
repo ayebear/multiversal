@@ -6,41 +6,41 @@
 #include <SFML/Graphics.hpp>
 #include "components.h"
 
-SpriteSystem::SpriteSystem(ocs::ObjectManager& entities):
-    entities(entities)
+SpriteSystem::SpriteSystem(ocs::ObjectManager& objects):
+    objects(objects)
 {
 }
 
 void SpriteSystem::update(float dt)
 {
     // Update sprites
-    for (auto& sprite: entities.getComponentArray<Components::Sprite>())
+    for (auto& sprite: objects.getComponentArray<Components::Sprite>())
     {
         auto id = sprite.getOwnerID();
 
         // Update position
-        auto position = entities.getComponent<Components::Position>(id);
+        auto position = objects.getComponent<Components::Position>(id);
         if (position)
             sprite.sprite.setPosition(position->x, position->y);
 
         // Update rotation
-        auto rotation = entities.getComponent<Components::Rotation>(id);
+        auto rotation = objects.getComponent<Components::Rotation>(id);
         if (rotation)
             sprite.sprite.setRotation(rotation->angle);
     }
 
     // Update animated sprites
-    for (auto& animSprite: entities.getComponentArray<Components::AnimSprite>())
+    for (auto& animSprite: objects.getComponentArray<Components::AnimSprite>())
     {
         auto id = animSprite.getOwnerID();
 
         // Update position
-        auto position = entities.getComponent<Components::Position>(id);
+        auto position = objects.getComponent<Components::Position>(id);
         if (position)
             animSprite.sprite.setPosition(position->x, position->y);
 
         // Update rotation
-        auto rotation = entities.getComponent<Components::Rotation>(id);
+        auto rotation = objects.getComponent<Components::Rotation>(id);
         if (rotation)
             animSprite.sprite.setRotation(rotation->angle);
 

@@ -21,7 +21,7 @@ Also handles the collision and redirection of the beams.
 class LaserSystem: public es::System
 {
     public:
-        LaserSystem(ocs::ObjectManager& entities, TileMapData& tileMapData, ng::TileMap& tileMap, MagicWindow& magicWindow);
+        LaserSystem(ocs::ObjectManager& objects, TileMapData& tileMapData, ng::TileMap& tileMap, MagicWindow& magicWindow);
         void initialize();
         void update(float dt);
 
@@ -50,7 +50,7 @@ class LaserSystem: public es::System
         static const char* textureFilename;
 
         // References
-        ocs::ObjectManager& entities;
+        ocs::ObjectManager& objects;
         TileMapData& tileMapData;
         ng::TileMap& tileMap;
         MagicWindow& magicWindow;

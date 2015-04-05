@@ -7,18 +7,17 @@
 #include "nage/graphics/vectors.h"
 #include <iostream>
 
-MovingSystem::MovingSystem(ocs::ObjectManager& entities):
-    entities(entities)
+MovingSystem::MovingSystem(ocs::ObjectManager& objects):
+    objects(objects)
 {
 }
 
 void MovingSystem::initialize()
 {
-    std::cout << "MovingSystem::initialize()\n";
     // Move all objects with Moving components to the first point
-    for (auto& moving: entities.getComponentArray<Components::Moving>())
+    for (auto& moving: objects.getComponentArray<Components::Moving>())
     {
-        auto position = entities.getComponent<Components::Position>(moving.getOwnerID());
+        auto position = objects.getComponent<Components::Position>(moving.getOwnerID());
         if (position && !moving.points.empty())
         {
             auto point = moving.points.front();
@@ -30,10 +29,10 @@ void MovingSystem::initialize()
 
 void MovingSystem::update(float dt)
 {
-    for (auto& moving: entities.getComponentArray<Components::Moving>())
+    for (auto& moving: objects.getComponentArray<Components::Moving>())
     {
-        auto position = entities.getComponent<Components::Position>(moving.getOwnerID());
-        auto state = entities.getComponent<Components::State>(moving.getOwnerID());
+        auto position = objects.getComponent<Components::Position>(moving.getOwnerID());
+        auto state = objects.getComponent<Components::State>(moving.getOwnerID());
         if (position && state)
         {
             // Make sure nothing goes out of bounds

@@ -20,7 +20,7 @@ It also detects and handles collision.
 class PhysicsSystem: public es::System
 {
     public:
-        PhysicsSystem(ocs::ObjectManager& entities, TileMapData& tileMapData, ng::TileMap& tileMap, MagicWindow& magicWindow);
+        PhysicsSystem(ocs::ObjectManager& objects, TileMapData& tileMapData, ng::TileMap& tileMap, MagicWindow& magicWindow);
         void initialize();
         void update(float dt);
 
@@ -41,7 +41,7 @@ class PhysicsSystem: public es::System
         static const sf::Vector2i gravityConstant;
 
         // References
-        ocs::ObjectManager& entities;
+        ocs::ObjectManager& objects;
         TileMapData& tileMapData;
         ng::TileMap& tileMap;
         MagicWindow& magicWindow;

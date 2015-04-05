@@ -43,11 +43,11 @@ Size = "64 64"
 class EntityPrototypeLoader
 {
     public:
-        EntityPrototypeLoader(ocs::ObjectManager& objManager, const std::string& configFilename);
+        EntityPrototypeLoader(ocs::ObjectManager& objects, const std::string& configFilename);
         bool load();
 
         // Loads all prototypes from a config file (returns true if successful)
-        static bool load(ocs::ObjectManager& objManager, const std::string& configFilename);
+        static bool load(ocs::ObjectManager& objects, const std::string& configFilename);
 
     private:
 
@@ -72,7 +72,7 @@ class EntityPrototypeLoader
             cfg::File::Section componentData;
         };
 
-        ocs::ObjectManager& objManager;
+        ocs::ObjectManager& objects;
         cfg::File config;
         std::map<std::string, ParentInfo> entToComp;
 

@@ -7,9 +7,9 @@
 #include "components.h"
 #include <iostream>
 
-ObjectSwitchSystem::ObjectSwitchSystem(Level& level, ocs::ObjectManager& entities):
+ObjectSwitchSystem::ObjectSwitchSystem(Level& level, ocs::ObjectManager& objects):
     level(level),
-    entities(entities)
+    objects(objects)
 {
 }
 
@@ -26,7 +26,7 @@ void ObjectSwitchSystem::toggleObjectState(const std::string& name)
     auto id = level.getObjectIdFromName(name);
 
     // Get state component from object ID
-    auto state = entities.getComponent<Components::State>(id);
+    auto state = objects.getComponent<Components::State>(id);
 
     // Update state
     if (state)

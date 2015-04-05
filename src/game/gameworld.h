@@ -31,7 +31,7 @@ struct GameWorld
     Level level;
     LevelLoader levelLoader;
     MagicWindow magicWindow;
-    ocs::ObjectManager entities;
+    ocs::ObjectManager objects;
     es::SystemContainer systems;
 };
 

@@ -6,30 +6,33 @@
 #include "components.h"
 #include "movingcomponent.h"
 #include "lasercomponent.h"
+#include <iostream>
 
-void bindComponentStrings(ocs::ObjectManager& entities)
+void bindComponentStrings(ocs::ObjectManager& objects)
 {
-    entities.bindStringToComponent<Components::Position>("Position");
-    entities.bindStringToComponent<Components::Velocity>("Velocity");
-    entities.bindStringToComponent<Components::Gravity>("Gravity");
-    entities.bindStringToComponent<Components::Size>("Size");
-    entities.bindStringToComponent<Components::AABB>("AABB");
-    entities.bindStringToComponent<Components::Sprite>("Sprite");
-    entities.bindStringToComponent<Components::AnimSprite>("AnimSprite");
-    entities.bindStringToComponent<Components::Jumpable>("Jumpable");
-    entities.bindStringToComponent<Components::ObjectState>("ObjectState");
-    entities.bindStringToComponent<Components::Movable>("Movable");
-    entities.bindStringToComponent<Components::Carrier>("Carrier");
-    entities.bindStringToComponent<Components::CameraUpdater>("CameraUpdater");
-    entities.bindStringToComponent<Components::AltWorld>("AltWorld");
-    entities.bindStringToComponent<Components::Carryable>("Carryable");
-    entities.bindStringToComponent<Components::DrawOnTop>("DrawOnTop");
-    entities.bindStringToComponent<Components::AboveWindow>("AboveWindow");
-    entities.bindStringToComponent<Components::Moving>("Moving");
-    entities.bindStringToComponent<Components::State>("State");
-    entities.bindStringToComponent<Components::TileGroup>("TileGroup");
-    entities.bindStringToComponent<Components::Laser>("Laser");
-    entities.bindStringToComponent<Components::TilePosition>("TilePosition");
-    entities.bindStringToComponent<Components::Rotation>("Rotation");
-    entities.bindStringToComponent<Components::Switch>("Switch");
+    std::cout << "Binding component strings...\n";
+    BIND_COMP_STR(Position);
+    BIND_COMP_STR(Velocity);
+    BIND_COMP_STR(Gravity);
+    BIND_COMP_STR(Size);
+    BIND_COMP_STR(AABB);
+    BIND_COMP_STR(Sprite);
+    BIND_COMP_STR(AnimSprite);
+    BIND_COMP_STR(Jumpable);
+    BIND_COMP_STR(ObjectState);
+    BIND_COMP_STR(Movable);
+    BIND_COMP_STR(Carrier);
+    BIND_COMP_STR(CameraUpdater);
+    BIND_COMP_STR(AltWorld);
+    BIND_COMP_STR(Carryable);
+    BIND_COMP_STR(DrawOnTop);
+    BIND_COMP_STR(AboveWindow);
+    BIND_COMP_STR(Moving);
+    BIND_COMP_STR(State);
+    BIND_COMP_STR(TileGroup);
+    BIND_COMP_STR(Laser);
+    BIND_COMP_STR(TilePosition);
+    BIND_COMP_STR(Rotation);
+    BIND_COMP_STR(Switch);
+    std::cout << "Done binding component strings.\n";
 }

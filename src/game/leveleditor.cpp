@@ -8,19 +8,28 @@
 #include "configfile.h"
 #include "nage/graphics/vectors.h"
 #include "nage/states/stateevent.h"
+#include "componentstrings.h"
+#include "entityprototypeloader.h"
+#include "components.h"
+#include "spritesystem.h"
+#include "inaltworld.h"
+
+const sf::Color LevelEditor::borderColors[] = {sf::Color::Green, sf::Color::Blue};
 
 LevelEditor::LevelEditor(GameWorld& world, ng::StateEvent& stateEvent):
     world(world),
     stateEvent(stateEvent)
 {
     view = world.camera.getView("window");
+    view.zoom(defaultZoom);
+    sf::FloatRect viewRect(-1116, -32, view.getSize().x, view.getSize().y);
+    view.reset(viewRect);
     loadConfig("data/config/level_editor.cfg");
     tileSize = world.tileMap.getTileSize();
     resize(32, 12);
 
     // Setup border
     border.setFillColor(sf::Color::Transparent);
-    border.setOutlineColor(sf::Color::Blue);
     border.setOutlineThickness(24);
     updateBorder();
 
@@ -32,6 +41,8 @@ LevelEditor::LevelEditor(GameWorld& world, ng::StateEvent& stateEvent):
     currentTile.setColor(sf::Color(255, 255, 255, 128));
     currentVisualId = 1;
     updateCurrentTile();
+
+    initialize();
 }
 
 void LevelEditor::handleEvent(const sf::Event& event)
@@ -39,7 +50,7 @@ void LevelEditor::handleEvent(const sf::Event& event)
     actions.handleEvent(event);
 }
 
-void LevelEditor::update(float dt)
+void LevelEditor::update(float dt, bool withinBorder)
 {
     updateMousePos();
 
@@ -52,7 +63,7 @@ void LevelEditor::update(float dt)
     es::Events::clear<TileSelectionEvent>();
 
     // Handle painting tiles
-    if (ng::Action::windowHasFocus)
+    if (!withinBorder && ng::Action::windowHasFocus)
     {
         bool leftPressed = sf::Mouse::isButtonPressed(sf::Mouse::Left);
         bool rightPressed = sf::Mouse::isButtonPressed(sf::Mouse::Right);
@@ -82,12 +93,24 @@ void LevelEditor::update(float dt)
 
     // Update the view for the input system
     es::Events::send(ViewEvent{view});
+
+    // Save sprites in the current layer to draw later
+    sprites.clear();
+    for (auto& sprite: world.objects.getComponentArray<Components::Sprite>())
+    {
+        if (inAltWorld(world.objects, sprite.getOwnerID()) == currentLayer)
+            sprites.push_back(&sprite.sprite);
+    }
 }
 
 void LevelEditor::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     target.setView(view);
     world.tileMap.drawLayer(target, currentLayer);
+
+    for (auto sprite: sprites)
+        target.draw(*sprite);
+
     target.draw(border);
     target.draw(currentTile);
 }
@@ -101,6 +124,9 @@ void LevelEditor::load()
 {
     world.level.loadFromFile(world.levelLoader.getLevelFilename(currentLevel));
     updateBorder();
+    world.systems.initializeAll();
+    world.systems.update<SpriteSystem>(1.0f / 60.0f);
+    initialize();
 }
 
 void LevelEditor::test()
@@ -126,8 +152,13 @@ void LevelEditor::redo()
 
 void LevelEditor::clear()
 {
-    // Reset all of the tiles
-    // Remove all of the objects
+    world.level.clear();
+}
+
+void LevelEditor::toggleLayer()
+{
+    currentLayer = !currentLayer;
+    updateBorder();
 }
 
 void LevelEditor::nextLevel()
@@ -144,21 +175,12 @@ void LevelEditor::prevLevel()
 
 void LevelEditor::loadConfig(const std::string& filename)
 {
-    cfg::File config(filename);
+    cfg::File config(filename, cfg::File::Errors);
     if (!config)
-    {
-        std::cerr << "Error loading " << filename << ".\n";
         return;
-    }
-
-    // Load general settings
-    panSpeed = 2400;
-    defaultZoom = 4;
-    view.zoom(defaultZoom);
 
     // Load controls and setup actions
     actions.loadSection(config.getSection("Controls"), "");
-    actions["toggleLayer"].setCallback([&]{ currentLayer = !currentLayer; });
     actions["popState"].setCallback([&]{ stateEvent.command = ng::StateEvent::Pop; });
     actions["growX"].setCallback([&]{ resize(1, 0); });
     actions["growY"].setCallback([&]{ resize(0, 1); });
@@ -170,6 +192,7 @@ void LevelEditor::loadConfig(const std::string& filename)
     ng_bindAction(actions, undo);
     ng_bindAction(actions, redo);
     ng_bindAction(actions, clear);
+    ng_bindAction(actions, toggleLayer);
     ng_bindAction(actions, nextLevel);
     ng_bindAction(actions, prevLevel);
 
@@ -181,11 +204,8 @@ void LevelEditor::loadConfig(const std::string& filename)
 
         // Setup tile
         auto& tile = visualTiles[visualId];
-        tile.logicalId = 0;
+        tile.reset();
         tile.visualId = visualId;
-        tile.collidable = false;
-        tile.blocksLaser = false;
-        tile.state = false;
 
         // Extract information
         if (!values.empty())
@@ -198,7 +218,11 @@ void LevelEditor::loadConfig(const std::string& filename)
     }
 
     // Load the object palette
-    world.level.loadObjects(config.getSection("Objects"), entities, objectNames);
+    bindComponentStrings(objectPalette);
+    if (es::EntityPrototypeLoader::load(objectPalette, "data/config/objects.cfg"))
+        world.level.loadObjects(config.getSection("Objects"), objectPalette, objectNamesPalette, false);
+    else
+        std::cerr << "ERROR: Could not load object prototypes.\n";
 }
 
 void LevelEditor::updateMousePos()
@@ -206,29 +230,37 @@ void LevelEditor::updateMousePos()
     for (auto& event: es::Events::get<MousePosEvent>())
     {
         mousePos = event.mousePos;
-        currentTile.setPosition(sf::Vector2f(int(mousePos.x / tileSize.x) * tileSize.x,
-                                             int(mousePos.y / tileSize.y) * tileSize.y));
+        currentTile.setPosition(sf::Vector2f(int(mousePos.x / int(tileSize.x)) * tileSize.x,
+                                             int(mousePos.y / int(tileSize.y)) * tileSize.y));
     }
 }
 
 void LevelEditor::paintTile(int visualId)
 {
     // Get location of tile to place, and make sure it is in bounds
-    sf::Vector2i location(mousePos.x / tileSize.x, mousePos.y / tileSize.y);
+    sf::Vector2i location(mousePos.x / int(tileSize.x), mousePos.y / int(tileSize.y));
     if (world.tileMap.inBounds(location.x, location.y))
     {
         int tileId = world.tileMapData.getId(currentLayer, location.x, location.y);
         //std::cout << "Location: " << tileId << ", Type: " << visualId << "\n";
 
         // Set the tile and update the graphical tile map
-        world.tileMapData(tileId) = visualTiles[visualId];
+        auto& tile = world.tileMapData(tileId);
+        tile = visualTiles[visualId];
         world.tileMapChanger.updateVisualTile(tileId);
+
+        // Add tile ID to tile group component
+        auto objectId = (tile.state ? stateOnId : stateOffId);
+        auto comp = world.objects.getComponent<Components::TileGroup>(objectId);
+        if (comp)
+            comp->tileIds.insert(tileId);
     }
 }
 
 void LevelEditor::updateBorder()
 {
     border.setSize(ng::vectors::cast<float>(world.tileMap.getPixelSize()));
+    border.setOutlineColor(borderColors[currentLayer]);
 }
 
 void LevelEditor::updateCurrentTile()
@@ -238,7 +270,22 @@ void LevelEditor::updateCurrentTile()
 
 void LevelEditor::resize(int deltaX, int deltaY)
 {
-    auto mapSize = world.tileMap.getMapSize();
+    auto mapSize = ng::vectors::cast<int>(world.tileMap.getMapSize());
     world.tileMapChanger.resize(mapSize.x + deltaX, mapSize.y + deltaY);
     updateBorder();
+}
+
+void LevelEditor::initialize()
+{
+    // Add TileChanger objects for initial on/off states of tiles
+    stateOnId = world.objects.createObject("TileController");
+    stateOffId = world.objects.createObject("TileController");
+
+    // Set initial state
+    auto comp = world.objects.getComponent<Components::TileGroup>(stateOnId);
+    if (comp)
+        comp->initialState = true;
+
+    world.level.registerObjectName(stateOnId, "onStates");
+    world.level.registerObjectName(stateOffId, "offStates");
 }

@@ -8,8 +8,8 @@
 #include "nage/graphics/views.h"
 #include "lasercomponent.h"
 
-RenderSystem::RenderSystem(ocs::ObjectManager& entities, ng::TileMap& tileMap, sf::RenderWindow& window, ng::Camera& camera, MagicWindow& magicWindow):
-    entities(entities),
+RenderSystem::RenderSystem(ocs::ObjectManager& objects, ng::TileMap& tileMap, sf::RenderWindow& window, ng::Camera& camera, MagicWindow& magicWindow):
+    objects(objects),
     tileMap(tileMap),
     window(window),
     camera(camera),
@@ -41,11 +41,11 @@ void RenderSystem::update(float dt)
     // TODO: Add z-indexing with z-index components that get sorted
 
     // Draw sprites
-    for (auto& sprite: entities.getComponentArray<Components::Sprite>())
+    for (auto& sprite: objects.getComponentArray<Components::Sprite>())
         drawSprite(sprite);
 
     // Draw animated sprites
-    for (auto& animSprite: entities.getComponentArray<Components::AnimSprite>())
+    for (auto& animSprite: objects.getComponentArray<Components::AnimSprite>())
         drawSprite(animSprite);
 
     // Draw laser beams
@@ -56,11 +56,11 @@ void RenderSystem::update(float dt)
     window.draw(magicWindow);
 
     // Draw animated sprites
-    for (auto& animSprite: entities.getComponentArray<Components::AnimSprite>())
+    for (auto& animSprite: objects.getComponentArray<Components::AnimSprite>())
         drawSprite(animSprite, true);
 
     // Draw sprites
-    for (auto& sprite: entities.getComponentArray<Components::Sprite>())
+    for (auto& sprite: objects.getComponentArray<Components::Sprite>())
         drawSprite(sprite, true);
 
     // Draw laser beams
@@ -69,22 +69,9 @@ void RenderSystem::update(float dt)
     window.display();
 }
 
-bool RenderSystem::inAltWorld(ocs::ID id) const
-{
-    // Check both the AltWorld and TilePosition components
-    bool altWorld = entities.hasComponents<Components::AltWorld>(id);
-    if (!altWorld)
-    {
-        auto tilePos = entities.getComponent<Components::TilePosition>(id);
-        if (tilePos)
-            altWorld = (tilePos->layer != 0);
-    }
-    return altWorld;
-}
-
 void RenderSystem::drawLasers(int layer)
 {
-    for (auto& laser: entities.getComponentArray<Components::Laser>())
+    for (auto& laser: objects.getComponentArray<Components::Laser>())
     {
         for (unsigned i = 0; i < laser.beams.size() && i < laser.beamCount; ++i)
         {

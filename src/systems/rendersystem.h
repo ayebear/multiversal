@@ -9,6 +9,7 @@
 #include "components.h"
 #include "nage/graphics/spriteloader.h"
 #include "system.h"
+#include "inaltworld.h"
 
 namespace ng
 {
@@ -25,13 +26,10 @@ It will render all of the drawable objects like the tile map, and drawable compo
 class RenderSystem: public es::System
 {
     public:
-        RenderSystem(ocs::ObjectManager& entities, ng::TileMap& tileMap, sf::RenderWindow& window, ng::Camera& camera, MagicWindow& magicWindow);
+        RenderSystem(ocs::ObjectManager& objects, ng::TileMap& tileMap, sf::RenderWindow& window, ng::Camera& camera, MagicWindow& magicWindow);
         void update(float dt);
 
     private:
-        // Determines if an object is in the alternate world
-        bool inAltWorld(ocs::ID id) const;
-
         // Draws laser beams
         void drawLasers(int layer);
 
@@ -39,7 +37,7 @@ class RenderSystem: public es::System
         void drawSprite(const SpriteType& sprite, bool onTop = false);
 
         // References to various things to draw
-        ocs::ObjectManager& entities;
+        ocs::ObjectManager& objects;
         ng::TileMap& tileMap;
         sf::RenderWindow& window;
         ng::Camera& camera;
@@ -53,10 +51,10 @@ class RenderSystem: public es::System
 template <class SpriteType>
 void RenderSystem::drawSprite(const SpriteType& sprite, bool onTop)
 {
-    bool hasOnTop = entities.hasComponents<Components::DrawOnTop>(sprite.getOwnerID());
+    bool hasOnTop = objects.hasComponents<Components::DrawOnTop>(sprite.getOwnerID());
     if (hasOnTop == onTop)
     {
-        if (inAltWorld(sprite.getOwnerID()))
+        if (inAltWorld(objects, sprite.getOwnerID()))
             texture->draw(sprite.sprite);
         else
             window.draw(sprite.sprite);

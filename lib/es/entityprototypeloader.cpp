@@ -6,8 +6,8 @@
 namespace es
 {
 
-EntityPrototypeLoader::EntityPrototypeLoader(ocs::ObjectManager& objManager, const std::string& configFilename):
-    objManager(objManager),
+EntityPrototypeLoader::EntityPrototypeLoader(ocs::ObjectManager& objects, const std::string& configFilename):
+    objects(objects),
     config(configFilename)
 {
 }
@@ -24,10 +24,10 @@ bool EntityPrototypeLoader::load()
     return status;
 }
 
-bool EntityPrototypeLoader::load(ocs::ObjectManager& objManager, const std::string& configFilename)
+bool EntityPrototypeLoader::load(ocs::ObjectManager& objects, const std::string& configFilename)
 {
     // Create an instance of this class inside of this function, because it needs to hold state
-    EntityPrototypeLoader loader(objManager, configFilename);
+    EntityPrototypeLoader loader(objects, configFilename);
     return loader.load();
 }
 
@@ -106,7 +106,7 @@ void EntityPrototypeLoader::loadComponents(const std::string& entityName, const 
 {
     // Load each component from a string in the section
     for (auto& option: section)
-        objManager.addComponentToPrototypeFromString(entityName, option.first, option.second.toString());
+        objects.addComponentToPrototypeFromString(entityName, option.first, option.second.toString());
 }
 
 }

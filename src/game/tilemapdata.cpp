@@ -5,6 +5,15 @@
 #include "configfile.h"
 #include <iostream>
 
+void Tile::reset()
+{
+    logicalId = 0;
+    visualId = 0;
+    collidable = false;
+    blocksLaser = false;
+    state = false;
+}
+
 TileMapData::TileMapData():
     currentLayer(0)
 {

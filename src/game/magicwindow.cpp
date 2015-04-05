@@ -7,14 +7,16 @@
 #include "events.h"
 #include "gameevents.h"
 
+std::vector<sf::RenderTexture> MagicWindow::textures(TEXTURE_COUNT);
+bool MagicWindow::createdTextures = false;
+
 MagicWindow::MagicWindow(ng::ActionHandler& actions):
     actions(actions),
     changed(false),
     visible(false),
     active(false),
     blockSize(DEFAULT_BLOCK_SIZE),
-    currentTexture(0),
-    textures(MAX_BLOCK_SIZE - MIN_BLOCK_SIZE + 1)
+    currentTexture(0)
 {
     const float THICKNESS = 16.0f;
     border.setFillColor(sf::Color::Transparent);
@@ -64,7 +66,7 @@ void MagicWindow::update()
 void MagicWindow::setTileSize(const sf::Vector2u& newTileSize)
 {
     tileSize = newTileSize;
-    updateTextures();
+    createTextures();
     setSize(DEFAULT_BLOCK_SIZE);
 }
 
@@ -179,15 +181,19 @@ void MagicWindow::setSize(const sf::Vector2f& newSize)
     }
 }
 
-void MagicWindow::updateTextures()
+void MagicWindow::createTextures()
 {
-    unsigned count = 0;
-    for (auto& tex: textures)
+    if (!createdTextures)
     {
-        unsigned currentBlockSize = MIN_BLOCK_SIZE + count;
-        tex.create(tileSize.x * currentBlockSize, tileSize.y * currentBlockSize);
-        std::cout << "Created texture of block size " << currentBlockSize << ".\n";
-        ++count;
+        unsigned count = 0;
+        for (auto& tex: textures)
+        {
+            unsigned currentBlockSize = MIN_BLOCK_SIZE + count;
+            tex.create(tileSize.x * currentBlockSize, tileSize.y * currentBlockSize);
+            std::cout << "Created texture of block size " << currentBlockSize << ".\n";
+            ++count;
+        }
+        createdTextures = true;
     }
 }
 

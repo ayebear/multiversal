@@ -18,7 +18,7 @@ May make separate classes for the different switch types.
 class SwitchSystem: public es::System
 {
     public:
-        SwitchSystem(TileMapData& tileMapData, TileMapChanger& tileMapChanger, ocs::ObjectManager& entities);
+        SwitchSystem(TileMapData& tileMapData, TileMapChanger& tileMapChanger, ocs::ObjectManager& objects);
         void initialize();
         void update(float dt);
 
@@ -30,7 +30,7 @@ class SwitchSystem: public es::System
 
         TileMapData& tileMapData;
         TileMapChanger& tileMapChanger;
-        ocs::ObjectManager& entities;
+        ocs::ObjectManager& objects;
 };
 
 #endif

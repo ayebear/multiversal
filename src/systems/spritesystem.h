@@ -13,11 +13,11 @@ This class handles updating the sprite positions from the position components.
 class SpriteSystem: public es::System
 {
     public:
-        SpriteSystem(ocs::ObjectManager& entities);
+        SpriteSystem(ocs::ObjectManager& objects);
         void update(float dt);
 
     private:
-        ocs::ObjectManager& entities;
+        ocs::ObjectManager& objects;
 };
 
 #endif

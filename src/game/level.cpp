@@ -22,11 +22,11 @@ const cfg::File::ConfigMap Level::defaultOptions = {
     }
 };
 
-Level::Level(TileMapData& tileMapData, ng::TileMap& tileMap, TileMapChanger& tileMapChanger, ocs::ObjectManager& entities, MagicWindow& magicWindow):
+Level::Level(TileMapData& tileMapData, ng::TileMap& tileMap, TileMapChanger& tileMapChanger, ocs::ObjectManager& objects, MagicWindow& magicWindow):
     tileMapData(tileMapData),
     tileMap(tileMap),
     tileMapChanger(tileMapChanger),
-    entities(entities),
+    objects(objects),
     magicWindow(magicWindow)
 {
 }
@@ -103,9 +103,14 @@ ocs::ID Level::getObjectIdFromName(const std::string& name) const
     return id;
 }
 
-void Level::loadObjects(cfg::File::Section& section, ocs::ObjectManager& entities, ObjectNameMap& objectNames) const
+void Level::registerObjectName(ocs::ID objectId, const std::string& name)
 {
-    entities.destroyAllObjects();
+    objectNamesToIds[name] = objectId;
+}
+
+void Level::loadObjects(cfg::File::Section& section, ocs::ObjectManager& objects, ObjectNameMap& objectNames, bool player) const
+{
+    objects.destroyAllObjects();
     objectNames.clear();
     bool playerCreated = false;
 
@@ -118,9 +123,9 @@ void Level::loadObjects(cfg::File::Section& section, ocs::ObjectManager& entitie
         // Create an object (with the type if specified)
         ocs::ID id;
         if (names.size() == 2)
-            id = entities.createObject(names.back());
+            id = objects.createObject(names.back());
         else
-            id = entities.createObject();
+            id = objects.createObject();
 
         // Keep its unique name in a lookup table
         objectNames[names.front()] = id;
@@ -140,25 +145,35 @@ void Level::loadObjects(cfg::File::Section& section, ocs::ObjectManager& entitie
                 auto componentName = compStr.substr(0, separator);
                 auto componentData = compStr.substr(separator + 1);
                 std::cout << "Component: '" << componentName << "', Data: '" << componentData << "'\n";
-                entities.updateComponentFromString(id, componentName, componentData);
+                objects.updateComponentFromString(id, componentName, componentData);
             }
             else if (separator == std::string::npos)
             {
                 std::cout << "Component: '" << compStr << "'\n";
-                entities.updateComponentFromString(id, compStr, "");
+                objects.updateComponentFromString(id, compStr, "");
             }
             else
                 std::cerr << "ERROR: Cannot process '" << compStr << "'.\n";
         }
     }
 
-    if (!playerCreated)
-    {
-        auto id = entities.createObject("Player");
-        objectNames["player"] = id;
-        const auto& tileSize = tileMap.getTileSize();
-        entities.addComponents(id, Components::Position(tileSize.x, tileSize.y));
-    }
+    if (player && !playerCreated)
+        createPlayer(objects, objectNames);
+}
+
+void Level::clear()
+{
+    tileMapChanger.clear();
+    objects.destroyAllObjects();
+    createPlayer(objects, objectNamesToIds);
+}
+
+void Level::createPlayer(ocs::ObjectManager& objects, ObjectNameMap& objectNames) const
+{
+    auto id = objects.createObject("Player");
+    objectNames["player"] = id;
+    const auto& tileSize = tileMap.getTileSize();
+    objects.addComponents(id, Components::Position(tileSize.x, tileSize.y));
 }
 
 void Level::loadLogicalLayer(cfg::File& config, int layer)
@@ -170,12 +185,14 @@ void Level::loadLogicalLayer(cfg::File& config, int layer)
         auto values = strlib::split<int>(tiles, " ");
         for (int logicalId: values)
         {
-            tileMapData(x, y).logicalId = logicalId;
+            if (tileMap.inBounds(x, y))
+            {
+                tileMapData(x, y).logicalId = logicalId;
 
-            // Populate the logical to tile ID map
-            if (logicalId != Tiles::None && logicalId != Tiles::Normal)
-                tileMapData[logicalId].push_back(tileMapData.getId(x, y));
-
+                // Populate the logical to tile ID map
+                if (logicalId != Tiles::None && logicalId != Tiles::Normal)
+                    tileMapData[logicalId].push_back(tileMapData.getId(x, y));
+            }
             ++x;
         }
         ++y;
@@ -191,11 +208,12 @@ void Level::loadVisualLayer(cfg::File& config, int layer)
         auto values = strlib::split<int>(tiles, " ");
         for (int visualId: values)
         {
-            tileMapData(x, y).visualId = visualId;
-
-            // Update the graphical tile map
-            tileMap.set(x, y, visualId);
-
+            if (tileMap.inBounds(x, y))
+            {
+                // Update the visual layer and graphical tile map
+                tileMapData(x, y).visualId = visualId;
+                tileMap.set(x, y, visualId);
+            }
             ++x;
         }
         ++y;
@@ -212,15 +230,11 @@ void Level::loadTileMap(cfg::File& config)
     tileMapData.clearTileIds();
 
     // Load layer data
-    int currentLayer = 0;
     for (auto& section: config)
     {
-        // Determine which dimension to use
-        if (section.first == "Real")
-            currentLayer = 0;
-        else if (section.first == "Alternate")
-            currentLayer = 1;
-        else
+        // Determine which layer to use
+        int currentLayer = strlib::fromString<int>(section.first);
+        if (currentLayer < 0 || currentLayer > 1)
             continue;
 
         tileMap.useLayer(currentLayer);
@@ -240,7 +254,7 @@ void Level::loadTileMap(cfg::File& config)
 
 void Level::loadObjects(cfg::File& config)
 {
-    loadObjects(config.getSection("Objects"), entities, objectNamesToIds);
+    loadObjects(config.getSection("Objects"), objects, objectNamesToIds);
 }
 
 void Level::saveTileMap(cfg::File& config) const
@@ -254,7 +268,7 @@ void Level::saveTileMap(cfg::File& config) const
 
     // Real/Alternate: logical, visual
     unsigned layer = 0;
-    for (const auto& section: {"Real", "Alternate"})
+    for (const auto& section: {"0: Real", "1: Alternate"})
     {
         tileMapData.useLayer(layer);
         config.useSection(section);
@@ -288,7 +302,7 @@ void Level::saveObjects(cfg::File& config) const
     {
         // Serialize all of the components of this object
         auto& option = config(object.first);
-        auto components = entities.serializeObject(object.second);
+        auto components = objects.serializeObject(object.second);
         std::sort(components.begin(), components.end());
         for (const auto& str: components)
             option.push() = str;

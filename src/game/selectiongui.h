@@ -19,7 +19,7 @@ class SelectionGUI: public sf::Drawable
     public:
         SelectionGUI(GameWorld& world, sf::RenderWindow& window);
         bool handleEvent(const sf::Event& event);
-        void update(float dt);
+        bool update(float dt);
         void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
     private:
@@ -29,7 +29,7 @@ class SelectionGUI: public sf::Drawable
         bool withinTexture(const sf::Vector2f& pos) const;
         void handleTilesTab();
         void handleObjectsTab();
-        void handleMouseEvent(const sf::Vector2i& pos, bool clicked);
+        bool handleMouseEvent(const sf::Vector2i& pos, bool clicked);
 
         // Takes a mouse position, and selects a tile/object
         void select(const sf::Vector2f& pos, bool clicked);
@@ -41,9 +41,9 @@ class SelectionGUI: public sf::Drawable
         };
 
         static const unsigned TILE_COLUMNS = 4;
-        static const unsigned WIDTH_PIXELS = 320;
+        static const unsigned WIDTH_PIXELS = 256;
         static const unsigned PADDING = 4;
-        static const unsigned BUTTON_WIDTH = 156;
+        static const unsigned BUTTON_WIDTH = (WIDTH_PIXELS / 2) - 8;
         static const unsigned BUTTON_HEIGHT = 40;
 
         GameWorld& world;
@@ -61,6 +61,7 @@ class SelectionGUI: public sf::Drawable
         sf::RectangleShape hoverSelection;
         ng::ButtonMap tabs;
         TabState state{TabState::Tiles};
+        bool showHover{false};
 
         // Render texture for tiles/objects
         sf::RenderTexture texture;

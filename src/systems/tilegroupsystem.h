@@ -16,13 +16,13 @@ Only does this when the State component changes.
 class TileGroupSystem: public es::System
 {
     public:
-        TileGroupSystem(TileMapChanger& tileMapChanger, ocs::ObjectManager& entities);
+        TileGroupSystem(TileMapChanger& tileMapChanger, ocs::ObjectManager& objects);
         void initialize();
         void update(float dt);
 
     private:
         TileMapChanger& tileMapChanger;
-        ocs::ObjectManager& entities;
+        ocs::ObjectManager& objects;
 };
 
 #endif

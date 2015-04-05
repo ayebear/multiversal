@@ -16,13 +16,13 @@ It then proxies the events so other things can handle what happened.
 class TileSystem: public es::System
 {
     public:
-        TileSystem(ocs::ObjectManager& entities, TileMapData& tileMapData);
+        TileSystem(ocs::ObjectManager& objects, TileMapData& tileMapData);
         void update(float dt);
 
     private:
         void handleExitTile();
 
-        ocs::ObjectManager& entities;
+        ocs::ObjectManager& objects;
         TileMapData& tileMapData;
 };
 

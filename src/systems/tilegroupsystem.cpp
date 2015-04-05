@@ -5,15 +5,15 @@
 #include "components.h"
 #include "tilemapchanger.h"
 
-TileGroupSystem::TileGroupSystem(TileMapChanger& tileMapChanger, ocs::ObjectManager& entities):
+TileGroupSystem::TileGroupSystem(TileMapChanger& tileMapChanger, ocs::ObjectManager& objects):
     tileMapChanger(tileMapChanger),
-    entities(entities)
+    objects(objects)
 {
 }
 
 void TileGroupSystem::initialize()
 {
-    for (auto& tileGroup: entities.getComponentArray<Components::TileGroup>())
+    for (auto& tileGroup: objects.getComponentArray<Components::TileGroup>())
     {
         for (auto id: tileGroup.tileIds)
             tileMapChanger.changeState(id, tileGroup.initialState);
@@ -22,9 +22,9 @@ void TileGroupSystem::initialize()
 
 void TileGroupSystem::update(float dt)
 {
-    for (auto& tileGroup: entities.getComponentArray<Components::TileGroup>())
+    for (auto& tileGroup: objects.getComponentArray<Components::TileGroup>())
     {
-        auto state = entities.getComponent<Components::State>(tileGroup.getOwnerID());
+        auto state = objects.getComponent<Components::State>(tileGroup.getOwnerID());
         if (state && state->hasChanged())
         {
             for (auto id: tileGroup.tileIds)

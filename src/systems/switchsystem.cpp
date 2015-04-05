@@ -9,10 +9,10 @@
 #include "components.h"
 #include <iostream>
 
-SwitchSystem::SwitchSystem(TileMapData& tileMapData, TileMapChanger& tileMapChanger, ocs::ObjectManager& entities):
+SwitchSystem::SwitchSystem(TileMapData& tileMapData, TileMapChanger& tileMapChanger, ocs::ObjectManager& objects):
     tileMapData(tileMapData),
     tileMapChanger(tileMapChanger),
-    entities(entities)
+    objects(objects)
 {
 }
 
@@ -20,7 +20,7 @@ void SwitchSystem::initialize()
 {
     // Populate switch objects map from Switch components
     switchObjects.clear();
-    for (auto& switchComp: entities.getComponentArray<Components::Switch>())
+    for (auto& switchComp: objects.getComponentArray<Components::Switch>())
         switchObjects[switchComp.tileId] = switchComp.objectNames;
 }
 

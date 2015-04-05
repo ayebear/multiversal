@@ -7,8 +7,8 @@
 #include "level.h"
 #include <iostream>
 
-PlayerSystem::PlayerSystem(ocs::ObjectManager& entities, ng::ActionHandler& actions, Level& level):
-    entities(entities),
+PlayerSystem::PlayerSystem(ocs::ObjectManager& objects, ng::ActionHandler& actions, Level& level):
+    objects(objects),
     actions(actions),
     level(level),
     playerId(-1),
@@ -32,9 +32,9 @@ void PlayerSystem::update(float dt)
 
 void PlayerSystem::handleMovement()
 {
-    auto velocity = entities.getComponent<Components::Velocity>(playerId);
-    auto sprite = entities.getComponent<Components::AnimSprite>(playerId);
-    auto movable = entities.getComponent<Components::Movable>(playerId);
+    auto velocity = objects.getComponent<Components::Velocity>(playerId);
+    auto sprite = objects.getComponent<Components::AnimSprite>(playerId);
+    auto movable = objects.getComponent<Components::Movable>(playerId);
     if (velocity && sprite && movable)
     {
         // Get status of actions
@@ -43,7 +43,7 @@ void PlayerSystem::handleMovement()
 
         // Check the carrying state
         std::string carryStr;
-        auto carrier = entities.getComponent<Components::Carrier>(playerId);
+        auto carrier = objects.getComponent<Components::Carrier>(playerId);
         if (carrier && carrier->carrying)
             carryStr = "Carry";
 
@@ -74,9 +74,9 @@ void PlayerSystem::handleMovement()
 
 void PlayerSystem::handleJump()
 {
-    auto jumpable = entities.getComponent<Components::Jumpable>(playerId);
-    auto objectState = entities.getComponent<Components::ObjectState>(playerId);
-    auto velocity = entities.getComponent<Components::Velocity>(playerId);
+    auto jumpable = objects.getComponent<Components::Jumpable>(playerId);
+    auto objectState = objects.getComponent<Components::ObjectState>(playerId);
+    auto velocity = objects.getComponent<Components::Velocity>(playerId);
     if (jumpable && objectState && velocity)
     {
         // Jump by changing velocity if not already in the air
@@ -91,8 +91,8 @@ void PlayerSystem::handleJump()
 void PlayerSystem::handleAction()
 {
     // Handle the input for pressing "up", and proxy the events
-    auto position = entities.getComponent<Components::Position>(playerId);
-    auto aabb = entities.getComponent<Components::AABB>(playerId);
+    auto position = objects.getComponent<Components::Position>(playerId);
+    auto aabb = objects.getComponent<Components::AABB>(playerId);
     if (position && aabb)
     {
         std::cout << "Action key pressed: (" << position->x << ", " << position->y << "), Locations: ";

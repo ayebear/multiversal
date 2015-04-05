@@ -15,14 +15,14 @@ Receives switch output events to work.
 class ObjectSwitchSystem: public es::System
 {
     public:
-        ObjectSwitchSystem(Level& level, ocs::ObjectManager& entities);
+        ObjectSwitchSystem(Level& level, ocs::ObjectManager& objects);
         void update(float dt);
 
     private:
         void toggleObjectState(const std::string& name);
 
         Level& level;
-        ocs::ObjectManager& entities;
+        ocs::ObjectManager& objects;
 };
 
 #endif

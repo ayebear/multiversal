@@ -260,17 +260,21 @@ struct State: public ocs::Component<State>
 struct TileGroup: public ocs::Component<TileGroup>
 {
     bool initialState{false};
-    std::vector<int> tileIds;
+    std::set<int> tileIds;
 
     void deSerialize(const std::string& str)
     {
         initialState = false;
-        tileIds = strlib::split<int>(str, " ");
-        if (!tileIds.empty())
+        tileIds.clear();
+        auto tiles = strlib::split<int>(str, " ");
+        if (!tiles.empty())
         {
             // Use the first element as the initial state
-            initialState = (tileIds.front() != 0);
-            tileIds.erase(tileIds.begin());
+            initialState = (tiles.front() != 0);
+
+            // Store the rest of the values as tile IDs
+            if (tiles.size() > 1)
+                tileIds.insert(tiles.begin() + 1, tiles.end());
         }
     }
 

@@ -25,7 +25,7 @@ class LevelEditor: public sf::Drawable
 
         LevelEditor(GameWorld& world, ng::StateEvent& stateEvent);
         void handleEvent(const sf::Event& event);
-        void update(float dt);
+        void update(float dt, bool withinBorder);
         void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
     private:
@@ -37,6 +37,7 @@ class LevelEditor: public sf::Drawable
         void undo();
         void redo();
         void clear();
+        void toggleLayer();
         void nextLevel();
         void prevLevel();
 
@@ -46,13 +47,14 @@ class LevelEditor: public sf::Drawable
         void updateBorder();
         void updateCurrentTile();
         void resize(int deltaX, int deltaY);
+        void initialize();
 
         GameWorld& world;
         ng::StateEvent& stateEvent;
 
         // Settings
-        float panSpeed = 100;
-        float defaultZoom = 1;
+        float panSpeed = 2400;
+        float defaultZoom = 4;
 
         // Other variables
         ng::ActionHandler actions;
@@ -62,15 +64,25 @@ class LevelEditor: public sf::Drawable
         std::map<int, Tile> visualTiles; // Used to place tiles
         sf::View view;
         sf::Vector2f mousePos;
-        sf::RectangleShape border; // Border to show boundaries
         sf::Vector2u tileSize;
+
+        // Used for drawing sprites
+        std::vector<sf::Sprite*> sprites;
+
+        // Border to show boundaries
+        sf::RectangleShape border;
+        static const sf::Color borderColors[];
 
         // Current tile (hovers under mouse)
         ng::TileMap currentTile;
 
         // Object palette and placing
-        ocs::ObjectManager entities;
-        Level::ObjectNameMap objectNames;
+        ocs::ObjectManager objectPalette;
+        Level::ObjectNameMap objectNamesPalette;
+
+        // For managing objects part of the level
+        ocs::ID stateOnId;
+        ocs::ID stateOffId;
 };
 
 #endif

@@ -8,12 +8,13 @@
 #include "components.h"
 #include "events.h"
 #include "gameevents.h"
+#include "inaltworld.h"
 
 const sf::Vector2i PhysicsSystem::maxVelocity(1600, 3200);
 const sf::Vector2i PhysicsSystem::gravityConstant(640, 640);
 
-PhysicsSystem::PhysicsSystem(ocs::ObjectManager& entities, TileMapData& tileMapData, ng::TileMap& tileMap, MagicWindow& magicWindow):
-    entities(entities),
+PhysicsSystem::PhysicsSystem(ocs::ObjectManager& objects, TileMapData& tileMapData, ng::TileMap& tileMap, MagicWindow& magicWindow):
+    objects(objects),
     tileMapData(tileMapData),
     tileMap(tileMap),
     magicWindow(magicWindow)
@@ -50,15 +51,15 @@ void PhysicsSystem::stepPositions(float dt)
     es::Events::clear<CameraEvent>();
 
     // Apply gravity and handle collisions
-    for (auto& velocity: entities.getComponentArray<Components::Velocity>())
+    for (auto& velocity: objects.getComponentArray<Components::Velocity>())
     {
         auto entityId = velocity.getOwnerID();
-        auto position = entities.getComponent<Components::Position>(entityId);
-        auto size = entities.getComponent<Components::Size>(entityId);
+        auto position = objects.getComponent<Components::Position>(entityId);
+        auto size = objects.getComponent<Components::Size>(entityId);
         if (position && size)
         {
             // Apply gravity from the gravity component (if it exists)
-            auto gravity = entities.getComponent<Components::Gravity>(entityId);
+            auto gravity = objects.getComponent<Components::Gravity>(entityId);
             if (gravity)
             {
                 velocity.x += dt * gravity->acceleration.x * gravityConstant.x;
@@ -70,10 +71,10 @@ void PhysicsSystem::stepPositions(float dt)
             }
 
             // Get the AABB component used for collision detection/handling
-            auto aabb = entities.getComponent<Components::AABB>(entityId);
+            auto aabb = objects.getComponent<Components::AABB>(entityId);
 
             // See if the entity is in the alternate world!
-            bool inAltWorld = entities.hasComponents<Components::AltWorld>(entityId);
+            bool inAltWorld = objects.hasComponents<Components::AltWorld>(entityId);
 
             // Update Y
             position->y += dt * velocity.y;
@@ -89,7 +90,7 @@ void PhysicsSystem::stepPositions(float dt)
             updateEdgeCases(position, size, velocity.y, entityId);
 
             // Send camera update event
-            if (entities.hasComponents<Components::CameraUpdater>(velocity.getOwnerID()))
+            if (objects.hasComponents<Components::CameraUpdater>(velocity.getOwnerID()))
                 es::Events::send(CameraEvent{sf::Vector2f(position->x, position->y),
                                              sf::Vector2f(size->x, size->y)});
         }
@@ -111,7 +112,7 @@ void PhysicsSystem::handleTileCollision(Components::AABB* entAABB, float& veloci
     sf::Vector2u end;
     getCollidingTiles(tempAABB, start, end);
 
-    bool aboveWindow = entities.hasComponents<Components::AboveWindow>(entityId);
+    bool aboveWindow = objects.hasComponents<Components::AboveWindow>(entityId);
 
     // Check the collision
     bool onPlatform = false;
@@ -197,7 +198,7 @@ void PhysicsSystem::checkEntityCollisions()
 
     // Use an O(n^2) algorithm to detect collisions between entities
     // Update the collision lists on any colliding components
-    auto& aabbComponents = entities.getComponentArray<Components::AABB>();
+    auto& aabbComponents = objects.getComponentArray<Components::AABB>();
     for (auto& aabb: aabbComponents)
     {
         aabb.collisions.clear();
@@ -209,19 +210,19 @@ void PhysicsSystem::checkEntityCollisions()
                     // This will make things 100% accurate and much simpler (no crazy boolean logic like below)
                 auto id = aabb.getOwnerID();
                 auto id2 = aabb2.getOwnerID();
-                auto pos = entities.getComponent<Components::Position>(id);
-                auto pos2 = entities.getComponent<Components::Position>(id2);
-                bool drawOnTop = entities.hasComponents<Components::DrawOnTop>(id);
-                bool drawOnTop2 = entities.hasComponents<Components::DrawOnTop>(id2);
-                bool inAltWorld = entities.hasComponents<Components::AltWorld>(id);
-                bool inAltWorld2 = entities.hasComponents<Components::AltWorld>(id2);
+                auto pos = objects.getComponent<Components::Position>(id);
+                auto pos2 = objects.getComponent<Components::Position>(id2);
+                bool drawOnTop = objects.hasComponents<Components::DrawOnTop>(id);
+                bool drawOnTop2 = objects.hasComponents<Components::DrawOnTop>(id2);
+                bool altWorld = inAltWorld(objects, id);
+                bool altWorld2 = inAltWorld(objects, id2);
                 bool inWindow = magicWindow.isWithin(aabb.getGlobalBounds(pos));
                 bool inWindow2 = magicWindow.isWithin(aabb2.getGlobalBounds(pos2));
-                bool case1 = (inAltWorld == inWindow && inAltWorld2 == inWindow2); // "Real world"
-                bool case2 = ((inAltWorld && !inWindow) && (inAltWorld2 && !inWindow2)); // "Alternate world"
-                bool case3 = (!inAltWorld && drawOnTop && inWindow && inAltWorld2 && inWindow2); // An object on top, like the player
-                bool case4 = (!inAltWorld2 && drawOnTop2 && inWindow2 && inAltWorld && inWindow); // Another object on top
-                bool case5 = (!inAltWorld && drawOnTop && inWindow && !inAltWorld2 && drawOnTop2 && inWindow2); // Both objects on top and in window
+                bool case1 = (altWorld == inWindow && altWorld2 == inWindow2); // "Real world"
+                bool case2 = ((altWorld && !inWindow) && (altWorld2 && !inWindow2)); // "Alternate world"
+                bool case3 = (!altWorld && drawOnTop && inWindow && altWorld2 && inWindow2); // An object on top, like the player
+                bool case4 = (!altWorld2 && drawOnTop2 && inWindow2 && altWorld && inWindow); // Another object on top
+                bool case5 = (!altWorld && drawOnTop && inWindow && !altWorld2 && drawOnTop2 && inWindow2); // Both objects on top and in window
                 if (case1 || case2 || case3 || case4 || case5)
                 {
                     if (aabb.getGlobalBounds(pos).intersects(aabb2.getGlobalBounds(pos2)))
@@ -238,10 +239,10 @@ void PhysicsSystem::checkTileCollisions()
 {
     // Generate lists of tile coordinates colliding with AABB components
     // TODO: This may only be useful for the player, so make an optional flag or component to enable it
-    for (auto& aabb: entities.getComponentArray<Components::AABB>())
+    for (auto& aabb: objects.getComponentArray<Components::AABB>())
     {
         aabb.tileCollisions.clear();
-        auto position = entities.getComponent<Components::Position>(aabb.getOwnerID());
+        auto position = objects.getComponent<Components::Position>(aabb.getOwnerID());
         if (position)
         {
             sf::Vector2u start, end;
@@ -272,36 +273,54 @@ int PhysicsSystem::determineLayer(bool inAltWorld, bool aboveWindow, unsigned x,
 
 void PhysicsSystem::updateTilePositionComponents()
 {
-    for (auto& tilePos: entities.getComponentArray<Components::TilePosition>())
+    for (auto& tilePos: objects.getComponentArray<Components::TilePosition>())
     {
         // Update pos/layer
         tilePos.layer = tileMapData.getLayer(tilePos.id);
         tilePos.pos.x = tileMapData.getX(tilePos.id);
         tilePos.pos.y = tileMapData.getY(tilePos.id);
 
-        // Update position components if they exist
-        auto position = entities.getComponent<Components::Position>(tilePos.getOwnerID());
-        if (position)
-        {
-            auto center = tileMap.getCenterPoint<float>(tilePos.pos.x, tilePos.pos.y);
-            position->x = center.x;
-            position->y = center.y;
-        }
+        auto ownerId = tilePos.getOwnerID();
+        auto position = objects.getComponent<Components::Position>(ownerId);
 
-        // Update sprite components to have a centered origin point
-        // Note: This is done so rotations will work as expected
-        auto sprite = entities.getComponent<Components::Sprite>(tilePos.getOwnerID());
-        if (sprite)
+        if (objects.hasComponents<Components::Rotation>(ownerId))
         {
-            auto bounds = sprite->sprite.getGlobalBounds();
-            sprite->sprite.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f);
+            // Use the center if there is a rotation component
+            // Note: Physics and collisions won't work properly with this
+
+            // Update position components if they exist
+            if (position)
+            {
+                auto center = tileMap.getCenterPoint<float>(tilePos.pos.x, tilePos.pos.y);
+                position->x = center.x;
+                position->y = center.y;
+            }
+
+            // Update sprite components to have a centered origin point
+            // Note: This is done so rotations will work as expected
+            auto sprite = objects.getComponent<Components::Sprite>(ownerId);
+            if (sprite)
+            {
+                auto bounds = sprite->sprite.getGlobalBounds();
+                sprite->sprite.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f);
+            }
+        }
+        else
+        {
+            // Use the top-left like normal if there is no rotation component
+            if (position)
+            {
+                auto bounds = tileMap.getBoundingBox(tilePos.pos.x, tilePos.pos.y);
+                position->x = bounds.left;
+                position->y = bounds.top;
+            }
         }
     }
 }
 
 void PhysicsSystem::updateOnPlatformState(ocs::ID entityId, int state)
 {
-    auto objectState = entities.getComponent<Components::ObjectState>(entityId);
+    auto objectState = objects.getComponent<Components::ObjectState>(entityId);
     if (objectState)
         objectState->state = state;
 }

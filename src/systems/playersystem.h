@@ -20,7 +20,7 @@ This system handles player-related actions:
 class PlayerSystem: public es::System
 {
     public:
-        PlayerSystem(ocs::ObjectManager& entities, ng::ActionHandler& actions, Level& level);
+        PlayerSystem(ocs::ObjectManager& objects, ng::ActionHandler& actions, Level& level);
         void initialize();
         void update(float dt);
 
@@ -29,7 +29,7 @@ class PlayerSystem: public es::System
         void handleJump();
         void handleAction();
 
-        ocs::ObjectManager& entities;
+        ocs::ObjectManager& objects;
         ng::ActionHandler& actions;
         Level& level;
 

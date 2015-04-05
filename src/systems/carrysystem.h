@@ -10,17 +10,17 @@
 class MagicWindow;
 
 /*
-This class handles entities that can "carry" other entities.
+This class handles entities that can "carry" other objects.
 TODO: Make this more generic to have an "attacher" that overrides positions.
 */
 class CarrySystem: public es::System
 {
     public:
-        CarrySystem(ocs::ObjectManager& entities, MagicWindow& magicwindow);
+        CarrySystem(ocs::ObjectManager& objects, MagicWindow& magicwindow);
         void update(float dt);
 
     private:
-        ocs::ObjectManager& entities;
+        ocs::ObjectManager& objects;
         MagicWindow& magicwindow;
 };
 

@@ -24,7 +24,7 @@
 
 GameWorld::GameWorld(sf::RenderWindow& window):
     tileMapChanger(tileMapData, tileMap),
-    level(tileMapData, tileMap, tileMapChanger, entities, magicWindow),
+    level(tileMapData, tileMap, tileMapChanger, objects, magicWindow),
     levelLoader(level, "data/levels/"),
     magicWindow(actions)
 {
@@ -35,22 +35,23 @@ GameWorld::GameWorld(sf::RenderWindow& window):
 
     // Setup systems
     systems.add<InputSystem>(window);
-    systems.add<MovingSystem>(entities);
-    systems.add<PhysicsSystem>(entities, tileMapData, tileMap, magicWindow);
-    systems.add<PlayerSystem>(entities, actions, level);
-    systems.add<CarrySystem>(entities, magicWindow);
-    systems.add<SpriteSystem>(entities);
+    systems.add<MovingSystem>(objects);
+    systems.add<PhysicsSystem>(objects, tileMapData, tileMap, magicWindow);
+    systems.add<PlayerSystem>(objects, actions, level);
+    systems.add<CarrySystem>(objects, magicWindow);
+    systems.add<SpriteSystem>(objects);
     systems.add<CameraSystem>(camera, tileMap);
-    systems.add<TileSystem>(entities, tileMapData);
-    systems.add<SwitchSystem>(tileMapData, tileMapChanger, entities);
-    systems.add<ObjectSwitchSystem>(level, entities);
-    systems.add<TileGroupSystem>(tileMapChanger, entities);
-    systems.add<LaserSystem>(entities, tileMapData, tileMap, magicWindow);
-    systems.add<RenderSystem>(entities, tileMap, window, camera, magicWindow);
+    systems.add<TileSystem>(objects, tileMapData);
+    systems.add<SwitchSystem>(tileMapData, tileMapChanger, objects);
+    systems.add<ObjectSwitchSystem>(level, objects);
+    systems.add<TileGroupSystem>(tileMapChanger, objects);
+    systems.add<LaserSystem>(objects, tileMapData, tileMap, magicWindow);
+    systems.add<RenderSystem>(objects, tileMap, window, camera, magicWindow);
 
     // Load entity prototypes
-    bindComponentStrings(entities);
-    es::EntityPrototypeLoader::load(entities, "data/config/entities.cfg");
+    bindComponentStrings(objects);
+    if (!es::EntityPrototypeLoader::load(objects, "data/config/objects.cfg"))
+        std::cerr << "ERROR: Could not load object prototypes.\n";
 
     // Load the tiles
     tileMap.loadFromConfig("data/config/tilemap.cfg");

@@ -9,8 +9,8 @@
 #include "components.h"
 #include <iostream>
 
-TileSystem::TileSystem(ocs::ObjectManager& entities, TileMapData& tileMapData):
-    entities(entities),
+TileSystem::TileSystem(ocs::ObjectManager& objects, TileMapData& tileMapData):
+    objects(objects),
     tileMapData(tileMapData)
 {
 }
@@ -20,7 +20,7 @@ void TileSystem::update(float dt)
     // Handle action key events (when the player presses "up") on different tiles
     for (auto& event: es::Events::get<ActionKeyEvent>())
     {
-        auto aabb = entities.getComponent<Components::AABB>(event.entityId);
+        auto aabb = objects.getComponent<Components::AABB>(event.entityId);
         if (aabb)
         {
             for (int tileId: aabb->tileCollisions)

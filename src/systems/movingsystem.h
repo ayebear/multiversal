@@ -17,7 +17,7 @@ Instead of using velocity/gravity components to update position like the physics
 class MovingSystem: public es::System
 {
     public:
-        MovingSystem(ocs::ObjectManager& entities);
+        MovingSystem(ocs::ObjectManager& objects);
         void initialize();
         void update(float dt);
 
@@ -25,7 +25,7 @@ class MovingSystem: public es::System
         void goToNextPoint(Components::Moving& moving, Components::Position& position, Components::State& state) const;
         void calculateVelocity(Components::Moving& moving, Components::Position& position) const;
 
-        ocs::ObjectManager& entities;
+        ocs::ObjectManager& objects;
 };
 
 #endif

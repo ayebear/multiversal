@@ -4,6 +4,8 @@
 #ifndef TILEMAPCHANGER_H
 #define TILEMAPCHANGER_H
 
+#include <functional>
+
 class TileMapData;
 namespace ng { class TileMap; }
 
@@ -13,6 +15,7 @@ A simplified way to change the logical and visual tilemap simultaneously.
 class TileMapChanger
 {
     public:
+
         TileMapChanger(TileMapData& tileMapData, ng::TileMap& tileMap);
 
         // Returns true if the state of the tile changed from this call
@@ -25,9 +28,17 @@ class TileMapChanger
         void updateVisualTile(int tileId);
 
         // Resizes both tile maps, and re-populates the visual tiles
-        void resize(unsigned width, unsigned height);
+        void resize(int width, int height);
+
+        // Resets all of the tiles, but does not resize anything
+        void clear();
 
     private:
+
+        // Applies a function to every tile
+        using FuncType = std::function<void(unsigned, unsigned)>;
+        void apply(FuncType callback);
+
         TileMapData& tileMapData;
         ng::TileMap& tileMap;
 };

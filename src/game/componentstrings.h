@@ -6,6 +6,8 @@
 
 namespace ocs { class ObjectManager; }
 
-void bindComponentStrings(ocs::ObjectManager& entities);
+#define BIND_COMP_STR(name) objects.bindStringToComponent<Components::name>(#name)
+
+void bindComponentStrings(ocs::ObjectManager& objects);
 
 #endif
