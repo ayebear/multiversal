@@ -34,5 +34,6 @@ void bindComponentStrings(ocs::ObjectManager& objects)
     BIND_COMP_STR(TilePosition);
     BIND_COMP_STR(Rotation);
     BIND_COMP_STR(Switch);
+    BIND_COMP_STR(InitialPosition);
     std::cout << "Done binding component strings.\n";
 }

@@ -350,6 +350,28 @@ struct Switch: public ocs::Component<Switch>
     }
 };
 
+// Initializes the position of an object by name
+struct InitialPosition: public ocs::Component<InitialPosition>
+{
+    std::string objectName;
+    int tileId{};
+
+    void deSerialize(const std::string& str)
+    {
+        auto values = strlib::split(str, " ");
+        if (values.size() == 2)
+        {
+            objectName = values.front();
+            tileId = strlib::fromString<int>(values.back());
+        }
+    }
+
+    std::string serialize()
+    {
+        return "InitialPosition " + objectName + " " + std::to_string(tileId);
+    }
+};
+
 // Component flags
 
 // Flag for updating the camera

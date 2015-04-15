@@ -4,7 +4,7 @@
 #ifndef TILEGROUPSYSTEM_H
 #define TILEGROUPSYSTEM_H
 
-#include "system.h"
+#include "es/system.h"
 #include "OCS/Objects.hpp"
 
 class TileMapChanger;

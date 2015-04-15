@@ -6,18 +6,20 @@
 #include "nage/graphics/tilemap.h"
 #include "magicwindow.h"
 #include "components.h"
-#include "events.h"
+#include "es/events.h"
 #include "gameevents.h"
 #include "inaltworld.h"
+#include "level.h"
 
 const sf::Vector2i PhysicsSystem::maxVelocity(1600, 3200);
 const sf::Vector2i PhysicsSystem::gravityConstant(640, 640);
 
-PhysicsSystem::PhysicsSystem(ocs::ObjectManager& objects, TileMapData& tileMapData, ng::TileMap& tileMap, MagicWindow& magicWindow):
+PhysicsSystem::PhysicsSystem(ocs::ObjectManager& objects, TileMapData& tileMapData, ng::TileMap& tileMap, MagicWindow& magicWindow, Level& level):
     objects(objects),
     tileMapData(tileMapData),
     tileMap(tileMap),
-    magicWindow(magicWindow)
+    magicWindow(magicWindow),
+    level(level)
 {
 }
 
@@ -228,8 +230,6 @@ void PhysicsSystem::checkEntityCollisions()
                     if (aabb.getGlobalBounds(pos).intersects(aabb2.getGlobalBounds(pos2)))
                         aabb.collisions.push_back(aabb2.getOwnerID());
                 }
-                //if (id == 0 && id2 == 1)
-                //    std::cout << "Player cases: " << case1 << ", " << case2 << ", " << case3 << ", " << case4 << ", " << case5 << ", IDs: " << id << ", " << id2 << "\n";
             }
         }
     }
@@ -273,6 +273,16 @@ int PhysicsSystem::determineLayer(bool inAltWorld, bool aboveWindow, unsigned x,
 
 void PhysicsSystem::updateTilePositionComponents()
 {
+    // Initialize tile positions from InitialPosition components
+    for (auto& initPos: objects.getComponentArray<Components::InitialPosition>())
+    {
+        auto objId = level.getObjectIdFromName(initPos.objectName);
+        auto tilePos = objects.getComponent<Components::TilePosition>(objId);
+        if (tilePos)
+            tilePos->id = initPos.tileId;
+    }
+
+    // Initial positions from TilePosition components
     for (auto& tilePos: objects.getComponentArray<Components::TilePosition>())
     {
         // Update pos/layer

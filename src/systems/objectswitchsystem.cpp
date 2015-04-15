@@ -2,7 +2,7 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "objectswitchsystem.h"
-#include "events.h"
+#include "es/events.h"
 #include "gameevents.h"
 #include "components.h"
 #include <iostream>

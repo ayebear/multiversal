@@ -3,11 +3,11 @@
 
 #include "levelloader.h"
 #include "level.h"
-#include "events.h"
+#include "es/events.h"
 #include "gameevents.h"
 #include <iostream>
 
-const int LevelLoader::TOTAL_LEVELS = 1;
+const int LevelLoader::TOTAL_LEVELS = 10;
 
 const cfg::File::ConfigMap LevelLoader::defaultSaveGameOptions = {
     {"", {

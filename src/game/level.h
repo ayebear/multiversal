@@ -65,13 +65,10 @@ class Level
         // Loads objects from a section in a config file
         void loadObjects(cfg::File::Section& section, ocs::ObjectManager& objects, ObjectNameMap& objectNames, bool player = true) const;
 
-        // Resets tilemaps and objects (but keeps player object)
+        // Resets tilemaps and objects
         void clear();
 
     private:
-
-        // Creates a player object
-        void createPlayer(ocs::ObjectManager& objects, ObjectNameMap& objectNames) const;
 
         // Loading levels
         void load(cfg::File& config);

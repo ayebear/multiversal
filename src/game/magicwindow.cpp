@@ -4,7 +4,7 @@
 #include "magicwindow.h"
 #include <iostream>
 #include "nage/graphics/views.h"
-#include "events.h"
+#include "es/events.h"
 #include "gameevents.h"
 
 std::vector<sf::RenderTexture> MagicWindow::textures(TEXTURE_COUNT);

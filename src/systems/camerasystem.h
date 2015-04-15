@@ -5,7 +5,7 @@
 #define CAMERASYSTEM_H
 
 #include <SFML/Graphics.hpp>
-#include "system.h"
+#include "es/system.h"
 
 namespace ng
 {

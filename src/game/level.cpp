@@ -3,7 +3,7 @@
 
 #include "level.h"
 #include <sstream>
-#include "events.h"
+#include "es/events.h"
 #include "gameevents.h"
 #include "tilemapdata.h"
 #include "nage/graphics/tilemap.h"
@@ -96,7 +96,7 @@ void Level::save(cfg::File& config) const
 
 ocs::ID Level::getObjectIdFromName(const std::string& name) const
 {
-    ocs::ID id = -1;
+    ocs::ID id = BasePackedArray::INVALID_INDEX;
     auto found = objectNamesToIds.find(name);
     if (found != objectNamesToIds.end())
         id = found->second;
@@ -112,7 +112,6 @@ void Level::loadObjects(cfg::File::Section& section, ocs::ObjectManager& objects
 {
     objects.destroyAllObjects();
     objectNames.clear();
-    bool playerCreated = false;
 
     // Create objects from level file
     for (auto& option: section)
@@ -129,8 +128,6 @@ void Level::loadObjects(cfg::File::Section& section, ocs::ObjectManager& objects
 
         // Keep its unique name in a lookup table
         objectNames[names.front()] = id;
-        if (names.front() == "player")
-            playerCreated = true;
 
         // Update all specified components
         for (auto& componentStr: option.second)
@@ -156,24 +153,13 @@ void Level::loadObjects(cfg::File::Section& section, ocs::ObjectManager& objects
                 std::cerr << "ERROR: Cannot process '" << compStr << "'.\n";
         }
     }
-
-    if (player && !playerCreated)
-        createPlayer(objects, objectNames);
 }
 
 void Level::clear()
 {
     tileMapChanger.clear();
     objects.destroyAllObjects();
-    createPlayer(objects, objectNamesToIds);
-}
-
-void Level::createPlayer(ocs::ObjectManager& objects, ObjectNameMap& objectNames) const
-{
-    auto id = objects.createObject("Player");
-    objectNames["player"] = id;
-    const auto& tileSize = tileMap.getTileSize();
-    objects.addComponents(id, Components::Position(tileSize.x, tileSize.y));
+    objectNamesToIds.clear();
 }
 
 void Level::loadLogicalLayer(cfg::File& config, int layer)
@@ -233,7 +219,10 @@ void Level::loadTileMap(cfg::File& config)
     for (auto& section: config)
     {
         // Determine which layer to use
-        int currentLayer = strlib::fromString<int>(section.first);
+        auto parsed = strlib::split(section.first, ":");
+        int currentLayer = -1;
+        if (parsed.size() > 1)
+            currentLayer = strlib::fromString<int>(parsed.front(), -1);
         if (currentLayer < 0 || currentLayer > 1)
             continue;
 
@@ -245,7 +234,7 @@ void Level::loadTileMap(cfg::File& config)
         loadVisualLayer(config, currentLayer);
     }
 
-    // Derive the remaining layer data (this basically initializes the layers)
+    // Derive the remaining layer data (states and collision layers)
     tileMapData.deriveTiles();
 
     // Use the real world as the current layer
@@ -287,8 +276,8 @@ void Level::saveTileMap(cfg::File& config) const
                     visualStream << " ";
                 }
             }
-            config("logical").push() = logicalStream.str();
-            config("visual").push() = visualStream.str();
+            config("logical") << logicalStream.str();
+            config("visual") << visualStream.str();
         }
         ++layer;
     }
@@ -300,11 +289,15 @@ void Level::saveObjects(cfg::File& config) const
     config.useSection("Objects");
     for (const auto& object: objectNamesToIds)
     {
-        // Serialize all of the components of this object
-        auto& option = config(object.first);
-        auto components = objects.serializeObject(object.second);
-        std::sort(components.begin(), components.end());
-        for (const auto& str: components)
-            option.push() = str;
+        // TODO: Make an exclusion list?
+        if (object.first != "player")
+        {
+            // Serialize all of the components of this object
+            auto& option = config(object.first);
+            auto components = objects.serializeObject(object.second);
+            std::sort(components.begin(), components.end());
+            for (const auto& str: components)
+                option << str;
+        }
     }
 }

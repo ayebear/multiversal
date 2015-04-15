@@ -2,7 +2,7 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "movingsystem.h"
-#include "events.h"
+#include "es/events.h"
 #include "gameevents.h"
 #include "nage/graphics/vectors.h"
 #include <iostream>

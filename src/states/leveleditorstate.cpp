@@ -4,7 +4,7 @@
 #include "leveleditorstate.h"
 #include "gameresources.h"
 #include "inputsystem.h"
-#include "events.h"
+#include "es/events.h"
 
 LevelEditorState::LevelEditorState(GameResources& resources):
     resources(resources)

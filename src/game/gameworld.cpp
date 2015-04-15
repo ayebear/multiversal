@@ -4,7 +4,7 @@
 #include "gameworld.h"
 #include "components.h"
 #include "componentstrings.h"
-#include "entityprototypeloader.h"
+#include "es/entityprototypeloader.h"
 #include <iostream>
 
 // Include systems
@@ -36,8 +36,8 @@ GameWorld::GameWorld(sf::RenderWindow& window):
     // Setup systems
     systems.add<InputSystem>(window);
     systems.add<MovingSystem>(objects);
-    systems.add<PhysicsSystem>(objects, tileMapData, tileMap, magicWindow);
     systems.add<PlayerSystem>(objects, actions, level);
+    systems.add<PhysicsSystem>(objects, tileMapData, tileMap, magicWindow, level);
     systems.add<CarrySystem>(objects, magicWindow);
     systems.add<SpriteSystem>(objects);
     systems.add<CameraSystem>(camera, tileMap);

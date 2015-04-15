@@ -5,7 +5,7 @@
 #define INPUTSYSTEM_H
 
 #include <SFML/Graphics.hpp>
-#include "system.h"
+#include "es/system.h"
 
 /*
 This class handles the processing of all inputs, and sends out global input events with all of the needed information.

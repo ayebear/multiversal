@@ -2,7 +2,7 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "playersystem.h"
-#include "events.h"
+#include "es/events.h"
 #include "gameevents.h"
 #include "level.h"
 #include <iostream>
@@ -21,8 +21,13 @@ PlayerSystem::PlayerSystem(ocs::ObjectManager& objects, ng::ActionHandler& actio
 
 void PlayerSystem::initialize()
 {
-    // Lookup the player's object ID
+    // Create a player object if it doesn't already exist
     playerId = level.getObjectIdFromName("player");
+    if (playerId == BasePackedArray::INVALID_INDEX)
+    {
+        playerId = objects.createObject("Player");
+        level.registerObjectName(playerId, "player");
+    }
 }
 
 void PlayerSystem::update(float dt)
@@ -90,7 +95,7 @@ void PlayerSystem::handleJump()
 
 void PlayerSystem::handleAction()
 {
-    // Handle the input for pressing "up", and proxy the events
+    // Handle the input for pressing the action key, and proxy the events
     auto position = objects.getComponent<Components::Position>(playerId);
     auto aabb = objects.getComponent<Components::AABB>(playerId);
     if (position && aabb)

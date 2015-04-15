@@ -4,7 +4,7 @@
 #ifndef LASERSYSTEM_H
 #define LASERSYSTEM_H
 
-#include "system.h"
+#include "es/system.h"
 #include "OCS/Objects.hpp"
 #include <SFML/Graphics.hpp>
 #include "components.h"

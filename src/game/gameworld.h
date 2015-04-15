@@ -13,7 +13,7 @@
 #include "magicwindow.h"
 #include "OCS/Objects.hpp"
 #include "nage/misc/matrix.h"
-#include "systemcontainer.h"
+#include "es/systemcontainer.h"
 #include "nage/actions/actionhandler.h"
 
 /*

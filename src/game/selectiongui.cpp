@@ -4,7 +4,7 @@
 #include "selectiongui.h"
 #include "gameworld.h"
 #include "nage/graphics/vectors.h"
-#include "events.h"
+#include "es/events.h"
 #include "gameevents.h"
 
 SelectionGUI::SelectionGUI(GameWorld& world, sf::RenderWindow& window):
@@ -132,10 +132,7 @@ void SelectionGUI::setupTiles()
     for (unsigned y = 0; y < rows && id < tileTypes; ++y)
     {
         for (unsigned x = 0; x < TILE_COLUMNS && id < tileTypes; ++x)
-        {
-            tiles.set(x, y, id);
-            ++id;
-        }
+            tiles.set(x, y, id++);
     }
 }
 

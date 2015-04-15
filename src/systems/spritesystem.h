@@ -5,7 +5,7 @@
 #define SPRITESYSTEM_H
 
 #include "OCS/Objects.hpp"
-#include "system.h"
+#include "es/system.h"
 
 /*
 This class handles updating the sprite positions from the position components.

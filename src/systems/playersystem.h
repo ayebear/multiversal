@@ -6,7 +6,7 @@
 
 #include "components.h"
 #include "OCS/Objects.hpp"
-#include "system.h"
+#include "es/system.h"
 #include "nage/actions/actionhandler.h"
 
 class Level;

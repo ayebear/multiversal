@@ -3,6 +3,8 @@
 
 #include "tilemapdata.h"
 #include "configfile.h"
+
+#include "logicaltiles.h"
 #include <iostream>
 
 void Tile::reset()
@@ -72,8 +74,7 @@ void TileMapData::deriveTiles()
     {
         for (auto& tile: layer)
         {
-            // Set the state to false and update the collision
-            tile.state = false;
+            updateState(tile);
             updateCollision(tile);
         }
     }
@@ -81,7 +82,11 @@ void TileMapData::deriveTiles()
 
 void TileMapData::updateVisualId(int id)
 {
-    auto& tile = operator()(id);
+    updateVisualId(operator()(id));
+}
+
+void TileMapData::updateVisualId(Tile& tile)
+{
     auto& tileInfo = logicalToInfo[tile.logicalId];
     if (tileInfo.stateToVisualUsed)
         tile.visualId = tileInfo.stateToVisual[tile.state];
@@ -98,6 +103,18 @@ void TileMapData::updateCollision(Tile& tile)
     auto& tileInfo = logicalToInfo[tile.logicalId];
     tile.collidable = tileInfo.collision[TileInfo::Collision + tile.state];
     tile.blocksLaser = tileInfo.collision[TileInfo::LaserCollision + tile.state];
+}
+
+void TileMapData::updateState(int id)
+{
+    updateState(operator()(id));
+}
+
+void TileMapData::updateState(Tile& tile)
+{
+    auto found = visualToInfo.find(tile.visualId);
+    if (found != visualToInfo.end())
+        tile.state = found->second.state;
 }
 
 void TileMapData::addTile(int id)
@@ -166,5 +183,18 @@ void TileMapData::loadTileInfo()
                 tileInfo.stateToVisualUsed = true;
             }
         }
+    }
+
+    // Load visual tile reverse lookup table
+    for (auto& option: config.getSection("VisualTiles"))
+    {
+        int visualId = strlib::fromString<int>(option.first);
+        auto values = strlib::split<int>(option.second, " ");
+
+        // Extract logical ID and state
+        auto& info = visualToInfo[visualId];
+        info.logicalId = values.front();
+        if (values.size() >= 2)
+            info.state = (values[1] != 0);
     }
 }

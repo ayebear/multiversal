@@ -6,6 +6,7 @@
 
 #include <map>
 #include <set>
+#include <unordered_map>
 #include <SFML/System/Vector2.hpp>
 #include "nage/misc/matrix.h"
 
@@ -36,17 +37,24 @@ class TileMapData
         Tile& operator()(unsigned x, unsigned y);
         Tile& operator()(int id);
 
-        // Important methods
+        // Size and layers
         void resize(unsigned width, unsigned height, bool preserve = true);
         unsigned width() const;
         unsigned height() const;
         void useLayer(int layer);
+
+        // Compute tile IDs
         int getId(unsigned x, unsigned y) const;
         int getId(int layer, unsigned x, unsigned y) const;
+
+        // Lookup/derive tile information
         void deriveTiles();
         void updateVisualId(int id);
+        void updateVisualId(Tile& tile);
         void updateCollision(int id);
         void updateCollision(Tile& tile);
+        void updateState(int id);
+        void updateState(Tile& tile);
 
         // Tiles with objects on top
         void addTile(int id);
@@ -62,6 +70,12 @@ class TileMapData
         int getLayer(int id) const;
         unsigned getX(int id) const;
         unsigned getY(int id) const;
+
+        // Returns a reference to the visual ID reverse lookup table
+        inline const auto& getVisualToInfo() const
+        {
+            return visualToInfo;
+        }
 
     private:
 
@@ -96,13 +110,21 @@ class TileMapData
                 StateToVisualTrue
             };
 
-            bool collision[4] {};
-            int stateToVisual[2] {};
-            bool stateToVisualUsed = false;
+            bool collision[4]{};
+            int stateToVisual[2]{};
+            bool stateToVisualUsed{false};
         };
 
         // Used to lookup information about a particular logical ID (tile type)
-        std::map<int, TileInfo> logicalToInfo;
+        std::unordered_map<int, TileInfo> logicalToInfo;
+
+        // Visual ID -> Logical ID lookup
+        struct VisualInfo
+        {
+            int logicalId{};
+            bool state{false};
+        };
+        std::unordered_map<int, VisualInfo> visualToInfo;
 };
 
 #endif

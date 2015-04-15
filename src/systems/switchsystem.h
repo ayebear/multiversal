@@ -4,7 +4,7 @@
 #ifndef SWITCHSYSTEM_H
 #define SWITCHSYSTEM_H
 
-#include "system.h"
+#include "es/system.h"
 #include "OCS/Objects.hpp"
 #include "gameevents.h"
 

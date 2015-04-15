@@ -4,7 +4,7 @@
 #ifndef OBJECTSWITCHSYSTEM_H
 #define OBJECTSWITCHSYSTEM_H
 
-#include "system.h"
+#include "es/system.h"
 #include "level.h"
 #include "OCS/Objects.hpp"
 

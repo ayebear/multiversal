@@ -8,7 +8,7 @@
 #include "magicwindow.h"
 #include "logicaltiles.h"
 #include "nage/graphics/vectors.h"
-#include "events.h"
+#include "es/events.h"
 #include "gameevents.h"
 #include <cmath>
 

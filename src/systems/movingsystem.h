@@ -4,7 +4,7 @@
 #ifndef MOVINGSYSTEM_H
 #define MOVINGSYSTEM_H
 
-#include "system.h"
+#include "es/system.h"
 #include "OCS/Objects.hpp"
 #include "components.h"
 #include "movingcomponent.h"

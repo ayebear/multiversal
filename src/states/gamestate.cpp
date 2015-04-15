@@ -3,7 +3,7 @@
 
 #include "gamestate.h"
 #include "gameresources.h"
-#include "events.h"
+#include "es/events.h"
 #include "gameevents.h"
 
 GameState::GameState(GameResources& resources):

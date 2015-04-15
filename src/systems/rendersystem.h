@@ -8,7 +8,7 @@
 #include "OCS/Objects.hpp"
 #include "components.h"
 #include "nage/graphics/spriteloader.h"
-#include "system.h"
+#include "es/system.h"
 #include "inaltworld.h"
 
 namespace ng

@@ -2,7 +2,7 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "inputsystem.h"
-#include "events.h"
+#include "es/events.h"
 #include "gameevents.h"
 
 InputSystem::InputSystem(sf::RenderWindow& window):
