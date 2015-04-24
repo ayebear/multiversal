@@ -28,11 +28,11 @@ class PhysicsSystem: public es::System
     private:
         void stepPositions(float dt);
         void handleTileCollision(Components::AABB* entAABB, float& velocity, Components::Position* position,
-                bool vertical, ocs::ID entityId, bool inAltWorld);
+                bool vertical, ocs::ID entityId, bool altWorld);
         void updateEdgeCases(Components::Position* position, Components::Size* size, float& velocity, ocs::ID entityId);
         void checkEntityCollisions();
         void checkTileCollisions();
-        int determineLayer(bool inAltWorld, bool aboveWindow, unsigned x, unsigned y) const;
+        int determineLayer(bool altWorld, bool aboveWindow, unsigned x, unsigned y) const;
         void updateTilePositionComponents();
         void updateOnPlatformState(ocs::ID entityId, int state);
         void getCollidingTiles(const sf::FloatRect& entAABB, sf::Vector2u& start, sf::Vector2u& end);

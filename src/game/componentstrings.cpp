@@ -8,32 +8,34 @@
 #include "lasercomponent.h"
 #include <iostream>
 
+#define bindCompName(name) objects.bindStringToComponent<Components::name>(#name)
+
 void bindComponentStrings(ocs::ObjectManager& objects)
 {
     std::cout << "Binding component strings...\n";
-    BIND_COMP_STR(Position);
-    BIND_COMP_STR(Velocity);
-    BIND_COMP_STR(Gravity);
-    BIND_COMP_STR(Size);
-    BIND_COMP_STR(AABB);
-    BIND_COMP_STR(Sprite);
-    BIND_COMP_STR(AnimSprite);
-    BIND_COMP_STR(Jumpable);
-    BIND_COMP_STR(ObjectState);
-    BIND_COMP_STR(Movable);
-    BIND_COMP_STR(Carrier);
-    BIND_COMP_STR(CameraUpdater);
-    BIND_COMP_STR(AltWorld);
-    BIND_COMP_STR(Carryable);
-    BIND_COMP_STR(DrawOnTop);
-    BIND_COMP_STR(AboveWindow);
-    BIND_COMP_STR(Moving);
-    BIND_COMP_STR(State);
-    BIND_COMP_STR(TileGroup);
-    BIND_COMP_STR(Laser);
-    BIND_COMP_STR(TilePosition);
-    BIND_COMP_STR(Rotation);
-    BIND_COMP_STR(Switch);
-    BIND_COMP_STR(InitialPosition);
+    bindCompName(Position);
+    bindCompName(Velocity);
+    bindCompName(Gravity);
+    bindCompName(Size);
+    bindCompName(AABB);
+    bindCompName(Sprite);
+    bindCompName(AnimSprite);
+    bindCompName(Jumpable);
+    bindCompName(ObjectState);
+    bindCompName(Movable);
+    bindCompName(Carrier);
+    bindCompName(CameraUpdater);
+    bindCompName(AltWorld);
+    bindCompName(Carryable);
+    bindCompName(DrawOnTop);
+    bindCompName(AboveWindow);
+    bindCompName(Moving);
+    bindCompName(State);
+    bindCompName(TileGroup);
+    bindCompName(Laser);
+    bindCompName(TilePosition);
+    bindCompName(Rotation);
+    bindCompName(Switch);
+    bindCompName(InitialPosition);
     std::cout << "Done binding component strings.\n";
 }

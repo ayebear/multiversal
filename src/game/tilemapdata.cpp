@@ -3,8 +3,6 @@
 
 #include "tilemapdata.h"
 #include "configfile.h"
-
-#include "logicaltiles.h"
 #include <iostream>
 
 void Tile::reset()

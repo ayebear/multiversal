@@ -16,12 +16,14 @@
 #include "es/systemcontainer.h"
 #include "nage/actions/actionhandler.h"
 
+class GameSaveHandler;
+
 /*
 Contains the class instances used by the game.
 */
 struct GameWorld
 {
-    GameWorld(sf::RenderWindow& window);
+    GameWorld(sf::RenderWindow& window, GameSaveHandler& gameSave);
 
     ng::ActionHandler actions;
     TileMapData tileMapData;

@@ -3,22 +3,25 @@
 
 #include "menustate.h"
 #include "gameresources.h"
+#include "nage/misc/utils.h"
 #include <iostream>
 
 MenuState::MenuState(GameResources& resources):
     resources(resources),
     menu(resources.window, "data/config/menu.cfg")
 {
-    menu.addItem("Play", std::bind(&MenuState::handlePlay, this));
-    menu.addItem("Level Editor", std::bind(&MenuState::handleLevelEditor, this));
-    menu.addItem("About", std::bind(&MenuState::handleAbout, this));
-    menu.addItem("Exit", std::bind(&MenuState::handleExit, this));
+    continueButton = menu.addItem("Continue", ngBind(handleContinue));
+    menu.addItem("New Game", ngBind(handleNewGame));
+    menu.addItem("Level Editor", ngBind(handleLevelEditor));
+    menu.addItem("About", ngBind(handleAbout));
+    menu.addItem("Exit", ngBind(handleExit));
 }
 
 void MenuState::onStart()
 {
     resources.window.setView(resources.window.getDefaultView());
     resources.music.play("menu");
+    updateContinueButton();
 }
 
 void MenuState::handleEvents()
@@ -46,11 +49,33 @@ void MenuState::draw()
     resources.window.display();
 }
 
-void MenuState::handlePlay()
+void MenuState::updateContinueButton()
 {
-    std::cout << "Play pressed\n";
+    int currentLevel = resources.gameSave.getCurrentLevel();
+    bool enabled = (currentLevel > 1);
+    if (enabled)
+    {
+        // Build button string
+        std::ostringstream continueLabel;
+        continueLabel << "Continue (" << currentLevel << "/" << GameSaveHandler::TOTAL_LEVELS << ")";
+
+        // Update button label
+        menu.setLabel(continueButton, continueLabel.str());
+    }
+    menu.setEnabled(continueButton, enabled);
+}
+
+void MenuState::handleContinue()
+{
     stateEvent.name = "Game";
     stateEvent.command = ng::StateEvent::Push;
+}
+
+void MenuState::handleNewGame()
+{
+    stateEvent.name = "Game";
+    stateEvent.command = ng::StateEvent::Push;
+    resources.gameSave.reset();
 }
 
 void MenuState::handleLevelEditor()

@@ -12,4 +12,5 @@
 	branch = master
 [submodule "lib/es"]
 	path = lib/es
-	url = git@github.com:ayebear/es.git
+	url = https://github.com/ayebear/es.git
+	branch = master

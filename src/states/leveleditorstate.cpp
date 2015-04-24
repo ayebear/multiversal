@@ -17,7 +17,7 @@ void LevelEditorState::onStart()
     if (!world)
     {
         std::cout << "\nLevel editor is loading...\n\n";
-        world = std::make_unique<GameWorld>(resources.window);
+        world = std::make_unique<GameWorld>(resources.window, resources.gameSave);
         editor = std::make_unique<LevelEditor>(*world, stateEvent);
         selection = std::make_unique<SelectionGUI>(*world, resources.window);
         std::cout << "\nLevel editor is loaded.\n\n";

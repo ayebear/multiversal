@@ -53,7 +53,7 @@ void AboutState::setup()
     float startTop = (viewSize.y - totalHeight) / 2.0f;
 
     // Center the background sprite
-    auto bgSize = ng::vectors::cast<int>(bgSprite.getTexture()->getSize());
+    auto bgSize = ng::vec::cast<int>(bgSprite.getTexture()->getSize());
     bgSprite.setPosition((viewSize.x - bgSize.x) / 2, (viewSize.y - bgSize.y) / 2);
 
     // Setup the sf::Text objects

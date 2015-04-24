@@ -8,6 +8,7 @@
 #include "configfile.h"
 #include "nage/audio/musicplayer.h"
 #include "nage/audio/soundplayer.h"
+#include "gamesavehandler.h"
 
 /*
 This class contains the game specific resources:
@@ -29,6 +30,7 @@ class GameResources: sf::NonCopyable
         cfg::File config; // The main configuration file
         ng::MusicPlayer music; // The music player
         //ng::SoundPlayer sound; // The sound effects player
+        GameSaveHandler gameSave; // To store current level
 
     private:
         void createWindow(const std::string& windowTitle, unsigned windowWidth, unsigned windowHeight, bool fullscreen, bool vsync, bool autoResolution);

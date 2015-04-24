@@ -22,10 +22,10 @@
 #include "lasersystem.h"
 #include "rendersystem.h"
 
-GameWorld::GameWorld(sf::RenderWindow& window):
+GameWorld::GameWorld(sf::RenderWindow& window, GameSaveHandler& gameSave):
     tileMapChanger(tileMapData, tileMap),
     level(tileMapData, tileMap, tileMapChanger, objects, magicWindow),
-    levelLoader(level, "data/levels/"),
+    levelLoader(level, gameSave, "data/levels/"),
     magicWindow(actions)
 {
     std::cout << "Initializing GameWorld...\n";

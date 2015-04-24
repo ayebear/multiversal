@@ -20,13 +20,17 @@ class MenuState: public ng::BaseState
         void draw();
 
     private:
-        void handlePlay();
+        void updateContinueButton();
+
+        void handleContinue();
+        void handleNewGame();
         void handleLevelEditor();
         void handleAbout();
         void handleExit();
 
         GameResources& resources;
         ng::GameMenu menu;
+        size_t continueButton;
 };
 
 #endif

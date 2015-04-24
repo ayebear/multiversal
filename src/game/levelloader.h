@@ -5,9 +5,9 @@
 #define LEVELLOADER_H
 
 #include <string>
-#include "configfile.h"
 
 class Level;
+class GameSaveHandler;
 
 /*
 Handles the loading and numbering of internal levels.
@@ -25,7 +25,7 @@ class LevelLoader
     };
 
     public:
-        LevelLoader(Level& level, const std::string& levelDir);
+        LevelLoader(Level& level, GameSaveHandler& gameSave, const std::string& levelDir);
 
         // Loads a level (default is to reload the current level)
         Status load(int levelId = -1);
@@ -43,17 +43,13 @@ class LevelLoader
         void clear();
 
     private:
-
         // Saves the configuration file storing the current level
         void updateCurrentLevel(int levelId);
 
-        static const int TOTAL_LEVELS;
-        static const cfg::File::ConfigMap defaultSaveGameOptions;
-
         Level& level;
+        GameSaveHandler& gameSave;
         std::string levelDir;
         int currentLevel;
-        cfg::File saveGameConfig;
         std::string levelData;
 };
 

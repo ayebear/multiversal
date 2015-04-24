@@ -5,35 +5,24 @@
 #include "level.h"
 #include "es/events.h"
 #include "gameevents.h"
+#include "gamesavehandler.h"
 #include <iostream>
 
-const int LevelLoader::TOTAL_LEVELS = 10;
-
-const cfg::File::ConfigMap LevelLoader::defaultSaveGameOptions = {
-    {"", {
-        {"currentLevel", cfg::makeOption(1, 1, TOTAL_LEVELS)}
-        }
-    }
-};
-
-LevelLoader::LevelLoader(Level& level, const std::string& levelDir):
+LevelLoader::LevelLoader(Level& level, GameSaveHandler& gameSave, const std::string& levelDir):
     level(level),
-    levelDir(levelDir),
-    currentLevel(1),
-    saveGameConfig("user/savegame.cfg", defaultSaveGameOptions)
+    gameSave(gameSave),
+    levelDir(levelDir)
 {
-    if (saveGameConfig)
-        currentLevel = saveGameConfig("currentLevel").toInt();
 }
 
 LevelLoader::Status LevelLoader::load(int levelId)
 {
     // Load the current level if not specified
     if (levelId == -1)
-        levelId = currentLevel;
+        levelId = gameSave.getCurrentLevel();
 
     // Don't load more levels than the game should have
-    if (levelId > TOTAL_LEVELS)
+    if (levelId > GameSaveHandler::TOTAL_LEVELS)
         return Status::Finished;
 
     // Get data from test mode events
@@ -54,7 +43,7 @@ LevelLoader::Status LevelLoader::load(int levelId)
         auto filename = getLevelFilename(levelId);
         if (level.loadFromFile(filename))
         {
-            updateCurrentLevel(levelId);
+            gameSave.setCurrentLevel(levelId);
             status = Status::Success;
         }
     }
@@ -70,7 +59,7 @@ LevelLoader::Status LevelLoader::load(int levelId)
 
 LevelLoader::Status LevelLoader::loadNext()
 {
-    return load(currentLevel + 1);
+    return load(gameSave.getCurrentLevel() + 1);
 }
 
 bool LevelLoader::update()
@@ -107,11 +96,4 @@ std::string LevelLoader::getLevelFilename(int levelId) const
 void LevelLoader::clear()
 {
     levelData.clear();
-}
-
-void LevelLoader::updateCurrentLevel(int levelId)
-{
-    currentLevel = levelId;
-    saveGameConfig("currentLevel") = currentLevel;
-    saveGameConfig.writeToFile();
 }

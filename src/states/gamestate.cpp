@@ -8,7 +8,7 @@
 
 GameState::GameState(GameResources& resources):
     resources(resources),
-    world(resources.window)
+    world(resources.window, resources.gameSave)
 {
     world.actions("Game", "restartLevel").setCallback([]{ es::Events::send(ReloadLevelEvent{}); });
     world.actions("Game", "toggleMute").setCallback([&]{ resources.music.mute(); });

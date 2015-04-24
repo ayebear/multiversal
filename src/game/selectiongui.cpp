@@ -32,7 +32,7 @@ SelectionGUI::SelectionGUI(GameWorld& world, sf::RenderWindow& window):
     sprite.setTexture(texture.getTexture());
 
     // Setup selection box
-    currentSelection.setSize(ng::vectors::cast<float>(tileSize));
+    currentSelection.setSize(ng::vec::cast<float>(tileSize));
     currentSelection.setFillColor(sf::Color::Transparent);
     currentSelection.setOutlineColor(sf::Color::Red);
     currentSelection.setOutlineThickness(-16);

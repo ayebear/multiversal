@@ -10,6 +10,8 @@
 #include "gameevents.h"
 #include "inaltworld.h"
 #include "level.h"
+#include "nage/misc/utils.h"
+#include "nage/graphics/vectors.h"
 
 const sf::Vector2i PhysicsSystem::maxVelocity(1600, 3200);
 const sf::Vector2i PhysicsSystem::gravityConstant(640, 640);
@@ -76,17 +78,17 @@ void PhysicsSystem::stepPositions(float dt)
             auto aabb = objects.getComponent<Components::AABB>(entityId);
 
             // See if the entity is in the alternate world!
-            bool inAltWorld = objects.hasComponents<Components::AltWorld>(entityId);
+            bool altWorld = inAltWorld(objects, entityId);
 
             // Update Y
             position->y += dt * velocity.y;
             if (aabb)
-                handleTileCollision(aabb, velocity.y, position, true, entityId, inAltWorld);
+                handleTileCollision(aabb, velocity.y, position, true, entityId, altWorld);
 
             // Update X
             position->x += dt * velocity.x;
             if (aabb)
-                handleTileCollision(aabb, velocity.x, position, false, entityId, inAltWorld);
+                handleTileCollision(aabb, velocity.x, position, false, entityId, altWorld);
 
             // Fix edge cases
             updateEdgeCases(position, size, velocity.y, entityId);
@@ -99,7 +101,7 @@ void PhysicsSystem::stepPositions(float dt)
     }
 }
 
-void PhysicsSystem::handleTileCollision(Components::AABB* entAABB, float& velocity, Components::Position* position, bool vertical, ocs::ID entityId, bool inAltWorld)
+void PhysicsSystem::handleTileCollision(Components::AABB* entAABB, float& velocity, Components::Position* position, bool vertical, ocs::ID entityId, bool altWorld)
 {
     // Object - tile map collision
     // Need to send an event when this happens so the entity knows which tile it is colliding with
@@ -124,7 +126,7 @@ void PhysicsSystem::handleTileCollision(Components::AABB* entAABB, float& veloci
         for (unsigned x = start.x; x <= end.x; ++x)
         {
             // Find which layer this object is part of
-            int layer = determineLayer(inAltWorld, true, x, y);
+            int layer = determineLayer(altWorld, true, x, y);
             tileMapData.useLayer(layer);
             if (tileMapData(x, y).collidable)
             {
@@ -139,7 +141,7 @@ void PhysicsSystem::handleTileCollision(Components::AABB* entAABB, float& veloci
                             onPlatform = true;
 
                             // Add the tile ID to the set of tiles with objects on them
-                            int newLayer = determineLayer(inAltWorld, aboveWindow, x, y - 1);
+                            int newLayer = determineLayer(altWorld, aboveWindow, x, y - 1);
                             tileMapData.addTile(tileMapData.getId(newLayer, x, y - 1));
                         }
                         else // Hitting ceiling
@@ -173,23 +175,16 @@ void PhysicsSystem::handleTileCollision(Components::AABB* entAABB, float& veloci
 
 void PhysicsSystem::updateEdgeCases(Components::Position* position, Components::Size* size, float& velocity, ocs::ID entityId)
 {
-    // Ensure that entities won't move outside of the level
-    if (position->x < 0)
-        position->x = 0;
-    if (position->y < 0)
-    {
-        position->y = 0;
-        velocity = 0;
-    }
     auto levelSize = tileMap.getPixelSize();
     sf::Vector2i newPosition(levelSize.x - size->x, levelSize.y - size->y);
-    if (position->x > newPosition.x)
-        position->x = newPosition.x;
-    if (position->y > newPosition.y)
-    {
-        position->y = newPosition.y;
+
+    // Ensure that entities won't move outside of the level
+    ng::clampLT(position->x, 0);
+    if (ng::clampLT(position->y, 0))
+        velocity = 0;
+    ng::clampGT(position->x, newPosition.x);
+    if (ng::clampGT(position->y, newPosition.y))
         updateOnPlatformState(entityId, Components::ObjectState::OnPlatform);
-    }
 }
 
 void PhysicsSystem::checkEntityCollisions()
@@ -266,9 +261,9 @@ void PhysicsSystem::checkTileCollisions()
     }
 }
 
-int PhysicsSystem::determineLayer(bool inAltWorld, bool aboveWindow, unsigned x, unsigned y) const
+int PhysicsSystem::determineLayer(bool altWorld, bool aboveWindow, unsigned x, unsigned y) const
 {
-    return (inAltWorld || (aboveWindow && magicWindow.isWithin(tileMap.getCenterPoint<unsigned>(x, y))));
+    return (altWorld || (aboveWindow && magicWindow.isWithin(tileMap.getCenterPoint<unsigned>(x, y))));
 }
 
 void PhysicsSystem::updateTilePositionComponents()
@@ -341,20 +336,16 @@ void PhysicsSystem::getCollidingTiles(const sf::FloatRect& entAABB, sf::Vector2u
     const auto& mapSize = tileMap.getMapSize();
 
     // Get the area to check collision against
-    auto startTemp = sf::Vector2i(entAABB.left / tileSize.x, entAABB.top / tileSize.y);
+    auto startSigned = sf::Vector2i(entAABB.left / tileSize.x,
+                                    entAABB.top / tileSize.y);
     end = sf::Vector2u((entAABB.left + entAABB.width) / tileSize.x,
                        (entAABB.top + entAABB.height) / tileSize.y);
 
     // Make sure this is within bounds
-    // TODO: Use "enforce" functions
-    if (startTemp.y < 0)
-        startTemp.y = 0;
-    if (startTemp.x < 0)
-        startTemp.x = 0;
-    if (end.x > mapSize.x - 1)
-        end.x = mapSize.x - 1;
-    if (end.y > mapSize.y - 1)
-        end.y = mapSize.y - 1;
+    ng::clampLT(startSigned.x, 0);
+    ng::clampLT(startSigned.y, 0);
+    ng::clampGT(end.x, mapSize.x - 1);
+    ng::clampGT(end.y, mapSize.y - 1);
 
-    start = sf::Vector2u(startTemp.x, startTemp.y);
+    start = ng::vec::cast<unsigned>(startSigned);
 }

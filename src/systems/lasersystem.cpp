@@ -125,7 +125,7 @@ LaserSystem::PointInfo LaserSystem::findPoint()
 void LaserSystem::addBeams(Components::Laser& laser, Components::TilePosition& tilePos)
 {
     // Setup everything
-    currentPosition = ng::vectors::cast<int>(tilePos.pos);
+    currentPosition = ng::vec::cast<int>(tilePos.pos);
     currentDirection = laser.direction;
 
     // Current layer is the starting layer of the beam
@@ -158,12 +158,12 @@ void LaserSystem::addBeams(Components::Laser& laser, Components::TilePosition& t
         beam->sprite.setOrigin(beamWidth / 2, 0);
 
         // Calculate and set the beam length
-        float beamLength = ng::vectors::distance(startPoint, endPoint.position);
+        float beamLength = ng::vec::distance(startPoint, endPoint.position);
         beam->sprite.setScale(1, beamLength);
 
         // Set the beam's position and rotation
         beam->sprite.setPosition(startPoint);
-        beam->sprite.setRotation(ng::vectors::rotateAngle(laser.getAngle(currentDirection), 180.0));
+        beam->sprite.setRotation(ng::vec::rotateAngle(laser.getAngle(currentDirection), 180.0));
 
         // Set the beam's layer
         beam->layer = currentLayer;

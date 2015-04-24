@@ -14,6 +14,8 @@
 #include "spritesystem.h"
 #include "inaltworld.h"
 #include "logicaltiles.h"
+#include "gamesavehandler.h"
+#include "nage/misc/utils.h"
 
 const sf::Color LevelEditor::borderColors[] = {sf::Color::Green, sf::Color::Blue};
 const sf::Color LevelEditor::switchColor(255, 0, 0, 128);
@@ -47,7 +49,7 @@ LevelEditor::LevelEditor(GameWorld& world, ng::StateEvent& stateEvent):
     currentVisualId = 1;
     updateCurrentTile();
 
-    initialize();
+    load();
 }
 
 void LevelEditor::handleEvent(const sf::Event& event)
@@ -211,12 +213,14 @@ void LevelEditor::toggleLayer()
 void LevelEditor::nextLevel()
 {
     ++currentLevel;
+    ng::clamp(currentLevel, 1, GameSaveHandler::TOTAL_LEVELS);
     load();
 }
 
 void LevelEditor::prevLevel()
 {
     --currentLevel;
+    ng::clamp(currentLevel, 1, GameSaveHandler::TOTAL_LEVELS);
     load();
 }
 
@@ -232,16 +236,16 @@ void LevelEditor::loadConfig(const std::string& filename)
     actions["growY"].setCallback([&]{ resize(0, 1); });
     actions["shrinkX"].setCallback([&]{ resize(-1, 0); });
     actions["shrinkY"].setCallback([&]{ resize(0, -1); });
-    ng_bindAction(actions, save);
-    ng_bindAction(actions, load);
-    ng_bindAction(actions, test);
-    ng_bindAction(actions, undo);
-    ng_bindAction(actions, redo);
-    ng_bindAction(actions, clear);
-    ng_bindAction(actions, escape);
-    ng_bindAction(actions, toggleLayer);
-    ng_bindAction(actions, nextLevel);
-    ng_bindAction(actions, prevLevel);
+    ngBindAction(actions, save);
+    ngBindAction(actions, load);
+    ngBindAction(actions, test);
+    ngBindAction(actions, undo);
+    ngBindAction(actions, redo);
+    ngBindAction(actions, clear);
+    ngBindAction(actions, escape);
+    ngBindAction(actions, toggleLayer);
+    ngBindAction(actions, nextLevel);
+    ngBindAction(actions, prevLevel);
 
     // Derive placeable tiles from the reverse lookup table
     for (const auto& data: world.tileMapData.getVisualToInfo())
@@ -414,7 +418,7 @@ void LevelEditor::setBox(int tileId, bool show, const sf::Color& color)
     {
         // Set colors and size
         auto& box = boxes[tileId];
-        box.setSize(ng::vectors::cast<float>(tileSize));
+        box.setSize(ng::vec::cast<float>(tileSize));
         box.setFillColor(sf::Color::Transparent);
         box.setOutlineColor(color);
         box.setOutlineThickness(-16);
@@ -493,7 +497,7 @@ void LevelEditor::changeSwitchMode(int tileId)
 
 void LevelEditor::updateBorder()
 {
-    border.setSize(ng::vectors::cast<float>(world.tileMap.getPixelSize()));
+    border.setSize(ng::vec::cast<float>(world.tileMap.getPixelSize()));
     border.setOutlineColor(borderColors[currentLayer]);
 }
 
@@ -516,7 +520,7 @@ void LevelEditor::updateCurrentObject()
 
 void LevelEditor::resize(int deltaX, int deltaY)
 {
-    auto mapSize = ng::vectors::cast<int>(world.tileMap.getMapSize());
+    auto mapSize = ng::vec::cast<int>(world.tileMap.getMapSize());
     world.tileMapChanger.resize(mapSize.x + deltaX, mapSize.y + deltaY);
     updateBorder();
 }
