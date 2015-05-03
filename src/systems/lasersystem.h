@@ -25,6 +25,8 @@ class LaserSystem: public es::System
         void initialize();
         void update(float dt);
 
+        static void updateRotations(ocs::ObjectManager& objects);
+
     private:
         struct PointInfo
         {

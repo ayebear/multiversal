@@ -4,8 +4,10 @@
 #ifndef SPRITESYSTEM_H
 #define SPRITESYSTEM_H
 
-#include "OCS/Objects.hpp"
 #include "es/system.h"
+#include "OCS/Objects.hpp"
+
+namespace sf { class Transformable; }
 
 /*
 This class handles updating the sprite positions from the position components.
@@ -16,7 +18,12 @@ class SpriteSystem: public es::System
         SpriteSystem(ocs::ObjectManager& objects);
         void update(float dt);
 
+        static void updateRotations(ocs::ObjectManager& objects);
+
     private:
+        static void setPosition(ocs::ObjectManager& objects, sf::Transformable& sprite, ocs::ID id);
+        static void setRotation(ocs::ObjectManager& objects, sf::Transformable& sprite, ocs::ID id);
+
         ocs::ObjectManager& objects;
 };
 

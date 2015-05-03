@@ -50,7 +50,7 @@ GameWorld::GameWorld(sf::RenderWindow& window, GameSaveHandler& gameSave):
 
     // Load entity prototypes
     bindComponentStrings(objects);
-    if (!es::EntityPrototypeLoader::load(objects, "data/config/objects.cfg"))
+    if (!es::loadPrototypes(objects, "data/config/objects.cfg"))
         std::cerr << "ERROR: Could not load object prototypes.\n";
 
     // Load the tiles

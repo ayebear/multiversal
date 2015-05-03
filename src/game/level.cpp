@@ -96,7 +96,7 @@ void Level::save(cfg::File& config) const
 
 ocs::ID Level::getObjectIdFromName(const std::string& name) const
 {
-    ocs::ID id = BasePackedArray::INVALID_INDEX;
+    ocs::ID id = ocs::invalidID;
     auto found = objectNamesToIds.find(name);
     if (found != objectNamesToIds.end())
         id = found->second;
@@ -108,7 +108,12 @@ void Level::registerObjectName(ocs::ID objectId, const std::string& name)
     objectNamesToIds[name] = objectId;
 }
 
-void Level::loadObjects(cfg::File::Section& section, ocs::ObjectManager& objects, ObjectNameMap& objectNames, bool player) const
+void Level::unregisterObjectName(const std::string& name)
+{
+    objectNamesToIds.erase(name);
+}
+
+void Level::loadObjects(cfg::File::Section& section, ocs::ObjectManager& objects, ObjectNameMap& objectNames) const
 {
     objects.destroyAllObjects();
     objectNames.clear();

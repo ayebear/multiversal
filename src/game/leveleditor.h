@@ -12,6 +12,7 @@
 
 class GameWorld;
 class Tile;
+class ObjectPalette;
 namespace ng { class StateEvent; }
 
 /*
@@ -21,21 +22,21 @@ Also receives events for handling focus.
 
 Controls:
 Left click: Place current tile or object
-Right click: Remove tile
-Shift+Left click: Toggle state of object
-Shift+Right click: Remove object
+Right click: Remove tile or object
+Shift+Left click: Enable state of object
+Shift+Right click: Disable state of object
 Ctrl+Left click: Edit tile
     Changes what the switches are connected to
-    Left click: Enable connection (adds it to TileChanger component of switch object)
-    Right click: Disable connection
-    Shift+left click: Enable object connection
-    Shift+right click: Disable object connection
+    Left click: Enable tile/object connection (adds it to TileChanger component of switch object)
+    Right click: Disable tile/object connection
+    //Shift+left click: Enable object connection
+    //Shift+right click: Disable object connection
 */
 class LevelEditor: public sf::Drawable
 {
     public:
 
-        LevelEditor(GameWorld& world, ng::StateEvent& stateEvent);
+        LevelEditor(GameWorld& world, ng::StateEvent& stateEvent, ObjectPalette& objectPalette);
         void handleEvent(const sf::Event& event);
         void update(float dt, bool withinBorder);
         void draw(sf::RenderTarget& target, sf::RenderStates states) const;
@@ -74,6 +75,11 @@ class LevelEditor: public sf::Drawable
         bool isControllable(int tileId) const;
         void changeSwitchMode(int tileId = -1);
 
+        // Object handling
+        void placeObject(int tileId);
+        void removeObject(int tileId);
+        void changeObjectState(int tileId, bool state);
+
         // Miscellaneous methods
         void updateBorder();
         void updateCurrentTile();
@@ -81,10 +87,9 @@ class LevelEditor: public sf::Drawable
         void resize(int deltaX, int deltaY);
         void initialize();
 
-        static const auto invalidId = BasePackedArray::INVALID_INDEX;
-
         GameWorld& world;
         ng::StateEvent& stateEvent;
+        ObjectPalette& objectPalette;
 
         // Settings
         static constexpr float panSpeed{2400.0f};
@@ -125,10 +130,6 @@ class LevelEditor: public sf::Drawable
 
         // Highlights what the switches are connected to
         std::map<int, sf::RectangleShape> boxes;
-
-        // Object palette and placing
-        ocs::ObjectManager objectPalette;
-        Level::ObjectNameMap objectNamesPalette;
 
         // Tiles with inital on states
         ocs::ID stateOnId;

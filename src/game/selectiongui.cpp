@@ -6,10 +6,13 @@
 #include "nage/graphics/vectors.h"
 #include "es/events.h"
 #include "gameevents.h"
+#include "objectpalette.h"
+#include "components.h"
 
-SelectionGUI::SelectionGUI(GameWorld& world, sf::RenderWindow& window):
+SelectionGUI::SelectionGUI(GameWorld& world, sf::RenderWindow& window, ObjectPalette& objectPalette):
     world(world),
-    window(window)
+    window(window),
+    objectPalette(objectPalette)
 {
     // Calculate views and sizes
     view = world.camera.getView("window");
@@ -94,15 +97,18 @@ bool SelectionGUI::update(float dt)
     // Draw to render texture
     texture.setView(textureView);
     texture.clear(sf::Color::Transparent);
+
     if (state == TabState::Tiles)
-    {
         texture.draw(tiles);
+    else if (state == TabState::Objects)
+        objectPalette.draw(texture);
+
+    if (state == selState)
         texture.draw(currentSelection);
-        if (showHover)
-            texture.draw(hoverSelection);
-    }
-    /*else if (state == TabState::Objects)
-        target.draw(objects);*/
+
+    if (showHover)
+        texture.draw(hoverSelection);
+
     texture.display();
 
     sprite.setTexture(texture.getTexture());
@@ -138,7 +144,31 @@ void SelectionGUI::setupTiles()
 
 void SelectionGUI::setupObjects()
 {
+    // Update positions of objects
+    sf::Vector2u gridPos;
+    for (auto& spriteComp: objectPalette.objects.getComponentArray<Components::Sprite>())
+    {
+        sf::Vector2f offset;
+        if (objectPalette.objects.hasComponents<Components::Rotation>(spriteComp.getOwnerID()))
+        {
+            auto bounds = spriteComp.sprite.getGlobalBounds();
+            offset = sf::Vector2f(bounds.width / 2.0f, bounds.height / 2.0f);
+        }
 
+        spriteComp.sprite.setPosition(gridPos.x * tileSize.x + offset.x, gridPos.y * tileSize.y + offset.y);
+
+        std::cout << gridPos.x * tileSize.x << ", " << gridPos.y * tileSize.y << "\n";
+
+        //posComp.x = gridPos.x * tileSize.x;
+        //posComp.y = gridPos.y * tileSize.y;
+
+        ++gridPos.x;
+        if (gridPos.x >= TILE_COLUMNS)
+        {
+            gridPos.x = 0;
+            ++gridPos.y;
+        }
+    }
 }
 
 bool SelectionGUI::withinBorder(const sf::Vector2f& pos) const
@@ -202,6 +232,7 @@ void SelectionGUI::select(const sf::Vector2f& pos, bool clicked)
             {
                 // Update current selection
                 currentSelection.setPosition(selectionPos);
+                selState = TabState::Tiles;
 
                 // Send event with new visual tile ID
                 int visualId = tiles(tilePos.x, tilePos.y);
@@ -211,6 +242,29 @@ void SelectionGUI::select(const sf::Vector2f& pos, bool clicked)
     }
     else if (state == TabState::Objects)
     {
+        hoverSelection.setPosition(pos);
+        showHover = true;
 
+        if (clicked)
+        {
+            auto objectId = checkCollision(objectPalette.objects, pos);
+            if (objectId != ocs::invalidID)
+            {
+                auto spriteComp = objectPalette.objects.getComponent<Components::Sprite>(objectId);
+                if (spriteComp)
+                {
+                    // Update current selection
+                    auto position = spriteComp->sprite.getPosition();
+                    auto origin = spriteComp->sprite.getOrigin();
+                    currentSelection.setPosition(position.x - origin.x, position.y - origin.y);
+                    selState = TabState::Objects;
+
+                    //std::cout << "Updated current selection position to: " ;
+
+                    // Send event with selected object ID
+                    es::Events::send(ObjectSelectionEvent{objectId});
+                }
+            }
+        }
     }
 }

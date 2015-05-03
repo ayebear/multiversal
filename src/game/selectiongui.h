@@ -9,6 +9,7 @@
 #include "nage/graphics/tilemap.h"
 
 class GameWorld;
+class ObjectPalette;
 
 /*
 A scrollable widget of tiles and objects that can be chosen from.
@@ -17,7 +18,7 @@ The chosen tile/object is sent to the level editor as an event.
 class SelectionGUI: public sf::Drawable
 {
     public:
-        SelectionGUI(GameWorld& world, sf::RenderWindow& window);
+        SelectionGUI(GameWorld& world, sf::RenderWindow& window, ObjectPalette& objectPalette);
         bool handleEvent(const sf::Event& event);
         bool update(float dt);
         void draw(sf::RenderTarget& target, sf::RenderStates states) const;
@@ -48,6 +49,7 @@ class SelectionGUI: public sf::Drawable
 
         GameWorld& world;
         sf::RenderWindow& window;
+        ObjectPalette& objectPalette;
 
         sf::Vector2i rawMousePos;
         sf::Vector2f guiMousePos;
@@ -61,6 +63,7 @@ class SelectionGUI: public sf::Drawable
         sf::RectangleShape hoverSelection;
         ng::ButtonMap tabs;
         TabState state{TabState::Tiles};
+        TabState selState{TabState::Tiles};
         bool showHover{false};
 
         // Render texture for tiles/objects

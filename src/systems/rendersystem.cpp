@@ -42,7 +42,10 @@ void RenderSystem::update(float dt)
 
     // Draw sprites
     for (auto& sprite: objects.getComponentArray<Components::Sprite>())
-        drawSprite(sprite);
+    {
+        if (sprite.visible)
+            drawSprite(sprite);
+    }
 
     // Draw animated sprites
     for (auto& animSprite: objects.getComponentArray<Components::AnimSprite>())
@@ -61,7 +64,10 @@ void RenderSystem::update(float dt)
 
     // Draw sprites
     for (auto& sprite: objects.getComponentArray<Components::Sprite>())
-        drawSprite(sprite, true);
+    {
+        if (sprite.visible)
+            drawSprite(sprite, true);
+    }
 
     // Draw laser beams
     drawLasers(0);

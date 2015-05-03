@@ -105,16 +105,23 @@ struct Sprite: public ocs::Component<Sprite>
 {
     sf::Sprite sprite;
     std::string filename;
+    bool visible{true};
 
     void deSerialize(const std::string& str)
     {
-        filename = str;
+        auto values = strlib::split(str, " ");
+        values.resize(2);
+        filename = values.front();
+        visible = (values.back().empty() || strlib::strToBool(values.back()));
         ng::SpriteLoader::load(sprite, filename, true);
     }
 
     std::string serialize()
     {
-        return "Sprite " + filename;
+        auto str = "Sprite " + filename;
+        if (!visible)
+            str += " false";
+        return str;
     }
 };
 
@@ -354,21 +361,17 @@ struct Switch: public ocs::Component<Switch>
 struct InitialPosition: public ocs::Component<InitialPosition>
 {
     std::string objectName;
-    int tileId{};
 
     void deSerialize(const std::string& str)
     {
         auto values = strlib::split(str, " ");
-        if (values.size() == 2)
-        {
-            objectName = values.front();
-            tileId = strlib::fromString<int>(values.back());
-        }
+        values.resize(1);
+        objectName = values.front();
     }
 
     std::string serialize()
     {
-        return "InitialPosition " + objectName + " " + std::to_string(tileId);
+        return "InitialPosition " + objectName;
     }
 };
 

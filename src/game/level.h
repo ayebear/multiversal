@@ -56,14 +56,21 @@ class Level
         bool saveToFile(const std::string& filename) const;
         void saveToString(std::string& data) const;
 
+        // Things that should be in OCS ---------------------------------------
+
         // Returns an object ID from an object's name
         ocs::ID getObjectIdFromName(const std::string& name) const;
 
         // Registers an object name to an ID
         void registerObjectName(ocs::ID objectId, const std::string& name);
 
+        // Removes an object from the index
+        void unregisterObjectName(const std::string& name);
+
+        // --------------------------------------------------------------------
+
         // Loads objects from a section in a config file
-        void loadObjects(cfg::File::Section& section, ocs::ObjectManager& objects, ObjectNameMap& objectNames, bool player = true) const;
+        void loadObjects(cfg::File::Section& section, ocs::ObjectManager& objects, ObjectNameMap& objectNames) const;
 
         // Resets tilemaps and objects
         void clear();

@@ -74,7 +74,6 @@ struct TileSelectionEvent
 struct ObjectSelectionEvent
 {
     ocs::ID objectId;
-    // TODO: Determine if the object name will be easier to use
 };
 
 // Used for updating the input system's view

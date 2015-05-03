@@ -31,13 +31,7 @@ void LaserSystem::initialize()
     tileSize = tileMap.getTileSize();
     mapSize = tileMap.getMapSize();
 
-    // Update the rotation components based on the direction of the lasers
-    for (auto& laser: objects.getComponentArray<Components::Laser>())
-    {
-        auto rotation = objects.getComponent<Components::Rotation>(laser.getOwnerID());
-        if (rotation)
-            rotation->angle = laser.getAngle(laser.direction);
-    }
+    updateRotations(objects);
 }
 
 void LaserSystem::update(float dt)
@@ -61,6 +55,20 @@ void LaserSystem::update(float dt)
     // Turn off the laser sensors in the list
     for (int tileId: laserSensorsToDisable)
         es::Events::send(SwitchEvent{tileId, SwitchEvent::Off});
+}
+
+void LaserSystem::updateRotations(ocs::ObjectManager& objects)
+{
+    // Update the rotation components based on the direction of the lasers
+    for (auto& laser: objects.getComponentArray<Components::Laser>())
+    {
+        auto rotation = objects.getComponent<Components::Rotation>(laser.getOwnerID());
+        if (rotation)
+        {
+            rotation->angle = laser.getAngle(laser.direction);
+            std::cout << rotation->angle << "\n";
+        }
+    }
 }
 
 LaserSystem::PointInfo LaserSystem::findPoint()
@@ -153,7 +161,7 @@ void LaserSystem::addBeams(Components::Laser& laser, Components::TilePosition& t
             beam = &laser.beams.back();
             ng::SpriteLoader::load(beam->sprite, textureFilename, true);
         }
-        ++(laser.beamCount);
+        ++laser.beamCount;
 
         beam->sprite.setOrigin(beamWidth / 2, 0);
 

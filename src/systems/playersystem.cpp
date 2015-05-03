@@ -23,7 +23,7 @@ void PlayerSystem::initialize()
 {
     // Create a player object if it doesn't already exist
     playerId = level.getObjectIdFromName("player");
-    if (playerId == BasePackedArray::INVALID_INDEX)
+    if (playerId == ocs::invalidID)
     {
         playerId = objects.createObject("Player");
         level.registerObjectName(playerId, "player");

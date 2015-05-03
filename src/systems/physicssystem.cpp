@@ -271,10 +271,20 @@ void PhysicsSystem::updateTilePositionComponents()
     // Initialize tile positions from InitialPosition components
     for (auto& initPos: objects.getComponentArray<Components::InitialPosition>())
     {
+        auto ownerId = initPos.getOwnerID();
         auto objId = level.getObjectIdFromName(initPos.objectName);
-        auto tilePos = objects.getComponent<Components::TilePosition>(objId);
-        if (tilePos)
-            tilePos->id = initPos.tileId;
+
+        // TODO: Use "assign" when it's available
+        if (!objects.hasComponents<Components::TilePosition>(ownerId))
+            objects.addComponents<Components::TilePosition>(ownerId, Components::TilePosition());
+        if (!objects.hasComponents<Components::TilePosition>(objId))
+            objects.addComponents<Components::TilePosition>(objId, Components::TilePosition());
+
+        // Update tile position from initial position's object's tile position
+        auto destTilePos = objects.getComponent<Components::TilePosition>(objId);
+        auto sourceTilePos = objects.getComponent<Components::TilePosition>(ownerId);
+        if (destTilePos && sourceTilePos)
+            destTilePos->id = sourceTilePos->id;
     }
 
     // Initial positions from TilePosition components

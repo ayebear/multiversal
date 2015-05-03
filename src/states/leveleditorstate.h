@@ -8,21 +8,20 @@
 #include "leveleditor.h"
 #include "selectiongui.h"
 #include "gameworld.h"
+#include "objectpalette.h"
 #include <memory>
 
 class GameResources;
 
 /*
-LevelEditor -> For placing tiles/objects in the level
-    TileMap
-    View
-SelectionGUI -> For choosing tiles/objects
-    TileMap
-    View (default)
-    View (for render texture)
-    RenderTexture
-The selector sends events to the editor for the currently selected tile/object.
-SystemContainer& -> For the systems for the objects
+ObjectPalette
+    For storing the objects that can be placed
+    This is used by both the LevelEditor and SelectionGUI
+LevelEditor
+    For placing tiles/objects in the level
+SelectionGUI
+    For choosing tiles/objects
+    Sends events to the editor for the currently selected tile/object
 */
 class LevelEditorState: public ng::BaseState
 {
@@ -37,6 +36,7 @@ class LevelEditorState: public ng::BaseState
     private:
         GameResources& resources;
         std::unique_ptr<GameWorld> world;
+        std::unique_ptr<ObjectPalette> objectPalette;
         std::unique_ptr<LevelEditor> editor;
         std::unique_ptr<SelectionGUI> selection;
 };
