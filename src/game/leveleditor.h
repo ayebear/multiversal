@@ -66,11 +66,14 @@ class LevelEditor: public sf::Drawable
 
         // Switch handling
         static const sf::Color switchColor;
-        static const sf::Color connectionColor;
+        static const sf::Color tileConnectionColor;
+        static const sf::Color objectConnectionColor;
         auto setupSwitch(int switchId);
-        void setSwitchConnection(int switchId, int tileId, bool connect);
-        void setBox(int tileId, bool show, const sf::Color& color = connectionColor);
+        void connectSwitchToObject(int switchId, int tileId, bool connect, const sf::Color& color);
+        void connectSwitchToTile(int switchId, int tileId, bool connect);
+        void setBox(int tileId, bool show, const sf::Color& color);
         void updateBoxes();
+        bool isObject(int tileId) const;
         bool isSwitch(int tileId) const;
         bool isControllable(int tileId) const;
         void changeSwitchMode(int tileId = -1);

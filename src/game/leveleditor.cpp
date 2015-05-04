@@ -19,7 +19,8 @@
 
 const sf::Color LevelEditor::borderColors[] = {sf::Color::Green, sf::Color::Blue};
 const sf::Color LevelEditor::switchColor(255, 0, 0, 128);
-const sf::Color LevelEditor::connectionColor(0, 255, 0, 128);
+const sf::Color LevelEditor::tileConnectionColor(0, 255, 0, 128);
+const sf::Color LevelEditor::objectConnectionColor(0, 0, 255, 128);
 
 LevelEditor::LevelEditor(GameWorld& world, ng::StateEvent& stateEvent, ObjectPalette& objectPalette):
     world(world),
@@ -271,46 +272,39 @@ void LevelEditor::loadConfig(const std::string& filename)
 
 void LevelEditor::handleMouse(int tileId)
 {
+    if (ctrlPressed)
+        return;
+
     bool leftPressed = sf::Mouse::isButtonPressed(sf::Mouse::Left);
     bool rightPressed = sf::Mouse::isButtonPressed(sf::Mouse::Right);
 
     if (selectedSwitch == -1)
     {
         // Normal state, not currently editing a switch
-        if (!ctrlPressed)
+        if (placeMode == PlaceMode::Tile)
         {
-            if (placeMode == PlaceMode::Tile)
-            {
-                if (leftPressed)
-                    paintTile(tileId, currentVisualId);
-                else if (rightPressed)
-                    paintTile(tileId, 0);
-            }
-            else
-            {
-                if (leftPressed)
-                    placeObject(tileId);
-                else if (rightPressed)
-                    removeObject(tileId);
-            }
+            if (leftPressed)
+                paintTile(tileId, currentVisualId);
+            else if (rightPressed)
+                paintTile(tileId, 0);
+        }
+        else
+        {
+            if (shiftPressed && (leftPressed || rightPressed))
+                changeObjectState(tileId, leftPressed);
+            else if (leftPressed)
+                placeObject(tileId);
+            else if (rightPressed)
+                removeObject(tileId);
         }
     }
-    else
+    else if (leftPressed || rightPressed)
     {
         // Currently editing a switch tile
         if (shiftPressed)
-        {
-            if (leftPressed || rightPressed)
-                changeObjectState(tileId, leftPressed);
-        }
-        else if (!ctrlPressed)
-        {
-            // Enable/disable tile
-            if (leftPressed)
-                setSwitchConnection(selectedSwitch, tileId, true);
-            else if (rightPressed)
-                setSwitchConnection(selectedSwitch, tileId, false);
-        }
+            connectSwitchToObject(selectedSwitch, tileId, leftPressed, objectConnectionColor);
+        else
+            connectSwitchToTile(selectedSwitch, tileId, leftPressed);
     }
 }
 
@@ -376,13 +370,10 @@ auto LevelEditor::setupSwitch(int switchId)
     return switchObj;
 }
 
-void LevelEditor::setSwitchConnection(int switchId, int tileId, bool connect)
+void LevelEditor::connectSwitchToObject(int switchId, int tileId, bool connect, const sf::Color& color)
 {
-    // Only connect to tiles that can be controlled
-    if (!isControllable(tileId))
-        return;
-
-    auto tileIdName = std::to_string(tileId); // ID of tile being connected to switch
+    // ID of tile being connected to switch
+    auto tileIdName = std::to_string(tileId);
     auto switchObj = setupSwitch(switchId);
 
     // Get switch component
@@ -407,7 +398,19 @@ void LevelEditor::setSwitchConnection(int switchId, int tileId, bool connect)
         }
     }
 
+    setBox(tileId, connect, color);
+}
+
+void LevelEditor::connectSwitchToTile(int switchId, int tileId, bool connect)
+{
+    // Only connect to tiles that can be controlled
+    if (!isControllable(tileId))
+        return;
+
+    connectSwitchToObject(switchId, tileId, connect, tileConnectionColor);
+
     // Create TileController object at tile ID if it doesn't already exist
+    auto tileIdName = std::to_string(tileId);
     auto tileObj = world.level.getObjectIdFromName(tileIdName);
     if (tileObj == ocs::invalidID)
     {
@@ -419,8 +422,6 @@ void LevelEditor::setSwitchConnection(int switchId, int tileId, bool connect)
         if (tileGroup)
             tileGroup->tileIds.insert(tileId);
     }
-
-    setBox(tileId, connect, connectionColor);
 }
 
 void LevelEditor::setBox(int tileId, bool show, const sf::Color& color)
@@ -471,12 +472,26 @@ void LevelEditor::updateBoxes()
                     {
                         // Go through tile IDs of TileGroup component
                         for (int tileId: tileGroup->tileIds)
-                            setBox(tileId, true, connectionColor);
+                        {
+                            if (isObject(tileId))
+                                setBox(tileId, true, objectConnectionColor);
+                            else
+                                setBox(tileId, true, tileConnectionColor);
+                        }
                     }
                 }
             }
         }
     }
+}
+
+bool LevelEditor::isObject(int tileId) const
+{
+    auto objName = std::to_string(tileId);
+    auto objId = world.level.getObjectIdFromName(objName);
+    if (objId != ocs::invalidID)
+        return !world.objects.hasComponents<Components::TileGroup>(objId);
+    return false;
 }
 
 bool LevelEditor::isSwitch(int tileId) const
@@ -544,7 +559,14 @@ void LevelEditor::removeObject(int tileId)
 
 void LevelEditor::changeObjectState(int tileId, bool state)
 {
-
+    auto name = std::to_string(tileId);
+    auto id = world.level.getObjectIdFromName(name);
+    if (id != ocs::invalidID)
+    {
+        auto stateComp = world.objects.getComponent<Components::State>(id);
+        if (stateComp)
+            stateComp->value = state;
+    }
 }
 
 void LevelEditor::updateBorder()
