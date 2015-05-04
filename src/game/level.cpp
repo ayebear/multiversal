@@ -115,6 +115,8 @@ void Level::unregisterObjectName(const std::string& name)
 
 void Level::loadObjects(cfg::File::Section& section, ocs::ObjectManager& objects, ObjectNameMap& objectNames) const
 {
+    std::cout << "\nLoading objects...\n";
+
     objects.destroyAllObjects();
     objectNames.clear();
 

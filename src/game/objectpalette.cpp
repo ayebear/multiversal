@@ -53,6 +53,8 @@ ocs::ID ObjectPalette::copyObject(ocs::ID sourceObject, ocs::ObjectManager& dest
             // Deserialize each component in destination object manager
             destObjects.updateComponentFromString(id, compName, compData);
         }
+        else
+            destObjects.updateComponentFromString(id, comp, "");
     }
 
     return id;

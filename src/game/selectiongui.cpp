@@ -129,7 +129,7 @@ void SelectionGUI::setupTiles()
     // Setup tile map
     tiles.loadFromConfig("data/config/tilemap.cfg");
     unsigned tileTypes = tiles.getTotalTypes();
-    unsigned rows = tileTypes / TILE_COLUMNS;
+    unsigned rows = tileTypes / TILE_COLUMNS + 1;
     tiles.resize(TILE_COLUMNS, rows);
     tiles.useLayer(0);
 
