@@ -17,6 +17,10 @@ LevelLoader::LevelLoader(Level& level, GameSaveHandler& gameSave, const std::str
 
 LevelLoader::Status LevelLoader::load(int levelId)
 {
+    // Prevent loading the next level in test mode (just quit)
+    if (levelId != -1 && !levelData.empty())
+        return Status::Finished;
+
     // Load the current level if not specified
     if (levelId == -1)
         levelId = gameSave.getCurrentLevel();

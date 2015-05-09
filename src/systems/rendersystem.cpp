@@ -21,7 +21,7 @@ RenderSystem::RenderSystem(ocs::ObjectManager& objects, ng::TileMap& tileMap, sf
 
 void RenderSystem::update(float dt)
 {
-    window.clear();
+    window.clear(sf::Color(128, 128, 128));
 
     // Draw the real world
     window.setView(camera.getView("background"));
@@ -31,7 +31,7 @@ void RenderSystem::update(float dt)
 
     // Draw the magic window
     texture = &magicWindow.getRenderTexture();
-    texture->clear(sf::Color::Transparent);
+    texture->clear(sf::Color(0, 128, 0));
     auto windowViewPos = ng::views::getViewPos(camera.getView("game"));
     magicWindow.setView(camera.accessView("background"), windowViewPos);
     texture->draw(sprites("background2"));

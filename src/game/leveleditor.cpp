@@ -17,7 +17,7 @@
 #include "nage/misc/utils.h"
 #include "objectpalette.h"
 
-const sf::Color LevelEditor::borderColors[] = {sf::Color::Green, sf::Color::Blue};
+const sf::Color LevelEditor::borderColors[] = {sf::Color::Blue, sf::Color::Green};
 const sf::Color LevelEditor::switchColor(255, 0, 0, 128);
 const sf::Color LevelEditor::tileConnectionColor(0, 255, 0, 128);
 const sf::Color LevelEditor::objectConnectionColor(0, 0, 255, 128);
@@ -212,6 +212,7 @@ void LevelEditor::toggleLayer()
 {
     currentLayer = !currentLayer;
     updateBorder();
+    updateCurrentLayer();
 }
 
 void LevelEditor::nextLevel()
@@ -313,8 +314,7 @@ void LevelEditor::updateMousePos()
     for (auto& event: es::Events::get<MousePosEvent>())
     {
         mousePos = event.mousePos;
-        sf::Vector2i location;
-        showCurrent = getLocation(location);
+        showCurrent = getLocation();
         if (showCurrent)
         {
             // Update the positions of the current tile/object
@@ -323,8 +323,7 @@ void LevelEditor::updateMousePos()
             auto origin = currentObjectSprite.getOrigin();
             currentObjectSprite.setPosition(pos.x + origin.x, pos.y + origin.y);
 
-            // Update the current tile ID being hovered over
-            currentTileId = world.tileMapData.getId(currentLayer, location.x, location.y);
+            updateCurrentLayer();
         }
     }
 }
@@ -345,9 +344,18 @@ void LevelEditor::paintTile(int tileId, int visualId)
         else
             comp->tileIds.erase(tileId);
     }
+
+    // Remove any objects at this tile ID
+    auto objName = std::to_string(tileId);
+    auto id = world.level.getObjectIdFromName(objName);
+    if (id != ocs::invalidID)
+    {
+        world.objects.destroyObject(id);
+        world.level.unregisterObjectName(objName);
+    }
 }
 
-bool LevelEditor::getLocation(sf::Vector2i& location) const
+bool LevelEditor::getLocation()
 {
     // Get location of tile to place, and make sure it is in bounds
     location.x = round((mousePos.x / static_cast<float>(tileSize.x)) - 0.5f);
@@ -404,7 +412,7 @@ void LevelEditor::connectSwitchToObject(int switchId, int tileId, bool connect, 
 void LevelEditor::connectSwitchToTile(int switchId, int tileId, bool connect)
 {
     // Only connect to tiles that can be controlled
-    if (!isControllable(tileId))
+    if (connect && !isControllable(tileId))
         return;
 
     connectSwitchToObject(switchId, tileId, connect, tileConnectionColor);
@@ -412,7 +420,7 @@ void LevelEditor::connectSwitchToTile(int switchId, int tileId, bool connect)
     // Create TileController object at tile ID if it doesn't already exist
     auto tileIdName = std::to_string(tileId);
     auto tileObj = world.level.getObjectIdFromName(tileIdName);
-    if (tileObj == ocs::invalidID)
+    if (tileObj == ocs::invalidID && connect)
     {
         tileObj = world.objects.createObject("TileController");
         world.level.registerObjectName(tileObj, tileIdName);
@@ -421,6 +429,12 @@ void LevelEditor::connectSwitchToTile(int switchId, int tileId, bool connect)
         auto tileGroup = world.objects.getComponent<Components::TileGroup>(tileObj);
         if (tileGroup)
             tileGroup->tileIds.insert(tileId);
+    }
+    else if (tileObj != ocs::invalidID && !connect)
+    {
+        // Remove TileController object
+        world.objects.destroyObject(tileObj);
+        world.level.unregisterObjectName(tileIdName);
     }
 }
 
@@ -590,6 +604,12 @@ void LevelEditor::updateCurrentObject()
         currentObjectSprite = spriteComp->sprite;
         //currentObjectSprite.setTexture(spriteComp->sprite.getTexture());
     }
+}
+
+void LevelEditor::updateCurrentLayer()
+{
+    // Update the current tile ID being hovered over
+    currentTileId = world.tileMapData.getId(currentLayer, location.x, location.y);
 }
 
 void LevelEditor::resize(int deltaX, int deltaY)

@@ -62,7 +62,7 @@ class LevelEditor: public sf::Drawable
         void handleMouse(int tileId);
         void updateMousePos();
         void paintTile(int tileId, int visualId);
-        bool getLocation(sf::Vector2i& location) const;
+        bool getLocation();
 
         // Switch handling
         static const sf::Color switchColor;
@@ -87,6 +87,7 @@ class LevelEditor: public sf::Drawable
         void updateBorder();
         void updateCurrentTile();
         void updateCurrentObject();
+        void updateCurrentLayer();
         void resize(int deltaX, int deltaY);
         void initialize();
 
@@ -107,6 +108,7 @@ class LevelEditor: public sf::Drawable
         sf::View view;
         sf::Vector2f mousePos;
         sf::Vector2u tileSize;
+        sf::Vector2i location;
         bool shiftPressed{false};
         bool ctrlPressed{false};
         bool handledEvent{false};
