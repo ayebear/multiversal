@@ -282,18 +282,18 @@ void LevelEditor::handleMouse(int tileId)
     if (selectedSwitch == -1)
     {
         // Normal state, not currently editing a switch
-        if (placeMode == PlaceMode::Tile)
+        if (shiftPressed && (leftPressed || rightPressed))
+            changeObjectState(tileId, leftPressed);
+        else if (placeMode == PlaceMode::Tile)
         {
             if (leftPressed)
                 paintTile(tileId, currentVisualId);
             else if (rightPressed)
                 paintTile(tileId, 0);
         }
-        else
+        else if (placeMode == PlaceMode::Object)
         {
-            if (shiftPressed && (leftPressed || rightPressed))
-                changeObjectState(tileId, leftPressed);
-            else if (leftPressed)
+            if (leftPressed)
                 placeObject(tileId);
             else if (rightPressed)
                 removeObject(tileId);
@@ -480,18 +480,19 @@ void LevelEditor::updateBoxes()
                 auto id = world.level.getObjectIdFromName(name);
                 if (id != ocs::invalidID)
                 {
-                    // Get a TileGroup component
+                    // Get a TileGroup component (not an object if it has one)
                     auto tileGroup = world.objects.getComponent<Components::TileGroup>(id);
                     if (tileGroup)
                     {
-                        // Go through tile IDs of TileGroup component
+                        // Show tile connection(s)
                         for (int tileId: tileGroup->tileIds)
-                        {
-                            if (isObject(tileId))
-                                setBox(tileId, true, objectConnectionColor);
-                            else
-                                setBox(tileId, true, tileConnectionColor);
-                        }
+                            setBox(tileId, true, tileConnectionColor);
+                    }
+                    else
+                    {
+                        // Show object connection
+                        int tileId = strlib::fromString<int>(name);
+                        setBox(tileId, true, objectConnectionColor);
                     }
                 }
             }

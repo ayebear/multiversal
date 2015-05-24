@@ -38,8 +38,8 @@ class PhysicsSystem: public es::System
         void getCollidingTiles(const sf::FloatRect& entAABB, sf::Vector2u& start, sf::Vector2u& end);
 
         // These are used for gravity and falling
-        static const sf::Vector2i maxVelocity;
-        static const sf::Vector2i gravityConstant;
+        static const sf::Vector2f maxVelocity;
+        static const sf::Vector2f gravityConstant;
 
         // References
         ocs::ObjectManager& objects;

@@ -13,8 +13,8 @@
 #include "nage/misc/utils.h"
 #include "nage/graphics/vectors.h"
 
-const sf::Vector2i PhysicsSystem::maxVelocity(1600, 3200);
-const sf::Vector2i PhysicsSystem::gravityConstant(640, 640);
+const sf::Vector2f PhysicsSystem::maxVelocity(3200, 3200);
+const sf::Vector2f PhysicsSystem::gravityConstant(640, 640);
 
 PhysicsSystem::PhysicsSystem(ocs::ObjectManager& objects, TileMapData& tileMapData, ng::TileMap& tileMap, MagicWindow& magicWindow, Level& level):
     objects(objects),
@@ -68,10 +68,8 @@ void PhysicsSystem::stepPositions(float dt)
             {
                 velocity.x += dt * gravity->acceleration.x * gravityConstant.x;
                 velocity.y += dt * gravity->acceleration.y * gravityConstant.y;
-                if (velocity.x > maxVelocity.x)
-                    velocity.x = maxVelocity.x;
-                if (velocity.y > maxVelocity.y)
-                    velocity.y = maxVelocity.y;
+                ng::clamp(velocity.x, -maxVelocity.x, maxVelocity.x);
+                ng::clamp(velocity.y, -maxVelocity.y, maxVelocity.y);
             }
 
             // Get the AABB component used for collision detection/handling
