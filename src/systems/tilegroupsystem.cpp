@@ -4,16 +4,17 @@
 #include "tilegroupsystem.h"
 #include "components.h"
 #include "tilemapchanger.h"
+#include "es/world.h"
 
-TileGroupSystem::TileGroupSystem(TileMapChanger& tileMapChanger, ocs::ObjectManager& objects):
+TileGroupSystem::TileGroupSystem(TileMapChanger& tileMapChanger, es::World& world):
     tileMapChanger(tileMapChanger),
-    objects(objects)
+    world(world)
 {
 }
 
 void TileGroupSystem::initialize()
 {
-    for (auto& tileGroup: objects.getComponentArray<Components::TileGroup>())
+    for (auto& tileGroup: world.getComponents<TileGroup>())
     {
         for (auto id: tileGroup.tileIds)
             tileMapChanger.changeState(id, tileGroup.initialState);
@@ -22,12 +23,13 @@ void TileGroupSystem::initialize()
 
 void TileGroupSystem::update(float dt)
 {
-    for (auto& tileGroup: objects.getComponentArray<Components::TileGroup>())
+    for (auto ent: world.query<TileGroup, State>())
     {
-        auto state = objects.getComponent<Components::State>(tileGroup.getOwnerID());
-        if (state && state->hasChanged())
+        auto tileGroup = ent.get<TileGroup>();
+        auto state = ent.get<State>();
+        if (state->hasChanged())
         {
-            for (auto id: tileGroup.tileIds)
+            for (auto id: tileGroup->tileIds)
                 tileMapChanger.toggleState(id);
         }
     }

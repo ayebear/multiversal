@@ -4,13 +4,13 @@
 #include "inaltworld.h"
 #include "components.h"
 
-bool inAltWorld(ocs::ObjectManager& objects, ocs::ID id)
+bool inAltWorld(es::Entity ent)
 {
     // Check both the AltWorld and TilePosition components
-    bool altWorld = objects.hasComponents<Components::AltWorld>(id);
+    bool altWorld = ent.has<AltWorld>();
     if (!altWorld)
     {
-        auto tilePos = objects.getComponent<Components::TilePosition>(id);
+        auto tilePos = ent.get<TilePosition>();
         if (tilePos)
             altWorld = (tilePos->layer != 0);
     }

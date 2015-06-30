@@ -8,8 +8,8 @@
 #include "nage/graphics/views.h"
 #include "lasercomponent.h"
 
-RenderSystem::RenderSystem(ocs::ObjectManager& objects, ng::TileMap& tileMap, sf::RenderWindow& window, ng::Camera& camera, MagicWindow& magicWindow):
-    objects(objects),
+RenderSystem::RenderSystem(es::World& world, ng::TileMap& tileMap, sf::RenderWindow& window, ng::Camera& camera, MagicWindow& magicWindow):
+    world(world),
     tileMap(tileMap),
     window(window),
     camera(camera),
@@ -39,17 +39,18 @@ void RenderSystem::update(float dt)
     tileMap.drawLayer(*texture, 1);
 
     // TODO: Add z-indexing with z-index components that get sorted
+    // TODO: Make lasers, sprites, and animated sprites more easily drawable
+
+    auto spriteEnts = world.query<Sprite>();
+    auto animSpriteEnts = world.query<AnimSprite>();
 
     // Draw sprites
-    for (auto& sprite: objects.getComponentArray<Components::Sprite>())
-    {
-        if (sprite.visible)
-            drawSprite(sprite);
-    }
+    for (auto& ent: spriteEnts)
+        drawSprite<Sprite>(ent);
 
     // Draw animated sprites
-    for (auto& animSprite: objects.getComponentArray<Components::AnimSprite>())
-        drawSprite(animSprite);
+    for (auto& ent: animSpriteEnts)
+        drawSprite<AnimSprite>(ent);
 
     // Draw laser beams
     drawLasers(1);
@@ -58,16 +59,13 @@ void RenderSystem::update(float dt)
     texture->display();
     window.draw(magicWindow);
 
-    // Draw animated sprites
-    for (auto& animSprite: objects.getComponentArray<Components::AnimSprite>())
-        drawSprite(animSprite, true);
-
     // Draw sprites
-    for (auto& sprite: objects.getComponentArray<Components::Sprite>())
-    {
-        if (sprite.visible)
-            drawSprite(sprite, true);
-    }
+    for (auto& ent: spriteEnts)
+        drawSprite<Sprite>(ent, true);
+
+    // Draw animated sprites
+    for (auto& ent: animSpriteEnts)
+        drawSprite<AnimSprite>(ent, true);
 
     // Draw laser beams
     drawLasers(0);
@@ -77,7 +75,7 @@ void RenderSystem::update(float dt)
 
 void RenderSystem::drawLasers(int layer)
 {
-    for (auto& laser: objects.getComponentArray<Components::Laser>())
+    for (auto& laser: world.getComponents<Laser>())
     {
         for (unsigned i = 0; i < laser.beams.size() && i < laser.beamCount; ++i)
         {

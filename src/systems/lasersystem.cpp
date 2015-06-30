@@ -14,8 +14,8 @@
 
 const char* LaserSystem::textureFilename = "data/images/beam.png";
 
-LaserSystem::LaserSystem(ocs::ObjectManager& objects, TileMapData& tileMapData, ng::TileMap& tileMap, MagicWindow& magicWindow):
-    objects(objects),
+LaserSystem::LaserSystem(es::World& world, TileMapData& tileMapData, ng::TileMap& tileMap, MagicWindow& magicWindow):
+    world(world),
     tileMapData(tileMapData),
     tileMap(tileMap),
     magicWindow(magicWindow)
@@ -31,7 +31,7 @@ void LaserSystem::initialize()
     tileSize = tileMap.getTileSize();
     mapSize = tileMap.getMapSize();
 
-    updateRotations(objects);
+    updateRotations(world);
 }
 
 void LaserSystem::update(float dt)
@@ -42,14 +42,15 @@ void LaserSystem::update(float dt)
         laserSensorsToDisable.insert(tileId);
 
     // Update laser beams
-    for (auto& laser: objects.getComponentArray<Components::Laser>())
+    for (auto ent: world.query<Laser, TilePosition, State>())
     {
-        auto tilePos = objects.getComponent<Components::TilePosition>(laser.getOwnerID());
-        auto state = objects.getComponent<Components::State>(laser.getOwnerID());
-        if (tilePos && state && state->value)
-            addBeams(laser, *tilePos);
+        auto laser = ent.get<Laser>();
+        auto tilePos = ent.get<TilePosition>();
+        auto state = ent.get<State>();
+        if (state->value)
+            addBeams(*laser, *tilePos);
         else
-            laser.beams.clear();
+            laser->beams.clear();
     }
 
     // Turn off the laser sensors in the list
@@ -57,17 +58,15 @@ void LaserSystem::update(float dt)
         es::Events::send(SwitchEvent{tileId, SwitchEvent::Off});
 }
 
-void LaserSystem::updateRotations(ocs::ObjectManager& objects)
+void LaserSystem::updateRotations(es::World& world)
 {
     // Update the rotation components based on the direction of the lasers
-    for (auto& laser: objects.getComponentArray<Components::Laser>())
+    for (auto ent: world.query<Laser, Rotation>())
     {
-        auto rotation = objects.getComponent<Components::Rotation>(laser.getOwnerID());
-        if (rotation)
-        {
-            rotation->angle = laser.getAngle(laser.direction);
-            std::cout << rotation->angle << "\n";
-        }
+        auto laser = ent.get<Laser>();
+        auto rotation = ent.get<Rotation>();
+        rotation->angle = laser->getAngle(laser->direction);
+        std::cout << rotation->angle << "\n";
     }
 }
 
@@ -126,11 +125,11 @@ LaserSystem::PointInfo LaserSystem::findPoint()
         point.position.y += float(tileSize.y) * ((currentDirection.y - 1) / -2.0f);
     }
 
-    // TODO: Also collide with objects
+    // TODO: Also collide with world
     return point;
 }
 
-void LaserSystem::addBeams(Components::Laser& laser, Components::TilePosition& tilePos)
+void LaserSystem::addBeams(Laser& laser, TilePosition& tilePos)
 {
     // Setup everything
     currentPosition = ng::vec::cast<int>(tilePos.pos);
@@ -148,7 +147,7 @@ void LaserSystem::addBeams(Components::Laser& laser, Components::TilePosition& t
         // Find next point that collides
         endPoint = findPoint();
 
-        Components::Laser::Beam* beam;
+        Laser::Beam* beam;
         if (laser.beamCount < laser.beams.size())
         {
             // Use an existing sprite

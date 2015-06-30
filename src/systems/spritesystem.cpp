@@ -5,60 +5,61 @@
 
 #include <SFML/Graphics.hpp>
 #include "components.h"
+#include "es/world.h"
 
-SpriteSystem::SpriteSystem(ocs::ObjectManager& objects):
-    objects(objects)
+SpriteSystem::SpriteSystem(es::World& world):
+    world(world)
 {
 }
 
 void SpriteSystem::update(float dt)
 {
     // Update sprites
-    for (auto& sprite: objects.getComponentArray<Components::Sprite>())
+    for (auto ent: world.query<Sprite>())
     {
-        auto id = sprite.getOwnerID();
-        setPosition(objects, sprite.sprite, id);
-        setRotation(objects, sprite.sprite, id);
+        auto& sprite = ent.get<Sprite>()->sprite;
+        setPosition(ent, sprite);
+        setRotation(ent, sprite);
     }
 
     // Update animated sprites
-    for (auto& animSprite: objects.getComponentArray<Components::AnimSprite>())
+    for (auto ent: world.query<AnimSprite>())
     {
-        auto id = animSprite.getOwnerID();
-        setPosition(objects, animSprite.sprite, id);
-        setRotation(objects, animSprite.sprite, id);
+        auto& sprite = ent.get<AnimSprite>()->sprite;
+        setPosition(ent, sprite);
+        setRotation(ent, sprite);
 
         // Update animated sprite
-        animSprite.sprite.update(dt);
+        sprite.update(dt);
     }
 }
 
-void SpriteSystem::updateRotations(ocs::ObjectManager& objects)
+void SpriteSystem::updateRotations(es::World& world)
 {
-    for (auto& sprite: objects.getComponentArray<Components::Sprite>())
+    for (auto ent: world.query<Sprite>())
     {
-        auto id = sprite.getOwnerID();
-        if (objects.hasComponents<Components::Rotation>(id))
+        auto& sprite = ent.get<Sprite>()->sprite;
+        if (ent.has<Rotation>())
         {
-            auto bounds = sprite.sprite.getGlobalBounds();
-            sprite.sprite.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f);
+            auto bounds = sprite.getGlobalBounds();
+            sprite.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f);
         }
-        setRotation(objects, sprite.sprite, id);
+        setRotation(ent, sprite);
     }
 }
 
-void SpriteSystem::setPosition(ocs::ObjectManager& objects, sf::Transformable& sprite, ocs::ID id)
+void SpriteSystem::setPosition(es::Entity& ent, sf::Transformable& sprite)
 {
     // Update position
-    auto position = objects.getComponent<Components::Position>(id);
+    auto position = ent.get<Position>();
     if (position)
         sprite.setPosition(position->x, position->y);
 }
 
-void SpriteSystem::setRotation(ocs::ObjectManager& objects, sf::Transformable& sprite, ocs::ID id)
+void SpriteSystem::setRotation(es::Entity& ent, sf::Transformable& sprite)
 {
     // Update rotation
-    auto rotation = objects.getComponent<Components::Rotation>(id);
+    auto rotation = ent.get<Rotation>();
     if (rotation)
         sprite.setRotation(rotation->angle);
 }

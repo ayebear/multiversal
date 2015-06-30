@@ -14,20 +14,20 @@ LevelEditorState::LevelEditorState(GameResources& resources):
 void LevelEditorState::onStart()
 {
     es::Events::clearAll();
-    if (!world)
+    if (!gameInstance)
     {
         std::cout << "\nLevel editor is loading...\n\n";
-        world = std::make_unique<GameWorld>(resources.window, resources.gameSave);
-        objectPalette = std::make_unique<ObjectPalette>();
-        editor = std::make_unique<LevelEditor>(*world, stateEvent, *objectPalette);
-        selection = std::make_unique<SelectionGUI>(*world, resources.window, *objectPalette);
+        gameInstance = std::make_unique<GameInstance>(resources.window, resources.gameSave);
+        palette = std::make_unique<es::World>();
+        editor = std::make_unique<LevelEditor>(*gameInstance, stateEvent, *palette);
+        selection = std::make_unique<SelectionGUI>(*gameInstance, resources.window, *palette);
         std::cout << "\nLevel editor is loaded.\n\n";
     }
 }
 
 void LevelEditorState::handleEvents()
 {
-    world->systems.update<InputSystem>(dt);
+    gameInstance->systems.update<InputSystem>(dt);
     for (auto& event: es::Events::get<sf::Event>())
     {
         if (event.type == sf::Event::Closed)

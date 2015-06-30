@@ -2,28 +2,27 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "selectiongui.h"
-#include "gameworld.h"
+#include "gameinstance.h"
 #include "nage/graphics/vectors.h"
 #include "es/events.h"
 #include "gameevents.h"
-#include "objectpalette.h"
 #include "components.h"
 
-SelectionGUI::SelectionGUI(GameWorld& world, sf::RenderWindow& window, ObjectPalette& objectPalette):
-    world(world),
+SelectionGUI::SelectionGUI(GameInstance& gameInstance, sf::RenderWindow& window, es::World& palette):
+    gameInstance(gameInstance),
     window(window),
-    objectPalette(objectPalette)
+    palette(palette)
 {
     // Calculate views and sizes
-    view = world.camera.getView("window");
-    tileSize = world.tileMap.getTileSize();
+    view = gameInstance.camera.getView("window");
+    tileSize = gameInstance.tileMap.getTileSize();
     borderSize = sf::Vector2f(WIDTH_PIXELS + (PADDING * 2),
                               view.getSize().y - (PADDING * 2));
     float textureHeight = borderSize.y - BUTTON_HEIGHT - (PADDING * 4);
     float viewWidth = tileSize.x * TILE_COLUMNS;
     float viewHeight = (textureHeight / WIDTH_PIXELS) * viewWidth;
 
-    // Load tiles and objects
+    // Load tiles and world
     setupTiles();
     setupObjects();
 
@@ -55,7 +54,7 @@ SelectionGUI::SelectionGUI(GameWorld& world, sf::RenderWindow& window, ObjectPal
     font.loadFromFile("data/fonts/Ubuntu-B.ttf");
     const sf::Vector2u tabSize(BUTTON_WIDTH, BUTTON_HEIGHT);
     auto& tilesTab = tabs["tiles"];
-    auto& objectsTab = tabs["objects"];
+    auto& objectsTab = tabs["world"];
     tilesTab.setup(font, sf::Vector2f(PADDING * 2, PADDING * 2), tabSize, "Tiles");
     tilesTab.setFontSize(24);
     tilesTab.setPressedCallback([&](ng::Button& b){ handleTilesTab(); });
@@ -71,7 +70,7 @@ bool SelectionGUI::handleEvent(const sf::Event& event)
     // Handle switching tabs
     tabs.handleMouseEvent(event, guiMousePos);
 
-    // Handle selecting tiles/objects
+    // Handle selecting tiles/world
     bool clicked = (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left);
     bool mouseMoved = (event.type == sf::Event::MouseMoved);
     if (clicked || mouseMoved)
@@ -101,7 +100,10 @@ bool SelectionGUI::update(float dt)
     if (state == TabState::Tiles)
         texture.draw(tiles);
     else if (state == TabState::Objects)
-        objectPalette.draw(texture);
+    {
+        for (auto& spriteComp: gameInstance.world.getComponents<Sprite>())
+            texture.draw(spriteComp.sprite);
+    }
 
     if (state == selState)
         texture.draw(currentSelection);
@@ -146,22 +148,23 @@ void SelectionGUI::setupObjects()
 {
     // Update positions of objects
     sf::Vector2u gridPos;
-    for (auto& spriteComp: objectPalette.objects.getComponentArray<Components::Sprite>())
+    for (auto ent: palette.query<Sprite>())
     {
+        auto spriteComp = ent.get<Sprite>();
+
+        // Use center-based origin points for positions if there is a Rotation component
         sf::Vector2f offset;
-        if (objectPalette.objects.hasComponents<Components::Rotation>(spriteComp.getOwnerID()))
+        if (ent.has<Rotation>())
         {
-            auto bounds = spriteComp.sprite.getGlobalBounds();
+            auto bounds = spriteComp->sprite.getGlobalBounds();
             offset = sf::Vector2f(bounds.width / 2.0f, bounds.height / 2.0f);
         }
 
-        spriteComp.sprite.setPosition(gridPos.x * tileSize.x + offset.x, gridPos.y * tileSize.y + offset.y);
-
+        // Set position of sprite
+        spriteComp->sprite.setPosition(gridPos.x * tileSize.x + offset.x, gridPos.y * tileSize.y + offset.y);
         std::cout << gridPos.x * tileSize.x << ", " << gridPos.y * tileSize.y << "\n";
 
-        //posComp.x = gridPos.x * tileSize.x;
-        //posComp.y = gridPos.y * tileSize.y;
-
+        // Go to next position or next line
         ++gridPos.x;
         if (gridPos.x >= TILE_COLUMNS)
         {
@@ -247,10 +250,10 @@ void SelectionGUI::select(const sf::Vector2f& pos, bool clicked)
 
         if (clicked)
         {
-            auto objectId = checkCollision(objectPalette.objects, pos);
-            if (objectId != ocs::invalidID)
+            auto ent = checkCollision(palette, pos);
+            if (ent)
             {
-                auto spriteComp = objectPalette.objects.getComponent<Components::Sprite>(objectId);
+                auto spriteComp = ent.get<Sprite>();
                 if (spriteComp)
                 {
                     // Update current selection
@@ -259,12 +262,21 @@ void SelectionGUI::select(const sf::Vector2f& pos, bool clicked)
                     currentSelection.setPosition(position.x - origin.x, position.y - origin.y);
                     selState = TabState::Objects;
 
-                    //std::cout << "Updated current selection position to: " ;
-
                     // Send event with selected object ID
-                    es::Events::send(ObjectSelectionEvent{objectId});
+                    es::Events::send(ObjectSelectionEvent{ent.getId()});
                 }
             }
         }
     }
+}
+
+es::Entity SelectionGUI::checkCollision(es::World& world, const sf::Vector2f& mousePos)
+{
+    for (auto ent: world.query<Sprite>())
+    {
+        auto bounds = ent.get<Sprite>()->sprite.getGlobalBounds();
+        if (bounds.contains(mousePos))
+            return ent;
+    }
+    return {world};
 }

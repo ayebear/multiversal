@@ -4,7 +4,7 @@
 #include "leveleditor.h"
 #include "es/events.h"
 #include "gameevents.h"
-#include "gameworld.h"
+#include "gameinstance.h"
 #include "configfile.h"
 #include "nage/graphics/vectors.h"
 #include "nage/states/stateevent.h"
@@ -15,26 +15,26 @@
 #include "logicaltiles.h"
 #include "gamesavehandler.h"
 #include "nage/misc/utils.h"
-#include "objectpalette.h"
+#include "lasersystem.h"
+#include "spritesystem.h"
 
 const sf::Color LevelEditor::borderColors[] = {sf::Color::Blue, sf::Color::Green};
 const sf::Color LevelEditor::switchColor(255, 0, 0, 128);
 const sf::Color LevelEditor::tileConnectionColor(0, 255, 0, 128);
 const sf::Color LevelEditor::objectConnectionColor(0, 0, 255, 128);
 
-LevelEditor::LevelEditor(GameWorld& world, ng::StateEvent& stateEvent, ObjectPalette& objectPalette):
-    world(world),
+LevelEditor::LevelEditor(GameInstance& gameInstance, ng::StateEvent& stateEvent, es::World& palette):
+    gameInstance(gameInstance),
     stateEvent(stateEvent),
-    objectPalette(objectPalette),
-    placeMode(PlaceMode::Tile),
-    currentObject(-1)
+    palette(palette),
+    placeMode(PlaceMode::Tile)
 {
-    view = world.camera.getView("window");
+    view = gameInstance.camera.getView("window");
     view.zoom(defaultZoom);
     sf::FloatRect viewRect(-1116, -32, view.getSize().x, view.getSize().y);
     view.reset(viewRect);
     loadConfig("data/config/level_editor.cfg");
-    tileSize = world.tileMap.getTileSize();
+    tileSize = gameInstance.tileMap.getTileSize();
     resize(32, 12);
 
     // Setup border
@@ -88,7 +88,7 @@ void LevelEditor::update(float dt, bool withinBorder)
     for (auto& event: es::Events::get<ObjectSelectionEvent>())
     {
         placeMode = PlaceMode::Object;
-        currentObject = event.objectId;
+        currentEntity = event.objectId;
         updateCurrentObject();
     }
     es::Events::clear<ObjectSelectionEvent>();
@@ -121,17 +121,17 @@ void LevelEditor::update(float dt, bool withinBorder)
 
     // Save sprites in the current layer to draw later
     sprites.clear();
-    for (auto& sprite: world.objects.getComponentArray<Components::Sprite>())
+    for (auto ent: gameInstance.world.query<Sprite>())
     {
-        if (inAltWorld(world.objects, sprite.getOwnerID()) == currentLayer)
-            sprites.push_back(&sprite.sprite);
+        if (inAltWorld(ent) == currentLayer)
+            sprites.push_back(&(ent.get<Sprite>()->sprite));
     }
 }
 
 void LevelEditor::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     target.setView(view);
-    world.tileMap.drawLayer(target, currentLayer);
+    gameInstance.tileMap.drawLayer(target, currentLayer);
 
     for (auto sprite: sprites)
         target.draw(*sprite);
@@ -144,7 +144,7 @@ void LevelEditor::draw(sf::RenderTarget& target, sf::RenderStates states) const
         if (placeMode == PlaceMode::Tile)
             target.draw(currentTile);
         else if (placeMode == PlaceMode::Object)
-            target.draw(currentObjectSprite);
+            target.draw(currentEntitySprite);
     }
 
     // Draw switch connections
@@ -152,7 +152,7 @@ void LevelEditor::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
         for (auto& box: boxes)
         {
-            int layer = world.tileMapData.getLayer(box.first);
+            int layer = gameInstance.tileMapData.getLayer(box.first);
             if (layer == currentLayer)
                 target.draw(box.second);
         }
@@ -161,15 +161,15 @@ void LevelEditor::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 void LevelEditor::save()
 {
-    world.level.saveToFile(world.levelLoader.getLevelFilename(currentLevel));
+    gameInstance.level.saveToFile(gameInstance.levelLoader.getLevelFilename(currentLevel));
 }
 
 void LevelEditor::load()
 {
-    world.level.loadFromFile(world.levelLoader.getLevelFilename(currentLevel));
+    gameInstance.level.loadFromFile(gameInstance.levelLoader.getLevelFilename(currentLevel));
     updateBorder();
-    world.systems.initializeAll();
-    world.systems.update<SpriteSystem>(1.0f / 60.0f);
+    gameInstance.systems.initializeAll();
+    gameInstance.systems.update<SpriteSystem>(1.0f / 60.0f);
     initialize();
 }
 
@@ -179,7 +179,7 @@ void LevelEditor::test()
     stateEvent.command = ng::StateEvent::Push;
     stateEvent.name = "Game";
     TestModeEvent event;
-    world.level.saveToString(event.level);
+    gameInstance.level.saveToString(event.level);
     es::Events::send(event);
 }
 
@@ -196,7 +196,7 @@ void LevelEditor::redo()
 void LevelEditor::clear()
 {
     changeSwitchMode();
-    world.level.clear();
+    gameInstance.level.clear();
     initialize();
 }
 
@@ -253,7 +253,7 @@ void LevelEditor::loadConfig(const std::string& filename)
     ngBindAction(actions, prevLevel);
 
     // Derive placeable tiles from the reverse lookup table
-    for (const auto& data: world.tileMapData.getVisualToInfo())
+    for (const auto& data: gameInstance.tileMapData.getVisualToInfo())
     {
         int visualId = data.first;
         auto& info = data.second;
@@ -264,11 +264,13 @@ void LevelEditor::loadConfig(const std::string& filename)
         tile.visualId = visualId;
         tile.logicalId = info.logicalId;
         tile.state = info.state;
-        world.tileMapData.updateCollision(tile);
+        gameInstance.tileMapData.updateCollision(tile);
     }
 
-    // Load the object palette
-    objectPalette.load(config.getSection("Objects"), world.level);
+    // Load the palette of entities
+    gameInstance.level.loadEntities(config.getSection("Entities"), palette);
+    LaserSystem::updateRotations(palette);
+    SpriteSystem::updateRotations(palette);
 }
 
 void LevelEditor::handleMouse(int tileId)
@@ -320,8 +322,8 @@ void LevelEditor::updateMousePos()
             // Update the positions of the current tile/object
             sf::Vector2f pos(location.x * tileSize.x, location.y * tileSize.y);
             currentTile.setPosition(pos);
-            auto origin = currentObjectSprite.getOrigin();
-            currentObjectSprite.setPosition(pos.x + origin.x, pos.y + origin.y);
+            auto origin = currentEntitySprite.getOrigin();
+            currentEntitySprite.setPosition(pos.x + origin.x, pos.y + origin.y);
 
             updateCurrentLayer();
         }
@@ -331,12 +333,12 @@ void LevelEditor::updateMousePos()
 void LevelEditor::paintTile(int tileId, int visualId)
 {
     // Set the tile and update the graphical tile map
-    auto& tile = world.tileMapData(tileId);
+    auto& tile = gameInstance.tileMapData(tileId);
     tile = visualTiles[visualId];
-    world.tileMapChanger.updateVisualTile(tileId);
+    gameInstance.tileMapChanger.updateVisualTile(tileId);
 
     // Add/remove tile ID to tile group component
-    auto comp = world.objects.getComponent<Components::TileGroup>(stateOnId);
+    auto comp = gameInstance.world[stateOnEnt].get<TileGroup>();
     if (comp)
     {
         if (tile.state)
@@ -345,14 +347,8 @@ void LevelEditor::paintTile(int tileId, int visualId)
             comp->tileIds.erase(tileId);
     }
 
-    // Remove any objects at this tile ID
-    auto objName = std::to_string(tileId);
-    auto id = world.level.getObjectIdFromName(objName);
-    if (id != ocs::invalidID)
-    {
-        world.objects.destroyObject(id);
-        world.level.unregisterObjectName(objName);
-    }
+    // Remove the object at this tile ID
+    gameInstance.world.get(std::to_string(tileId)).destroy();
 }
 
 bool LevelEditor::getLocation()
@@ -360,32 +356,17 @@ bool LevelEditor::getLocation()
     // Get location of tile to place, and make sure it is in bounds
     location.x = round((mousePos.x / static_cast<float>(tileSize.x)) - 0.5f);
     location.y = round((mousePos.y / static_cast<float>(tileSize.y)) - 0.5f);
-    return world.tileMap.inBounds(location.x, location.y);
-}
-
-auto LevelEditor::setupSwitch(int switchId)
-{
-    auto switchIdName = std::to_string(switchId);
-    auto switchObj = world.level.getObjectIdFromName(switchIdName);
-
-    // Create new switch object if it doesn't already exist
-    if (switchObj == ocs::invalidID)
-    {
-        switchObj = world.objects.createObject("Switch");
-        world.level.registerObjectName(switchObj, switchIdName);
-    }
-
-    return switchObj;
+    return gameInstance.tileMap.inBounds(location.x, location.y);
 }
 
 void LevelEditor::connectSwitchToObject(int switchId, int tileId, bool connect, const sf::Color& color)
 {
     // ID of tile being connected to switch
     auto tileIdName = std::to_string(tileId);
-    auto switchObj = setupSwitch(switchId);
+    auto switchEnt = gameInstance.world("Switch", std::to_string(switchId));
 
     // Get switch component
-    auto switchComp = world.objects.getComponent<Components::Switch>(switchObj);
+    auto switchComp = switchEnt.get<Switch>();
     if (switchComp)
     {
         switchComp->tileId = switchId;
@@ -417,25 +398,16 @@ void LevelEditor::connectSwitchToTile(int switchId, int tileId, bool connect)
 
     connectSwitchToObject(switchId, tileId, connect, tileConnectionColor);
 
-    // Create TileController object at tile ID if it doesn't already exist
     auto tileIdName = std::to_string(tileId);
-    auto tileObj = world.level.getObjectIdFromName(tileIdName);
-    if (tileObj == ocs::invalidID && connect)
-    {
-        tileObj = world.objects.createObject("TileController");
-        world.level.registerObjectName(tileObj, tileIdName);
 
-        // Add tile ID to TileGroup component
-        auto tileGroup = world.objects.getComponent<Components::TileGroup>(tileObj);
-        if (tileGroup)
-            tileGroup->tileIds.insert(tileId);
-    }
-    else if (tileObj != ocs::invalidID && !connect)
+    if (connect)
     {
-        // Remove TileController object
-        world.objects.destroyObject(tileObj);
-        world.level.unregisterObjectName(tileIdName);
+        // Create TileController object at tile ID if it doesn't already exist
+        auto tileEnt = gameInstance.world("TileController", tileIdName);
+        tileEnt.at<TileGroup>()->tileIds.insert(tileId);
     }
+    else
+        gameInstance.world.destroy(tileIdName);
 }
 
 void LevelEditor::setBox(int tileId, bool show, const sf::Color& color)
@@ -450,8 +422,8 @@ void LevelEditor::setBox(int tileId, bool show, const sf::Color& color)
         box.setOutlineThickness(-16);
 
         // Set position
-        unsigned x = world.tileMapData.getX(tileId);
-        unsigned y = world.tileMapData.getY(tileId);
+        unsigned x = gameInstance.tileMapData.getX(tileId);
+        unsigned y = gameInstance.tileMapData.getY(tileId);
         box.setPosition(x * tileSize.x, y * tileSize.y);
     }
     else
@@ -464,37 +436,26 @@ void LevelEditor::updateBoxes()
         boxes.clear();
     else
     {
-        // Get switch component
-        auto switchId = world.level.getObjectIdFromName(std::to_string(selectedSwitch));
-        auto switchComp = world.objects.getComponent<Components::Switch>(switchId);
-
         // Setup box for switch itself
         setBox(selectedSwitch, true, switchColor);
 
         // Setup boxes for connections
-        if (switchComp)
+        auto switchComp = gameInstance.world[std::to_string(selectedSwitch)].at<Switch>();
+        for (auto& name: switchComp->objectNames)
         {
-            // Go through connected objects
-            for (auto& name: switchComp->objectNames)
+            // Get a TileGroup component (not an object if it has one)
+            auto tileGroup = gameInstance.world.get(name).get<TileGroup>();
+            if (tileGroup)
             {
-                auto id = world.level.getObjectIdFromName(name);
-                if (id != ocs::invalidID)
-                {
-                    // Get a TileGroup component (not an object if it has one)
-                    auto tileGroup = world.objects.getComponent<Components::TileGroup>(id);
-                    if (tileGroup)
-                    {
-                        // Show tile connection(s)
-                        for (int tileId: tileGroup->tileIds)
-                            setBox(tileId, true, tileConnectionColor);
-                    }
-                    else
-                    {
-                        // Show object connection
-                        int tileId = strlib::fromString<int>(name);
-                        setBox(tileId, true, objectConnectionColor);
-                    }
-                }
+                // Show tile connection(s)
+                for (int tileId: tileGroup->tileIds)
+                    setBox(tileId, true, tileConnectionColor);
+            }
+            else
+            {
+                // Show object connection
+                int tileId = strlib::fromString<int>(name);
+                setBox(tileId, true, objectConnectionColor);
             }
         }
     }
@@ -502,16 +463,13 @@ void LevelEditor::updateBoxes()
 
 bool LevelEditor::isObject(int tileId) const
 {
-    auto objName = std::to_string(tileId);
-    auto objId = world.level.getObjectIdFromName(objName);
-    if (objId != ocs::invalidID)
-        return !world.objects.hasComponents<Components::TileGroup>(objId);
-    return false;
+    auto ent = gameInstance.world.get(std::to_string(tileId));
+    return (ent && !ent.has<TileGroup>());
 }
 
 bool LevelEditor::isSwitch(int tileId) const
 {
-    int logicalId = world.tileMapData(tileId).logicalId;
+    int logicalId = gameInstance.tileMapData(tileId).logicalId;
     return (logicalId == Tiles::PushButton ||
             logicalId == Tiles::ToggleSwitch ||
             logicalId == Tiles::LaserSensor);
@@ -519,7 +477,7 @@ bool LevelEditor::isSwitch(int tileId) const
 
 bool LevelEditor::isControllable(int tileId) const
 {
-    int logicalId = world.tileMapData(tileId).logicalId;
+    int logicalId = gameInstance.tileMapData(tileId).logicalId;
     return (logicalId == Tiles::ConveyorBelt ||
             logicalId == Tiles::ForceField ||
             logicalId == Tiles::Mirror);
@@ -539,54 +497,35 @@ void LevelEditor::changeSwitchMode(int tileId)
 void LevelEditor::placeObject(int tileId)
 {
     auto name = std::to_string(tileId);
-    if (world.level.getObjectIdFromName(name) == ocs::invalidID)
+    if (!gameInstance.world.valid(name))
     {
-        auto id = objectPalette.copyObject(currentObject, world.objects);
-        world.level.registerObjectName(id, name);
+        // Clone the entity from the palette
+        auto ent = palette[currentEntity].clone(gameInstance.world, name);
 
-        // TODO: Use "assign" when it's available
-        if (!world.objects.hasComponents<Components::TilePosition>(id))
-            world.objects.addComponents<Components::TilePosition>(id, Components::TilePosition());
+        // Setup tile position and other positions
+        ent.at<TilePosition>()->id = tileId;
+        gameInstance.systems.initialize<PhysicsSystem>();
+        gameInstance.systems.update<SpriteSystem>(1.0f / 60.0f);
 
-        auto tilePos = world.objects.getComponent<Components::TilePosition>(id);
-        if (tilePos)
-        {
-            tilePos->id = tileId;
-
-            // Update rest of tile position and other positions
-            world.systems.initialize<PhysicsSystem>();
-            world.systems.update<SpriteSystem>(1.0f / 60.0f);
-        }
-        std::cout << "Placed object " << name << "\n";
+        std::cout << "Placed object '" << name << "'.\n";
     }
 }
 
 void LevelEditor::removeObject(int tileId)
 {
-    auto name = std::to_string(tileId);
-    auto id = world.level.getObjectIdFromName(name);
-    if (id != ocs::invalidID)
-    {
-        world.objects.destroyObject(id);
-        world.level.unregisterObjectName(name);
-    }
+    gameInstance.world.destroy(std::to_string(tileId));
 }
 
 void LevelEditor::changeObjectState(int tileId, bool state)
 {
-    auto name = std::to_string(tileId);
-    auto id = world.level.getObjectIdFromName(name);
-    if (id != ocs::invalidID)
-    {
-        auto stateComp = world.objects.getComponent<Components::State>(id);
-        if (stateComp)
-            stateComp->value = state;
-    }
+    auto stateComp = gameInstance.world.get(std::to_string(tileId)).get<State>();
+    if (stateComp)
+        stateComp->value = state;
 }
 
 void LevelEditor::updateBorder()
 {
-    border.setSize(ng::vec::cast<float>(world.tileMap.getPixelSize()));
+    border.setSize(ng::vec::cast<float>(gameInstance.tileMap.getPixelSize()));
     border.setOutlineColor(borderColors[currentLayer]);
 }
 
@@ -599,41 +538,31 @@ void LevelEditor::updateCurrentObject()
 {
     // Use the current object ID to get the sprite component
     // Copy the sprite to avoid memory issues
-    auto spriteComp = objectPalette.objects.getComponent<Components::Sprite>(currentObject);
+    auto spriteComp = palette[currentEntity].get<Sprite>();
     if (spriteComp)
     {
-        currentObjectSprite = spriteComp->sprite;
-        //currentObjectSprite.setTexture(spriteComp->sprite.getTexture());
+        currentEntitySprite = spriteComp->sprite;
+        //currentEntitySprite.setTexture(spriteComp->sprite.getTexture());
     }
 }
 
 void LevelEditor::updateCurrentLayer()
 {
     // Update the current tile ID being hovered over
-    currentTileId = world.tileMapData.getId(currentLayer, location.x, location.y);
+    currentTileId = gameInstance.tileMapData.getId(currentLayer, location.x, location.y);
 }
 
 void LevelEditor::resize(int deltaX, int deltaY)
 {
-    auto mapSize = ng::vec::cast<int>(world.tileMap.getMapSize());
-    world.tileMapChanger.resize(mapSize.x + deltaX, mapSize.y + deltaY);
+    auto mapSize = ng::vec::cast<int>(gameInstance.tileMap.getMapSize());
+    gameInstance.tileMapChanger.resize(mapSize.x + deltaX, mapSize.y + deltaY);
     updateBorder();
 }
 
 void LevelEditor::initialize()
 {
-    // Try to get the object ID for initial "on" states
-    stateOnId = world.level.getObjectIdFromName("onStates");
-    if (stateOnId == ocs::invalidID)
-    {
-        // Add TileChanger objects for initial on/off states of tiles
-        stateOnId = world.objects.createObject("TileController");
-
-        // Set initial state
-        auto comp = world.objects.getComponent<Components::TileGroup>(stateOnId);
-        if (comp)
-            comp->initialState = true;
-
-        world.level.registerObjectName(stateOnId, "onStates");
-    }
+    // Setup "onStates" entity
+    auto ent = gameInstance.world("TileController", "onStates");
+    ent.at<TileGroup>()->initialState = true;
+    stateOnEnt = ent.getId();
 }

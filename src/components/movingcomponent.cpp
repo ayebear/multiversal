@@ -3,16 +3,14 @@
 
 #include "movingcomponent.h"
 #include "strlib.h"
+#include "es/serialize.h"
 
-namespace Components
-{
-
-void Moving::deSerialize(const std::string& str)
+void Moving::load(const std::string& str)
 {
     if (!str.empty())
     {
         std::string pointStr;
-        serializer.deSerialize("% % %s", str, loop, speed, pointStr);
+        es::unpack(str, loop, speed, pointStr);
 
         // Get the array of points as strings
         auto pointStrings = strlib::split(pointStr, "|");
@@ -27,14 +25,12 @@ void Moving::deSerialize(const std::string& str)
     }
 }
 
-std::string Moving::serialize()
+std::string Moving::save() const
 {
     std::string pointStr;
     for (const auto& point: points)
         pointStr += strlib::toString(point.x) + ',' + strlib::toString(point.y) + '|';
     if (!pointStr.empty())
         pointStr.pop_back();
-    return serializer.serialize("Moving % % %s", loop, speed, pointStr);
-}
-
+    return es::pack(loop, speed, pointStr);
 }

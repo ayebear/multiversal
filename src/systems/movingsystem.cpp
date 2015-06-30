@@ -7,20 +7,21 @@
 #include "nage/graphics/vectors.h"
 #include <iostream>
 
-MovingSystem::MovingSystem(ocs::ObjectManager& objects):
-    objects(objects)
+MovingSystem::MovingSystem(es::World& world):
+    world(world)
 {
 }
 
 void MovingSystem::initialize()
 {
-    // Move all objects with Moving components to the first point
-    for (auto& moving: objects.getComponentArray<Components::Moving>())
+    // Move all world with Moving components to the first point
+    for (auto ent: world.query<Moving, Position>())
     {
-        auto position = objects.getComponent<Components::Position>(moving.getOwnerID());
-        if (position && !moving.points.empty())
+        auto moving = ent.get<Moving>();
+        auto position = ent.get<Position>();
+        if (!moving->points.empty())
         {
-            auto point = moving.points.front();
+            auto point = moving->points.front();
             position->x = point.x;
             position->y = point.y;
         }
@@ -29,46 +30,45 @@ void MovingSystem::initialize()
 
 void MovingSystem::update(float dt)
 {
-    for (auto& moving: objects.getComponentArray<Components::Moving>())
+    for (auto ent: world.query<Moving, Position, State>())
     {
-        auto position = objects.getComponent<Components::Position>(moving.getOwnerID());
-        auto state = objects.getComponent<Components::State>(moving.getOwnerID());
-        if (position && state)
+        auto moving = ent.get<Moving>();
+        auto position = ent.get<Position>();
+        auto state = ent.get<State>();
+
+        // Make sure nothing goes out of bounds
+        if (moving->currentPoint >= static_cast<int>(moving->points.size()))
+            moving->currentPoint = 0;
+
+        // Start moving if the state changes
+        if (state->hasChanged())
         {
-            // Make sure nothing goes out of bounds
-            if (moving.currentPoint >= static_cast<int>(moving.points.size()))
-                moving.currentPoint = 0;
+            moving->isMoving = true;
+            goToNextPoint(*moving, *position, *state);
+        }
+        else if (moving->isMoving)
+        {
+            // Update the position from our velocity vector
+            position->x += moving->velocity.x * dt;
+            position->y += moving->velocity.y * dt;
 
-            // Start moving if the state changes
-            if (state->hasChanged())
+            sf::Vector2f currentPos(position->x, position->y);
+
+            // Check if the object has moved far enough for the next point
+            if (ng::vec::distance(moving->startPos, currentPos) >= moving->distance)
             {
-                moving.isMoving = true;
-                goToNextPoint(moving, *position, *state);
-            }
-            else if (moving.isMoving)
-            {
-                // Update the position from our velocity vector
-                position->x += moving.velocity.x * dt;
-                position->y += moving.velocity.y * dt;
+                // Lock in the position
+                auto& destination = moving->points[moving->currentPoint];
+                position->x = destination.x;
+                position->y = destination.y;
 
-                sf::Vector2f currentPos(position->x, position->y);
-
-                // Check if the object has moved far enough for the next point
-                if (ng::vec::distance(moving.startPos, currentPos) >= moving.distance)
-                {
-                    // Lock in the position
-                    auto& destination = moving.points[moving.currentPoint];
-                    position->x = destination.x;
-                    position->y = destination.y;
-
-                    goToNextPoint(moving, *position, *state);
-                }
+                goToNextPoint(*moving, *position, *state);
             }
         }
     }
 }
 
-void MovingSystem::goToNextPoint(Components::Moving& moving, Components::Position& position, Components::State& state) const
+void MovingSystem::goToNextPoint(Moving& moving, Position& position, State& state) const
 {
     // Go to the next point (depends on state as well)
     moving.currentPoint += (state.value ? 1 : -1);
@@ -92,7 +92,7 @@ void MovingSystem::goToNextPoint(Components::Moving& moving, Components::Positio
     calculateVelocity(moving, position);
 }
 
-void MovingSystem::calculateVelocity(Components::Moving& moving, Components::Position& position) const
+void MovingSystem::calculateVelocity(Moving& moving, Position& position) const
 {
     auto end = moving.points[moving.currentPoint];
     sf::Vector2f start(position.x, position.y);

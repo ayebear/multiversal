@@ -7,20 +7,21 @@
 #include "logicaltiles.h"
 #include "es/events.h"
 #include "components.h"
+#include "es/world.h"
 #include <iostream>
 
-SwitchSystem::SwitchSystem(TileMapData& tileMapData, TileMapChanger& tileMapChanger, ocs::ObjectManager& objects):
+SwitchSystem::SwitchSystem(TileMapData& tileMapData, TileMapChanger& tileMapChanger, es::World& world):
     tileMapData(tileMapData),
     tileMapChanger(tileMapChanger),
-    objects(objects)
+    world(world)
 {
 }
 
 void SwitchSystem::initialize()
 {
-    // Populate switch objects map from Switch components
+    // Populate switch world map from Switch components
     switchObjects.clear();
-    for (auto& switchComp: objects.getComponentArray<Components::Switch>())
+    for (auto& switchComp: world.getComponents<Switch>())
         switchObjects[switchComp.tileId] = switchComp.objectNames;
 }
 

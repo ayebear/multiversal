@@ -8,8 +8,8 @@
 #include "magicwindow.h"
 #include <iostream>
 
-CarrySystem::CarrySystem(ocs::ObjectManager& objects, MagicWindow& magicwindow):
-    objects(objects),
+CarrySystem::CarrySystem(es::World& world, MagicWindow& magicwindow):
+    world(world),
     magicwindow(magicwindow)
 {
 }
@@ -19,58 +19,58 @@ void CarrySystem::update(float dt)
     // Process events, and check if anything should be picked up/put down
     for (auto& event: es::Events::get<ActionKeyEvent>())
     {
-        auto carrier = objects.getComponent<Components::Carrier>(event.entityId);
-        auto aabb = objects.getComponent<Components::AABB>(event.entityId);
+        auto ent = world[event.entityId];
+        auto carrier = ent.get<Carrier>();
+        auto aabb = ent.get<AABB>();
         if (carrier && aabb)
         {
             if (carrier->carrying)
             {
                 // Calculate which world to place the object in
-                auto carriedPos = objects.getComponent<Components::Position>(carrier->id);
-                auto carriedAabb = objects.getComponent<Components::AABB>(carrier->id);
-                if (carriedAabb && magicwindow.isWithin(carriedAabb->getGlobalBounds(carriedPos)))
-                    objects.addComponents(carrier->id, Components::AltWorld());
+                auto carriedEnt = world[carrier->id];
+                auto carriedPos = carriedEnt.get<Position>();
+                auto carriedAabb = carriedEnt.get<AABB>();
+                if (carriedAabb && magicwindow.isWithin(carriedAabb->getGlobalBounds(carriedPos.get())))
+                    carriedEnt.assign<AltWorld>();
 
                 // Drop object
-                objects.removeComponents<Components::DrawOnTop>(carrier->id);
+                carriedEnt.remove<DrawOnTop>();
                 carrier->carrying = false;
             }
             else if (!aabb->collisions.empty())
             {
                 // Pickup object
                 auto id = aabb->collisions.front();
-                auto carryable = objects.getComponent<Components::Carryable>(id);
-                if (carryable)
+                auto carriedEnt = world[id];
+                if (carriedEnt.has<Carryable>())
                 {
                     carrier->id = id;
-                    objects.removeComponents<Components::AltWorld, Components::TilePosition>(id);
-                    objects.addComponents(id, Components::DrawOnTop());
                     carrier->carrying = true;
+                    carriedEnt.remove<AltWorld, TilePosition>();
+                    carriedEnt.assign<DrawOnTop>();
                 }
             }
         }
     }
 
-    // Update positions of objects being carried
-    for (auto& carrier: objects.getComponentArray<Components::Carrier>())
+    // Update positions of world being carried
+    for (auto ent: world.query<Carrier, Position>())
     {
-        if (carrier.carrying)
+        auto carrier = ent.get<Carrier>();
+        if (carrier->carrying)
         {
-            auto carrierPos = objects.getComponent<Components::Position>(carrier.getOwnerID());
-            auto carryablePos = objects.getComponent<Components::Position>(carrier.id);
+            auto carrierPos = ent.get<Position>();
+            auto carryableEnt = world[carrier->id];
+            auto carryablePos = carryableEnt.get<Position>();
             if (carrierPos && carryablePos)
             {
                 // Update position
-                carryablePos->x = carrierPos->x + carrier.offset.x;
-                carryablePos->y = carrierPos->y + carrier.offset.y;
+                carryablePos->x = carrierPos->x + carrier->offset.x;
+                carryablePos->y = carrierPos->y + carrier->offset.y;
 
                 // Reset velocity
-                auto velocity = objects.getComponent<Components::Velocity>(carrier.id);
-                if (velocity)
-                {
-                    velocity->x = 0;
-                    velocity->y = 0;
-                }
+                if (carryableEnt.has<Velocity>())
+                    carryableEnt.assign<Velocity>();
             }
         }
     }

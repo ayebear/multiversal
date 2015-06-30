@@ -11,7 +11,6 @@
 #include "components.h"
 #include "logicaltiles.h"
 #include "magicwindow.h"
-#include "OCS/Objects.hpp"
 
 const cfg::File::ConfigMap Level::defaultOptions = {
     {"", {
@@ -22,11 +21,11 @@ const cfg::File::ConfigMap Level::defaultOptions = {
     }
 };
 
-Level::Level(TileMapData& tileMapData, ng::TileMap& tileMap, TileMapChanger& tileMapChanger, ocs::ObjectManager& objects, MagicWindow& magicWindow):
+Level::Level(TileMapData& tileMapData, ng::TileMap& tileMap, TileMapChanger& tileMapChanger, es::World& world, MagicWindow& magicWindow):
     tileMapData(tileMapData),
     tileMap(tileMap),
     tileMapChanger(tileMapChanger),
-    objects(objects),
+    world(world),
     magicWindow(magicWindow)
 {
 }
@@ -80,7 +79,7 @@ void Level::load(cfg::File& config)
 {
     // Load everything from the config file
     loadTileMap(config);
-    loadObjects(config);
+    loadEntities(config);
 
     // Reset window
     magicWindow.show(false);
@@ -91,82 +90,37 @@ void Level::save(cfg::File& config) const
 {
     // Save everything to a level file in memory
     saveTileMap(config);
-    saveObjects(config);
+    saveEntities(config);
 }
 
-ocs::ID Level::getObjectIdFromName(const std::string& name) const
+void Level::loadEntities(cfg::File::Section& section, es::World& world) const
 {
-    ocs::ID id = ocs::invalidID;
-    auto found = objectNamesToIds.find(name);
-    if (found != objectNamesToIds.end())
-        id = found->second;
-    return id;
-}
+    std::cout << "\nLoading entities...\n";
 
-void Level::registerObjectName(ocs::ID objectId, const std::string& name)
-{
-    objectNamesToIds[name] = objectId;
-}
+    world.clear();
 
-void Level::unregisterObjectName(const std::string& name)
-{
-    objectNamesToIds.erase(name);
-}
-
-void Level::loadObjects(cfg::File::Section& section, ocs::ObjectManager& objects, ObjectNameMap& objectNames) const
-{
-    std::cout << "\nLoading objects...\n";
-
-    objects.destroyAllObjects();
-    objectNames.clear();
-
-    // Create objects from level file
+    // Create world from level file
     for (auto& option: section)
     {
-        // Extract object name and type
+        // Extract entity name and type
         auto names = strlib::split(option.first, ":");
+        names.resize(2);
 
-        // Create an object (with the type if specified)
-        ocs::ID id;
-        if (names.size() == 2)
-            id = objects.createObject(names.back());
-        else
-            id = objects.createObject();
-
-        // Keep its unique name in a lookup table
-        objectNames[names.front()] = id;
+        // Create an entity (with the type if specified)
+        auto ent = world.copy(names.back(), names.front());
 
         // Update all specified components
-        for (auto& componentStr: option.second)
-        {
-            const auto& compStr = componentStr.toString();
-            if (compStr.empty())
-                continue;
-            auto separator = compStr.find(' ');
-            if (separator != std::string::npos && separator > 0 && separator + 1 < compStr.size())
-            {
-                // Extract the component's name and data
-                auto componentName = compStr.substr(0, separator);
-                auto componentData = compStr.substr(separator + 1);
-                std::cout << "Component: '" << componentName << "', Data: '" << componentData << "'\n";
-                objects.updateComponentFromString(id, componentName, componentData);
-            }
-            else if (separator == std::string::npos)
-            {
-                std::cout << "Component: '" << compStr << "'\n";
-                objects.updateComponentFromString(id, compStr, "");
-            }
-            else
-                std::cerr << "ERROR: Cannot process '" << compStr << "'.\n";
-        }
+        for (auto& compOption: option.second)
+            ent << compOption.toString();
     }
+
+    std::cout << "Done loading entities.\n\n";
 }
 
 void Level::clear()
 {
     tileMapChanger.clear();
-    objects.destroyAllObjects();
-    objectNamesToIds.clear();
+    world.clear();
 }
 
 void Level::loadLogicalLayer(cfg::File& config, int layer)
@@ -248,9 +202,9 @@ void Level::loadTileMap(cfg::File& config)
     tileMap.useLayer(0);
 }
 
-void Level::loadObjects(cfg::File& config)
+void Level::loadEntities(cfg::File& config)
 {
-    loadObjects(config.getSection("Objects"), objects, objectNamesToIds);
+    loadEntities(config.getSection("Entities"), world);
 }
 
 void Level::saveTileMap(cfg::File& config) const
@@ -290,20 +244,18 @@ void Level::saveTileMap(cfg::File& config) const
     }
 }
 
-void Level::saveObjects(cfg::File& config) const
+void Level::saveEntities(cfg::File& config) const
 {
     // TODO: Save with the prototype name, and only include different components
     config.useSection("Objects");
-    for (const auto& object: objectNamesToIds)
+    for (const auto& ent: world.query())
     {
-        // TODO: Make an exclusion list?
-        if (object.first != "player")
+        if (!ent.has<ExcludeFromLevel>())
         {
-            // Serialize all of the components of this object
-            auto& option = config(object.first);
-            auto components = objects.serializeObject(object.second);
-            std::sort(components.begin(), components.end());
-            for (const auto& str: components)
+            // Serialize all of the components and store them in an options array
+            auto comps = ent.serialize();
+            auto& option = config(ent.getName());
+            for (const auto& str: comps)
                 option << str;
         }
     }

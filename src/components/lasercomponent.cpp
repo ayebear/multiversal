@@ -4,9 +4,6 @@
 #include "lasercomponent.h"
 #include "nage/graphics/vectors.h"
 
-namespace Components
-{
-
 const int Laser::codeToDeltaX[] = {0, 1, 0, -1};
 const int Laser::codeToDeltaY[] = {-1, 0, 1, 0};
 const std::map<std::string, int> Laser::directionMap = {
@@ -16,12 +13,7 @@ const std::map<std::string, int> Laser::directionMap = {
     {"Left", Laser::Left}
 };
 
-Laser::Laser():
-    beamCount(0)
-{
-}
-
-void Laser::deSerialize(const std::string& str)
+void Laser::load(const std::string& str)
 {
     // Convert direction text to code
     directionStr = str;
@@ -35,7 +27,7 @@ void Laser::deSerialize(const std::string& str)
     direction.y = codeToDeltaY[directionCode];
 }
 
-std::string Laser::serialize()
+std::string Laser::save() const
 {
     return "Laser " + directionStr;
 }
@@ -43,6 +35,4 @@ std::string Laser::serialize()
 double Laser::getAngle(const sf::Vector2i& dir) const
 {
     return ng::vec::rotateAngle(ng::vec::getAngle(dir), 90.0);
-}
-
 }

@@ -7,10 +7,11 @@
 #include "gameevents.h"
 #include "logicaltiles.h"
 #include "components.h"
+#include "es/world.h"
 #include <iostream>
 
-TileSystem::TileSystem(ocs::ObjectManager& objects, TileMapData& tileMapData):
-    objects(objects),
+TileSystem::TileSystem(es::World& world, TileMapData& tileMapData):
+    world(world),
     tileMapData(tileMapData)
 {
 }
@@ -20,7 +21,7 @@ void TileSystem::update(float dt)
     // Handle action key events (when the player presses "up") on different tiles
     for (auto& event: es::Events::get<ActionKeyEvent>())
     {
-        auto aabb = objects.getComponent<Components::AABB>(event.entityId);
+        auto aabb = world[event.entityId].get<AABB>();
         if (aabb)
         {
             for (int tileId: aabb->tileCollisions)

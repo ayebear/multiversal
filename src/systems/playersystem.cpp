@@ -7,11 +7,11 @@
 #include "level.h"
 #include <iostream>
 
-PlayerSystem::PlayerSystem(ocs::ObjectManager& objects, ng::ActionHandler& actions, Level& level):
-    objects(objects),
+PlayerSystem::PlayerSystem(es::World& world, ng::ActionHandler& actions, Level& level):
+    world(world),
     actions(actions),
     level(level),
-    playerId(-1),
+    playerId(es::invalidId),
     wasRight(true)
 {
     // Setup action callbacks
@@ -22,12 +22,7 @@ PlayerSystem::PlayerSystem(ocs::ObjectManager& objects, ng::ActionHandler& actio
 void PlayerSystem::initialize()
 {
     // Create a player object if it doesn't already exist
-    playerId = level.getObjectIdFromName("player");
-    if (playerId == ocs::invalidID)
-    {
-        playerId = objects.createObject("Player");
-        level.registerObjectName(playerId, "player");
-    }
+    playerId = world("Player", "player").getId();
 }
 
 void PlayerSystem::update(float dt)
@@ -37,9 +32,10 @@ void PlayerSystem::update(float dt)
 
 void PlayerSystem::handleMovement()
 {
-    auto velocity = objects.getComponent<Components::Velocity>(playerId);
-    auto sprite = objects.getComponent<Components::AnimSprite>(playerId);
-    auto movable = objects.getComponent<Components::Movable>(playerId);
+    auto player = world[playerId];
+    auto velocity = player.get<Velocity>();
+    auto sprite = player.get<AnimSprite>();
+    auto movable = player.get<Movable>();
     if (velocity && sprite && movable)
     {
         // Get status of actions
@@ -48,7 +44,7 @@ void PlayerSystem::handleMovement()
 
         // Check the carrying state
         std::string carryStr;
-        auto carrier = objects.getComponent<Components::Carrier>(playerId);
+        auto carrier = player.get<Carrier>();
         if (carrier && carrier->carrying)
             carryStr = "Carry";
 
@@ -79,16 +75,17 @@ void PlayerSystem::handleMovement()
 
 void PlayerSystem::handleJump()
 {
-    auto jumpable = objects.getComponent<Components::Jumpable>(playerId);
-    auto objectState = objects.getComponent<Components::ObjectState>(playerId);
-    auto velocity = objects.getComponent<Components::Velocity>(playerId);
+    auto player = world[playerId];
+    auto jumpable = player.get<Jumpable>();
+    auto objectState = player.get<ObjectState>();
+    auto velocity = player.get<Velocity>();
     if (jumpable && objectState && velocity)
     {
         // Jump by changing velocity if not already in the air
-        if (objectState->state == Components::ObjectState::OnPlatform)
+        if (objectState->state == ObjectState::OnPlatform)
         {
             velocity->y = jumpable->jumpSpeed;
-            objectState->state = Components::ObjectState::InAir;
+            objectState->state = ObjectState::InAir;
         }
     }
 }
@@ -96,8 +93,9 @@ void PlayerSystem::handleJump()
 void PlayerSystem::handleAction()
 {
     // Handle the input for pressing the action key, and proxy the events
-    auto position = objects.getComponent<Components::Position>(playerId);
-    auto aabb = objects.getComponent<Components::AABB>(playerId);
+    auto player = world[playerId];
+    auto position = player.get<Position>();
+    auto aabb = player.get<AABB>();
     if (position && aabb)
     {
         std::cout << "Action key pressed: (" << position->x << ", " << position->y << "), Locations: ";
