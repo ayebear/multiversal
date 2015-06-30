@@ -5,6 +5,7 @@
 #include "gameresources.h"
 #include "inputsystem.h"
 #include "es/events.h"
+#include <iostream>
 
 LevelEditorState::LevelEditorState(GameResources& resources):
     resources(resources)

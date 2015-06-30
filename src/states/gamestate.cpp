@@ -5,6 +5,7 @@
 #include "gameresources.h"
 #include "es/events.h"
 #include "gameevents.h"
+#include <iostream>
 
 GameState::GameState(GameResources& resources):
     resources(resources),

@@ -12,6 +12,7 @@
 #include "level.h"
 #include "nage/misc/utils.h"
 #include "nage/graphics/vectors.h"
+#include <iostream>
 
 const sf::Vector2f PhysicsSystem::maxVelocity(3200, 3200);
 const sf::Vector2f PhysicsSystem::gravityConstant(640, 640);

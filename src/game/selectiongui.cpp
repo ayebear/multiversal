@@ -7,6 +7,7 @@
 #include "es/events.h"
 #include "gameevents.h"
 #include "components.h"
+#include <iostream>
 
 SelectionGUI::SelectionGUI(GameInstance& gameInstance, sf::RenderWindow& window, es::World& palette):
     gameInstance(gameInstance),

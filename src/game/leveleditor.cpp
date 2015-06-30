@@ -17,6 +17,7 @@
 #include "nage/misc/utils.h"
 #include "lasersystem.h"
 #include "spritesystem.h"
+#include <iostream>
 
 const sf::Color LevelEditor::borderColors[] = {sf::Color::Blue, sf::Color::Green};
 const sf::Color LevelEditor::switchColor(255, 0, 0, 128);

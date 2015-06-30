@@ -10,6 +10,7 @@
 #include "nage/graphics/vectors.h"
 #include "es/events.h"
 #include "gameevents.h"
+#include <iostream>
 #include <cmath>
 
 const char* LaserSystem::textureFilename = "data/images/beam.png";

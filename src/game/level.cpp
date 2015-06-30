@@ -3,6 +3,7 @@
 
 #include "level.h"
 #include <sstream>
+#include <iostream>
 #include "es/events.h"
 #include "gameevents.h"
 #include "tilemapdata.h"
@@ -95,8 +96,6 @@ void Level::save(cfg::File& config) const
 
 void Level::loadEntities(cfg::File::Section& section, es::World& world) const
 {
-    std::cout << "\nLoading entities...\n";
-
     world.clear();
 
     // Create world from level file
@@ -113,8 +112,6 @@ void Level::loadEntities(cfg::File::Section& section, es::World& world) const
         for (auto& compOption: option.second)
             ent << compOption.toString();
     }
-
-    std::cout << "Done loading entities.\n\n";
 }
 
 void Level::clear()
@@ -179,20 +176,19 @@ void Level::loadTileMap(cfg::File& config)
     // Load layer data
     for (auto& section: config)
     {
-        // Determine which layer to use
-        auto parsed = strlib::split(section.first, ":");
+        // Parse the layer ID from the section name
         int currentLayer = -1;
-        if (parsed.size() > 1)
-            currentLayer = strlib::fromString<int>(parsed.front(), -1);
-        if (currentLayer < 0 || currentLayer > 1)
-            continue;
+        es::unpack(section.first, currentLayer);
 
-        tileMap.useLayer(currentLayer);
-        tileMapData.useLayer(currentLayer);
-        config.useSection(section.first);
+        if (currentLayer == 0 || currentLayer == 1)
+        {
+            tileMap.useLayer(currentLayer);
+            tileMapData.useLayer(currentLayer);
+            config.useSection(section.first);
 
-        loadLogicalLayer(config, currentLayer);
-        loadVisualLayer(config, currentLayer);
+            loadLogicalLayer(config, currentLayer);
+            loadVisualLayer(config, currentLayer);
+        }
     }
 
     // Derive the remaining layer data (states and collision layers)
@@ -247,7 +243,7 @@ void Level::saveTileMap(cfg::File& config) const
 void Level::saveEntities(cfg::File& config) const
 {
     // TODO: Save with the prototype name, and only include different components
-    config.useSection("Objects");
+    config.useSection("Entities");
     for (const auto& ent: world.query())
     {
         if (!ent.has<ExcludeFromLevel>())
