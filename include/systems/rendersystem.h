@@ -27,6 +27,7 @@ class RenderSystem: public es::System
 {
     public:
         RenderSystem(es::World& world, ng::TileMap& tileMap, sf::RenderWindow& window, ng::Camera& camera, MagicWindow& magicWindow);
+        void initialize();
         void update(float dt);
 
     private:

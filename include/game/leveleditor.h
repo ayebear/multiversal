@@ -90,6 +90,7 @@ class LevelEditor: public sf::Drawable
 
         GameInstance& gameInstance;
         ng::StateEvent& stateEvent;
+        es::World& world;
         es::World& palette;
 
         // Settings
@@ -124,7 +125,7 @@ class LevelEditor: public sf::Drawable
         enum class PlaceMode {Tile, Object} placeMode;
         bool showCurrent{false};
         ng::TileMap currentTile;
-        es::ID currentEntity{es::invalidId};
+        es::Entity currentEntity{world};
         sf::Sprite currentEntitySprite;
 
         // Tile ID of current switch
@@ -134,7 +135,7 @@ class LevelEditor: public sf::Drawable
         std::map<int, sf::RectangleShape> boxes;
 
         // Tiles with inital on states
-        es::ID stateOnEnt{es::invalidId};
+        es::Entity stateOnEnt{world};
 };
 
 #endif

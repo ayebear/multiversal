@@ -2,8 +2,6 @@
 // This code is licensed under GPLv3, see LICENSE.txt for details.
 
 #include "gameinstance.h"
-#include "components.h"
-#include "es/entityprototypeloader.h"
 #include <iostream>
 
 // Include systems
@@ -46,14 +44,6 @@ GameInstance::GameInstance(sf::RenderWindow& window, GameSaveHandler& gameSave):
     systems.add<TileGroupSystem>(tileMapChanger, world);
     systems.add<LaserSystem>(world, tileMapData, tileMap, magicWindow);
     systems.add<RenderSystem>(world, tileMap, window, camera, magicWindow);
-
-    // Load entity prototypes
-    es::registerComponents<Position, Velocity, Gravity, Size, AABB, Sprite,
-        AnimSprite, Jumpable, ObjectState, Movable, Carrier, CameraUpdater,
-        AltWorld, Carryable, DrawOnTop, AboveWindow, Moving, State,
-        TileGroup, Laser, TilePosition, Rotation, Switch, InitialPosition>();
-    if (!es::loadPrototypes("data/config/entities.cfg"))
-        std::cerr << "ERROR: Could not load object prototypes.\n";
 
     // Load the tiles
     tileMap.loadFromConfig("data/config/tilemap.cfg");

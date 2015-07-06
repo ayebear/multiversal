@@ -275,7 +275,7 @@ void PhysicsSystem::updateTilePositionComponents()
     // Initialize tile positions from InitialPosition components
     for (auto srcEnt: world.query<InitialPosition>())
     {
-        auto name = srcEnt.get<InitialPosition>()->objectName;
+        auto name = srcEnt.get<InitialPosition>()->entityName;
         if (!name.empty())
         {
             // Update tile position from initial position's object's tile position

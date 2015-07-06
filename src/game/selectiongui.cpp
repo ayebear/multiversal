@@ -102,7 +102,7 @@ bool SelectionGUI::update(float dt)
         texture.draw(tiles);
     else if (state == TabState::Objects)
     {
-        for (auto& spriteComp: gameInstance.world.getComponents<Sprite>())
+        for (auto& spriteComp: palette.getComponents<Sprite>())
             texture.draw(spriteComp.sprite);
     }
 
@@ -147,6 +147,7 @@ void SelectionGUI::setupTiles()
 
 void SelectionGUI::setupObjects()
 {
+    std::cout << "\nSelectionGUI::setupObjects()\n";
     // Update positions of objects
     sf::Vector2u gridPos;
     for (auto ent: palette.query<Sprite>())
@@ -159,11 +160,12 @@ void SelectionGUI::setupObjects()
         {
             auto bounds = spriteComp->sprite.getGlobalBounds();
             offset = sf::Vector2f(bounds.width / 2.0f, bounds.height / 2.0f);
+            std::cout << "Has rotation, offset = " << offset.x << ", " << offset.y << "\n";
         }
 
         // Set position of sprite
-        spriteComp->sprite.setPosition(gridPos.x * tileSize.x + offset.x, gridPos.y * tileSize.y + offset.y);
-        std::cout << gridPos.x * tileSize.x << ", " << gridPos.y * tileSize.y << "\n";
+        spriteComp->sprite.setPosition(gridPos.x * tileSize.x + offset.x, gridPos.y * tileSize.y + offset.x);
+        std::cout << gridPos.x * tileSize.x + offset.x << ", " << gridPos.y * tileSize.y + offset.y << "\n";
 
         // Go to next position or next line
         ++gridPos.x;
@@ -173,6 +175,7 @@ void SelectionGUI::setupObjects()
             ++gridPos.y;
         }
     }
+    std::cout << "SelectionGUI::setupObjects() done\n\n";
 }
 
 bool SelectionGUI::withinBorder(const sf::Vector2f& pos) const

@@ -53,11 +53,11 @@ class Level
         bool saveToFile(const std::string& filename) const;
         void saveToString(std::string& data) const;
 
-        // Loads world from a section in a config file
-        void loadEntities(cfg::File::Section& section, es::World& world) const;
-
         // Resets tilemaps and world
         void clear();
+
+        // Loads world from a section in a config file
+        static void loadEntities(cfg::File::Section& section, es::World& world);
 
     private:
 

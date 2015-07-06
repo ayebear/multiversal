@@ -10,7 +10,6 @@
 #include "nage/graphics/vectors.h"
 #include "es/events.h"
 #include "gameevents.h"
-#include <iostream>
 #include <cmath>
 
 const char* LaserSystem::textureFilename = "data/images/beam.png";
@@ -23,7 +22,7 @@ LaserSystem::LaserSystem(es::World& world, TileMapData& tileMapData, ng::TileMap
 {
     ng::SpriteLoader::preloadTexture(textureFilename);
     auto& texture = ng::SpriteLoader::getTexture(textureFilename);
-    texture.setSmooth(true);
+    texture.setSmooth(false);
     beamWidth = texture.getSize().x;
 }
 
@@ -67,7 +66,6 @@ void LaserSystem::updateRotations(es::World& world)
         auto laser = ent.get<Laser>();
         auto rotation = ent.get<Rotation>();
         rotation->angle = laser->getAngle(laser->direction);
-        std::cout << rotation->angle << "\n";
     }
 }
 
@@ -126,7 +124,7 @@ LaserSystem::PointInfo LaserSystem::findPoint()
         point.position.y += float(tileSize.y) * ((currentDirection.y - 1) / -2.0f);
     }
 
-    // TODO: Also collide with world
+    // TODO: Also collide with entities
     return point;
 }
 

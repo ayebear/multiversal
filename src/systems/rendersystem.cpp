@@ -19,6 +19,19 @@ RenderSystem::RenderSystem(es::World& world, ng::TileMap& tileMap, sf::RenderWin
     sprites.loadFromConfig("data/config/sprites.cfg");
 }
 
+void RenderSystem::initialize()
+{
+    // TODO: Correctly resize backgrounds to fit level
+    /*auto targetSize = camera.accessView("background").getSize();
+    for (const auto& name: {"background", "background2"})
+    {
+        auto& sprite = sprites(name);
+        sprite.setScale(1, 1);
+        auto bounds = sprite.getLocalBounds();
+        sprite.setScale(targetSize.x / bounds.width, targetSize.y / bounds.height);
+    }*/
+}
+
 void RenderSystem::update(float dt)
 {
     window.clear(sf::Color(128, 128, 128));
@@ -59,13 +72,13 @@ void RenderSystem::update(float dt)
     texture->display();
     window.draw(magicWindow);
 
-    // Draw sprites
-    for (auto& ent: spriteEnts)
-        drawSprite<Sprite>(ent, true);
-
     // Draw animated sprites
     for (auto& ent: animSpriteEnts)
         drawSprite<AnimSprite>(ent, true);
+
+    // Draw sprites
+    for (auto& ent: spriteEnts)
+        drawSprite<Sprite>(ent, true);
 
     // Draw laser beams
     drawLasers(0);

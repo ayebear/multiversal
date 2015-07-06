@@ -94,8 +94,16 @@ void Level::save(cfg::File& config) const
     saveEntities(config);
 }
 
-void Level::loadEntities(cfg::File::Section& section, es::World& world) const
+void Level::clear()
 {
+    tileMapChanger.clear();
+    world.clear();
+}
+
+void Level::loadEntities(cfg::File::Section& section, es::World& world)
+{
+    std::cout << "Start\n";
+
     world.clear();
 
     // Create world from level file
@@ -105,19 +113,29 @@ void Level::loadEntities(cfg::File::Section& section, es::World& world) const
         auto names = strlib::split(option.first, ":");
         names.resize(2);
 
+        std::cout << "    " << names.back() << ": " << names.front() << "\n";
+
         // Create an entity (with the type if specified)
         auto ent = world.copy(names.back(), names.front());
 
         // Update all specified components
         for (auto& compOption: option.second)
             ent << compOption.toString();
-    }
-}
 
-void Level::clear()
-{
-    tileMapChanger.clear();
-    world.clear();
+        // Store prototype name
+        if (!names.back().empty())
+            ent.assign<Prototype>(names.back());
+    }
+
+    std::cout << "End\n";
+
+    std::cout << "Contents:\n";
+    for (auto ent: world.query())
+    {
+        std::cout << "    " << ent.getName() << "\n";
+        for (const auto& comp: ent.serialize())
+            std::cout << "        " << comp << "\n";
+    }
 }
 
 void Level::loadLogicalLayer(cfg::File& config, int layer)
@@ -250,9 +268,35 @@ void Level::saveEntities(cfg::File& config) const
         {
             // Serialize all of the components and store them in an options array
             auto comps = ent.serialize();
-            auto& option = config(ent.getName());
+            std::sort(comps.begin(), comps.end());
+
+            // Get prototype name if it exists, as well as the option name
+            std::string optionName = ent.getName();
+            std::string prototypeName;
+            auto prototype = ent.get<Prototype>();
+            if (prototype)
+            {
+                prototypeName = prototype->entityName;
+                if (!prototypeName.empty())
+                    optionName += ':' + prototypeName;
+            }
+
+            // Get the option array being written to
+            auto& option = config(optionName);
+
+            // Get the prototype entity
+            auto prototypeEnt = es::World::prototypes.get(prototypeName);
+
+            // Save the components to the option array
             for (const auto& str: comps)
-                option << str;
+            {
+                std::string compName;
+                es::unpack(str, compName);
+
+                // Only save components different from the components in the prototype
+                if (compName != "Prototype" && prototypeEnt.serialize(compName) != str)
+                    option << str;
+            }
         }
     }
 }

@@ -19,10 +19,15 @@ const cfg::File::ConfigMap GameResources::defaultOptions = {
 };
 
 GameResources::GameResources(const std::string& windowTitle):
-    config("data/config/game.cfg", defaultOptions, cfg::File::Warnings | cfg::File::Errors),
+    config("data/config/game.cfg", defaultOptions),
     music("data/config/music.cfg")
     //sound("sounds.cfg")
 {
+    if (!config)
+    {
+        std::cerr << "Game configuration could not be loaded. Please ensure 'data/' folder exists and is not corrupt.\n";
+        exit(1);
+    }
     config.useSection("Window");
     int windowWidth = config("windowWidth").toInt();
     int windowHeight = config("windowHeight").toInt();

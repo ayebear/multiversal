@@ -29,7 +29,7 @@ void Laser::load(const std::string& str)
 
 std::string Laser::save() const
 {
-    return "Laser " + directionStr;
+    return directionStr;
 }
 
 double Laser::getAngle(const sf::Vector2i& dir) const

@@ -14,7 +14,7 @@ MovingSystem::MovingSystem(es::World& world):
 
 void MovingSystem::initialize()
 {
-    // Move all world with Moving components to the first point
+    // Move all entities with Moving components to the first point
     for (auto ent: world.query<Moving, Position>())
     {
         auto moving = ent.get<Moving>();

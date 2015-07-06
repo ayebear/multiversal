@@ -398,16 +398,36 @@ struct InitialPosition: public es::Component
 {
     static constexpr auto name = "InitialPosition";
 
-    std::string objectName;
+    std::string entityName;
 
     void load(const std::string& str)
     {
-        es::unpack(str, objectName);
+        es::unpack(str, entityName);
     }
 
     std::string save() const
     {
-        return objectName;
+        return entityName;
+    }
+};
+
+// Stores the name of the prototype that an entity was created from
+struct Prototype: public es::Component
+{
+    static constexpr auto name = "Prototype";
+
+    std::string entityName;
+
+    Prototype(const std::string& str = ""): entityName(str) {}
+
+    void load(const std::string& str)
+    {
+        es::unpack(str, entityName);
+    }
+
+    std::string save() const
+    {
+        return entityName;
     }
 };
 

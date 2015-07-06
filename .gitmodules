@@ -1,7 +1,3 @@
-[submodule "lib/configfile"]
-	path = lib/configfile
-	url = https://github.com/ayebear/ConfigFile.git
-	branch = master
 [submodule "lib/nage"]
 	path = lib/nage
 	url = https://github.com/ayebear/NAGE.git

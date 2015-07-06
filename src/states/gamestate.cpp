@@ -5,12 +5,22 @@
 #include "gameresources.h"
 #include "es/events.h"
 #include "gameevents.h"
+#include "components.h"
+#include "movingcomponent.h"
+#include "lasercomponent.h"
+#include "es/entityprototypeloader.h"
 #include <iostream>
 
 GameState::GameState(GameResources& resources):
     resources(resources),
     gameInstance(resources.window, resources.gameSave)
 {
+    // Register components and load entity prototypes
+    es::registerComponents<Position, Velocity, Size, AABB, Sprite, AnimSprite, Jumpable, ObjectState, Movable, Carrier, Gravity, State, TileGroup, TilePosition, Rotation, Switch, InitialPosition, Prototype, CameraUpdater, AltWorld, DrawOnTop, Carryable, AboveWindow, Rigid, ExcludeFromLevel, Moving, Laser>();
+    if (!es::loadPrototypes("data/config/entities.cfg"))
+        std::cerr << "ERROR: Could not load object prototypes.\n";
+
+    // Link action callbacks
     gameInstance.actions("Game", "restartLevel").setCallback([]{ es::Events::send(ReloadLevelEvent{}); });
     gameInstance.actions("Game", "toggleMute").setCallback([&]{ resources.music.mute(); });
     gameInstance.actions("Game", "popState").setCallback([&]{ stateEvent.command = ng::StateEvent::Pop; });
