@@ -195,8 +195,7 @@ void Level::loadTileMap(cfg::File& config)
     for (auto& section: config)
     {
         // Parse the layer ID from the section name
-        int currentLayer = -1;
-        es::unpack(section.first, currentLayer);
+        int currentLayer = strlib::fromString<int>(section.first, -1);
 
         if (currentLayer == 0 || currentLayer == 1)
         {

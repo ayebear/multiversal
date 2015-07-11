@@ -21,15 +21,16 @@ RenderSystem::RenderSystem(es::World& world, ng::TileMap& tileMap, sf::RenderWin
 
 void RenderSystem::initialize()
 {
-    // TODO: Correctly resize backgrounds to fit level
-    /*auto targetSize = camera.accessView("background").getSize();
+    // Vertically scale the background to the level and keep the same aspect ratio
+    float targetHeight = camera.accessView("background").getSize().y;
     for (const auto& name: {"background", "background2"})
     {
         auto& sprite = sprites(name);
         sprite.setScale(1, 1);
         auto bounds = sprite.getLocalBounds();
-        sprite.setScale(targetSize.x / bounds.width, targetSize.y / bounds.height);
-    }*/
+        float scale = targetHeight / bounds.height;
+        sprite.setScale(scale, scale);
+    }
 }
 
 void RenderSystem::update(float dt)
