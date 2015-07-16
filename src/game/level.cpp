@@ -102,8 +102,6 @@ void Level::clear()
 
 void Level::loadEntities(cfg::File::Section& section, es::World& world)
 {
-    std::cout << "Start\n";
-
     world.clear();
 
     // Create world from level file
@@ -112,8 +110,6 @@ void Level::loadEntities(cfg::File::Section& section, es::World& world)
         // Extract entity name and type
         auto names = strlib::split(option.first, ":");
         names.resize(2);
-
-        std::cout << "    " << names.back() << ": " << names.front() << "\n";
 
         // Create an entity (with the type if specified)
         auto ent = world.copy(names.back(), names.front());
@@ -125,16 +121,6 @@ void Level::loadEntities(cfg::File::Section& section, es::World& world)
         // Store prototype name
         if (!names.back().empty())
             ent.assign<Prototype>(names.back());
-    }
-
-    std::cout << "End\n";
-
-    std::cout << "Contents:\n";
-    for (auto ent: world.query())
-    {
-        std::cout << "    " << ent.getName() << "\n";
-        for (const auto& comp: ent.serialize())
-            std::cout << "        " << comp << "\n";
     }
 }
 

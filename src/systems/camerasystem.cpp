@@ -20,7 +20,6 @@ void CameraSystem::initialize()
     float viewHeight = camera.accessView("game").getSize().y;
     float levelHeight = tileMap.getPixelSize().y;
     float zoomAmount = levelHeight / viewHeight;
-    std::cout << "Zoom: " << zoomAmount << " = " << levelHeight << " / " << viewHeight << "\n";
 
     // Update zoom amounts
     camera.accessView("game").zoom(zoomAmount);
