@@ -26,7 +26,7 @@ It will render all of the drawable world like the tile map, and drawable compone
 class RenderSystem: public es::System
 {
     public:
-        RenderSystem(es::World& world, ng::TileMap& tileMap, sf::RenderWindow& window, ng::Camera& camera, MagicWindow& magicWindow);
+        RenderSystem(es::World& world, ng::TileMap& tileMap, ng::TileMap& smoothTileMap, sf::RenderWindow& window, ng::Camera& camera, MagicWindow& magicWindow);
         void initialize();
         void update(float dt);
 
@@ -40,6 +40,7 @@ class RenderSystem: public es::System
         // References to various things to draw
         es::World& world;
         ng::TileMap& tileMap;
+        ng::TileMap& smoothTileMap;
         sf::RenderWindow& window;
         ng::Camera& camera;
         MagicWindow& magicWindow;

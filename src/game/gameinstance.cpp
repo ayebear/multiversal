@@ -18,6 +18,7 @@
 #include "tilegroupsystem.h"
 #include "lasersystem.h"
 #include "rendersystem.h"
+#include "tilesmoothingsystem.h"
 
 GameInstance::GameInstance(sf::RenderWindow& window, GameSaveHandler& gameSave):
     tileMapChanger(tileMapData, tileMap),
@@ -43,10 +44,12 @@ GameInstance::GameInstance(sf::RenderWindow& window, GameSaveHandler& gameSave):
     systems.add<ObjectSwitchSystem>(level, world);
     systems.add<TileGroupSystem>(tileMapChanger, world);
     systems.add<LaserSystem>(world, tileMapData, tileMap, magicWindow);
-    systems.add<RenderSystem>(world, tileMap, window, camera, magicWindow);
+    systems.add<RenderSystem>(world, tileMap, smoothTileMap, window, camera, magicWindow);
+    systems.add<TileSmoothingSystem>(world, tileMap, smoothTileMap);
 
     // Load the tiles
     tileMap.loadFromConfig("data/config/tilemap.cfg");
+    smoothTileMap.loadFromConfig("data/config/smooth_tilemap.cfg");
 
     // Setup the views
     auto defaultView = window.getDefaultView();

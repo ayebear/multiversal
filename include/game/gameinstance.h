@@ -27,6 +27,7 @@ struct GameInstance
     ng::ActionHandler actions;
     TileMapData tileMapData;
     ng::TileMap tileMap;
+    ng::TileMap smoothTileMap;
     TileMapChanger tileMapChanger;
     ng::Camera camera;
     Level level;

@@ -56,7 +56,7 @@ void AboutState::setup()
     auto bgSize = ng::vec::cast<int>(bgSprite.getTexture()->getSize());
     bgSprite.setPosition((viewSize.x - bgSize.x) / 2, (viewSize.y - bgSize.y) / 2);
 
-    // Setup the sf::Text world
+    // Setup the sf::Text objects
     int count = 0;
     for (auto& text: descriptionArray)
     {

@@ -11,7 +11,7 @@
 
 int main()
 {
-    GameResources resources("Multiversal v0.2.6 Dev");
+    GameResources resources("Multiversal v0.3.0 Alpha");
     ng::StateStack states;
     states.add<MenuState>("Menu", resources);
     states.add<GameState>("Game", resources);

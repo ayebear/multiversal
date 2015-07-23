@@ -8,9 +8,10 @@
 #include "nage/graphics/views.h"
 #include "lasercomponent.h"
 
-RenderSystem::RenderSystem(es::World& world, ng::TileMap& tileMap, sf::RenderWindow& window, ng::Camera& camera, MagicWindow& magicWindow):
+RenderSystem::RenderSystem(es::World& world, ng::TileMap& tileMap, ng::TileMap& smoothTileMap, sf::RenderWindow& window, ng::Camera& camera, MagicWindow& magicWindow):
     world(world),
     tileMap(tileMap),
+    smoothTileMap(smoothTileMap),
     window(window),
     camera(camera),
     magicWindow(magicWindow)
@@ -42,6 +43,7 @@ void RenderSystem::update(float dt)
     window.draw(sprites("background"));
     window.setView(camera.getView("game"));
     tileMap.drawLayer(window, 0);
+    smoothTileMap.drawLayer(window, 0);
 
     // Draw the magic window
     texture = &magicWindow.getRenderTexture();
@@ -51,6 +53,7 @@ void RenderSystem::update(float dt)
     texture->draw(sprites("background2"));
     magicWindow.setView(camera.accessView("game"), windowViewPos);
     tileMap.drawLayer(*texture, 1);
+    smoothTileMap.drawLayer(*texture, 1);
 
     // TODO: Add z-indexing with z-index components that get sorted
     // TODO: Make lasers, sprites, and animated sprites more easily drawable
