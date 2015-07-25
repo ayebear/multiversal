@@ -35,6 +35,21 @@ Tile& TileMapData::operator()(int id)
     return tiles[getLayer(id)](getX(id), getY(id));
 }
 
+const Tile& TileMapData::operator()(int layer, unsigned x, unsigned y) const
+{
+    return tiles[layer](x, y);
+}
+
+const Tile& TileMapData::operator()(unsigned x, unsigned y) const
+{
+    return tiles[currentLayer](x, y);
+}
+
+const Tile& TileMapData::operator()(int id) const
+{
+    return tiles[getLayer(id)](getX(id), getY(id));
+}
+
 void TileMapData::resize(unsigned width, unsigned height, bool preserve)
 {
     for (auto& layer: tiles)
@@ -59,6 +74,11 @@ sf::Vector2u TileMapData::size() const
 bool TileMapData::inBounds(int x, int y) const
 {
     return (x >= 0 && y >= 0 && x < static_cast<int>(width()) && y < static_cast<int>(height()));
+}
+
+bool TileMapData::inBounds(int tileId) const
+{
+    return inBounds(getX(tileId), getY(tileId));
 }
 
 void TileMapData::useLayer(int layer)

@@ -7,7 +7,6 @@
 #include "es/events.h"
 #include "gameevents.h"
 #include "components.h"
-#include <iostream>
 
 SelectionGUI::SelectionGUI(GameInstance& gameInstance, sf::RenderWindow& window, es::World& palette):
     gameInstance(gameInstance),
@@ -39,6 +38,7 @@ SelectionGUI::SelectionGUI(GameInstance& gameInstance, sf::RenderWindow& window,
     currentSelection.setFillColor(sf::Color::Transparent);
     currentSelection.setOutlineColor(sf::Color::Red);
     currentSelection.setOutlineThickness(-16);
+    currentSelection.setPosition(tileSize.x, 0);
 
     // Setup hover selection box
     hoverSelection = currentSelection;
@@ -94,6 +94,16 @@ bool SelectionGUI::update(float dt)
     guiMousePos = window.mapPixelToCoords(rawMousePos, view);
     textureMousePos = window.mapPixelToCoords(rawMousePos, textureView);
 
+    // Handle switching tile images when layer changes
+    for (auto& event: es::Events::get<LayerChangedEvent>())
+    {
+        const int visualId = event.layer + 1;
+        tiles.set(1, 0, visualId);
+        if (currentVisualId == 1 || currentVisualId == 2)
+            updateVisualId(visualId);
+    }
+    es::Events::clear<LayerChangedEvent>();
+
     // Draw to render texture
     texture.setView(textureView);
     texture.clear(sf::Color::Transparent);
@@ -129,25 +139,35 @@ void SelectionGUI::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 void SelectionGUI::setupTiles()
 {
+    auto& visualToInfo = gameInstance.tileMapData.getVisualToInfo();
+    unsigned tileTypes = visualToInfo.size();
+
     // Setup tile map
     tiles.loadFromConfig("data/config/tilemap.cfg");
-    unsigned tileTypes = tiles.getTotalTypes();
     unsigned rows = tileTypes / TILE_COLUMNS + 1;
     tiles.resize(TILE_COLUMNS, rows);
     tiles.useLayer(0);
 
-    // Generate tiles
-    unsigned id = 0;
-    for (unsigned y = 0; y < rows && id < tileTypes; ++y)
+    // Get all valid visual tile IDs
+    std::vector<unsigned> visualIds;
+    for (const auto& data: visualToInfo)
     {
-        for (unsigned x = 0; x < TILE_COLUMNS && id < tileTypes; ++x)
-            tiles.set(x, y, id++);
+        if (data.first != 2)
+            visualIds.push_back(data.first);
+    }
+    std::sort(visualIds.begin(), visualIds.end());
+
+    // Generate tiles
+    unsigned idx = 0;
+    for (unsigned y = 0; y < rows && idx < visualIds.size(); ++y)
+    {
+        for (unsigned x = 0; x < TILE_COLUMNS && idx < visualIds.size(); ++x, ++idx)
+            tiles.set(x, y, visualIds[idx]);
     }
 }
 
 void SelectionGUI::setupObjects()
 {
-    std::cout << "\nSelectionGUI::setupObjects()\n";
     // Update positions of objects
     sf::Vector2u gridPos;
     for (auto ent: palette.query<Sprite>())
@@ -160,12 +180,10 @@ void SelectionGUI::setupObjects()
         {
             auto bounds = spriteComp->sprite.getGlobalBounds();
             offset = sf::Vector2f(bounds.width / 2.0f, bounds.height / 2.0f);
-            std::cout << "Has rotation, offset = " << offset.x << ", " << offset.y << "\n";
         }
 
         // Set position of sprite
         spriteComp->sprite.setPosition(gridPos.x * tileSize.x + offset.x, gridPos.y * tileSize.y + offset.x);
-        std::cout << gridPos.x * tileSize.x + offset.x << ", " << gridPos.y * tileSize.y + offset.y << "\n";
 
         // Go to next position or next line
         ++gridPos.x;
@@ -175,7 +193,6 @@ void SelectionGUI::setupObjects()
             ++gridPos.y;
         }
     }
-    std::cout << "SelectionGUI::setupObjects() done\n\n";
 }
 
 bool SelectionGUI::withinBorder(const sf::Vector2f& pos) const
@@ -221,6 +238,12 @@ bool SelectionGUI::handleMouseEvent(const sf::Vector2i& pos, bool clicked)
     return handled;
 }
 
+void SelectionGUI::updateVisualId(int visualId)
+{
+    currentVisualId = visualId;
+    es::Events::send(TileSelectionEvent{currentVisualId});
+}
+
 void SelectionGUI::select(const sf::Vector2f& pos, bool clicked)
 {
     sf::Vector2u tilePos(pos.x / tileSize.x, pos.y / tileSize.y);
@@ -228,8 +251,6 @@ void SelectionGUI::select(const sf::Vector2f& pos, bool clicked)
     {
         if (tiles.inBounds(tilePos.x, tilePos.y))
         {
-            //std::cout << "tilePos = (" << tilePos.x << ", " << tilePos.y << ")\n";
-
             // Calculate position to move selection box
             sf::Vector2f selectionPos(tilePos.x * tileSize.x, tilePos.y * tileSize.y);
             hoverSelection.setPosition(selectionPos);
@@ -242,8 +263,7 @@ void SelectionGUI::select(const sf::Vector2f& pos, bool clicked)
                 selState = TabState::Tiles;
 
                 // Send event with new visual tile ID
-                int visualId = tiles(tilePos.x, tilePos.y);
-                es::Events::send(TileSelectionEvent{visualId});
+                updateVisualId(tiles(tilePos.x, tilePos.y));
             }
         }
     }

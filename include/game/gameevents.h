@@ -89,4 +89,16 @@ struct TestModeEvent
     std::string level;
 };
 
+// Sent from level editor to selection GUI
+struct LayerChangedEvent
+{
+    int layer;
+};
+
+// Sent from level editor to tile smoothing system
+struct PlatformTileUpdatedEvent
+{
+    int tileId;
+};
+
 #endif

@@ -31,6 +31,7 @@ class SelectionGUI: public sf::Drawable
         void handleTilesTab();
         void handleObjectsTab();
         bool handleMouseEvent(const sf::Vector2i& pos, bool clicked);
+        void updateVisualId(int visualId);
 
         // Takes a mouse position, and selects a tile/object
         void select(const sf::Vector2f& pos, bool clicked);
@@ -69,6 +70,7 @@ class SelectionGUI: public sf::Drawable
         TabState state{TabState::Tiles};
         TabState selState{TabState::Tiles};
         bool showHover{false};
+        int currentVisualId{0};
 
         // Render texture for tiles/world
         sf::RenderTexture texture;

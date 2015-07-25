@@ -6,10 +6,12 @@
 #include "es/world.h"
 #include "logicaltiles.h"
 #include "tilemapdata.h"
+#include "es/events.h"
+#include "gameevents.h"
 #include <iostream>
 #include <algorithm>
 
-TileSmoothingSystem::TileSmoothingSystem(es::World& world, TileMapData& tileMapData, ng::TileMap& smoothTileMap):
+TileSmoothingSystem::TileSmoothingSystem(es::World& world, const TileMapData& tileMapData, ng::TileMap& smoothTileMap):
     mappings("data/config/smooth_mappings.cfg"),
     world(world),
     tileMapData(tileMapData),
@@ -38,11 +40,36 @@ void TileSmoothingSystem::initialize()
 void TileSmoothingSystem::update(float dt)
 {
     // Handle partial updates from events (from a tile ID)
-    // Would only update the 3x3 grid around this particular tile
+    // Only updates the 3x3 grid around this particular tile
+    // Update the 6x6 area of quadrants around this 1 large tile
+    for (auto& event: es::Events::get<PlatformTileUpdatedEvent>())
+    {
+        if (tileMapData.inBounds(event.tileId))
+        {
+            // Get start and end points
+            const int layer = tileMapData.getLayer(event.tileId);
+            const sf::Vector2i largeTile{static_cast<int>(tileMapData.getX(event.tileId)),
+                                         static_cast<int>(tileMapData.getY(event.tileId))};
+            const sf::Vector2i smallStart{(largeTile.x - 1) * 2, (largeTile.y - 1) * 2};
+            const sf::Vector2i smallEnd{(largeTile.x + 1) * 2 + 1, (largeTile.y + 1) * 2 + 1};
+
+            // Update all tiles in the surrounding area
+            for (int y = smallStart.y; y < smallEnd.y; ++y)
+            {
+                for (int x = smallStart.x; x < smallEnd.x; ++x)
+                    updateTile(layer, x, y);
+            }
+        }
+    }
+    es::Events::clear<PlatformTileUpdatedEvent>();
 }
 
 void TileSmoothingSystem::updateTile(int layer, int x, int y)
 {
+    // Skip tiles that are out of bounds
+    if (!tileMapData.inBounds(x / 2, y / 2))
+        return;
+
     // Only generate tiles for platform tiles
     if (tileMapData(layer, x / 2, y / 2).logicalId != Tiles::Normal)
     {

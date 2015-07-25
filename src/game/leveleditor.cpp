@@ -217,6 +217,7 @@ void LevelEditor::toggleLayer()
     currentLayer = !currentLayer;
     updateBorder();
     updateCurrentLayer();
+    es::Events::send(LayerChangedEvent{currentLayer});
 }
 
 void LevelEditor::nextLevel()
@@ -336,15 +337,23 @@ void LevelEditor::updateMousePos()
 
 void LevelEditor::paintTile(int tileId, int visualId)
 {
+    // Don't do anything if the current mouse position is out of bounds
+    if (!showCurrent)
+        return;
+
     // Set the tile and update the graphical tile map
     auto& tile = gameInstance.tileMapData(tileId);
     tile = visualTiles[visualId];
-    if (tile.visualId >= 0 || tile.visualId <= 2)
-    {
+
+    // If it's a platform tile, erase it
+    if (tile.visualId >= 0 && tile.visualId <= 2)
         tile.visualId = 0;
-        // TODO: Send event to tile smoothing system
-        gameInstance.systems.initialize<TileSmoothingSystem>();
-    }
+
+    // Update the tile smoothing system
+    es::Events::send(PlatformTileUpdatedEvent{tileId});
+    gameInstance.systems.update<TileSmoothingSystem>(0.01f);
+
+    // Update graphical tile map
     gameInstance.tileMapChanger.updateVisualTile(tileId);
 
     // Add/remove tile ID to tile group component

@@ -18,7 +18,7 @@ Handles events for partial tile updates (for use with the level editor).
 class TileSmoothingSystem: public es::System
 {
     public:
-        TileSmoothingSystem(es::World& world, TileMapData& tileMapData, ng::TileMap& smoothTileMap);
+        TileSmoothingSystem(es::World& world, const TileMapData& tileMapData, ng::TileMap& smoothTileMap);
         void initialize();
         void update(float dt);
 
@@ -28,7 +28,7 @@ class TileSmoothingSystem: public es::System
 
         cfg::File mappings;
         es::World& world;
-        TileMapData& tileMapData;
+        const TileMapData& tileMapData;
         ng::TileMap& smoothTileMap;
 };
 

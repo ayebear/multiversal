@@ -37,12 +37,18 @@ class TileMapData
         Tile& operator()(unsigned x, unsigned y);
         Tile& operator()(int id);
 
+        // Access tiles (const)
+        const Tile& operator()(int layer, unsigned x, unsigned y) const;
+        const Tile& operator()(unsigned x, unsigned y) const;
+        const Tile& operator()(int id) const;
+
         // Size and layers
         void resize(unsigned width, unsigned height, bool preserve = true);
         unsigned width() const;
         unsigned height() const;
         sf::Vector2u size() const;
         bool inBounds(int x, int y) const;
+        bool inBounds(int tileId) const;
         void useLayer(int layer);
 
         // Compute tile IDs
