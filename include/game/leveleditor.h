@@ -114,9 +114,6 @@ class LevelEditor: public sf::Drawable
         // The pallette of tiles that can be placed
         std::map<int, Tile> visualTiles;
 
-        // Used for drawing sprites
-        std::vector<sf::Sprite*> sprites;
-
         // Border to show boundaries
         sf::RectangleShape border;
         static const sf::Color borderColors[];

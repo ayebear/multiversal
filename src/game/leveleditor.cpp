@@ -9,7 +9,6 @@
 #include "nage/graphics/vectors.h"
 #include "nage/states/stateevent.h"
 #include "components.h"
-#include "spritesystem.h"
 #include "physicssystem.h"
 #include "inaltworld.h"
 #include "logicaltiles.h"
@@ -121,14 +120,6 @@ void LevelEditor::update(float dt, bool withinBorder)
 
     // Update the view for the input system
     es::Events::send(ViewEvent{view});
-
-    // Save sprites in the current layer to draw later
-    sprites.clear();
-    for (auto ent: world.query<Sprite>())
-    {
-        if (inAltWorld(ent) == currentLayer)
-            sprites.push_back(&(ent.get<Sprite>()->sprite));
-    }
 }
 
 void LevelEditor::draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -137,8 +128,11 @@ void LevelEditor::draw(sf::RenderTarget& target, sf::RenderStates states) const
     gameInstance.tileMap.drawLayer(target, currentLayer);
     gameInstance.smoothTileMap.drawLayer(target, currentLayer);
 
-    for (auto sprite: sprites)
-        target.draw(*sprite);
+    for (auto ent: world.query<Sprite>())
+    {
+        if (inAltWorld(ent) == currentLayer)
+            target.draw(ent.get<Sprite>()->sprite);
+    }
 
     target.draw(border);
 
