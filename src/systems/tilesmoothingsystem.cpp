@@ -40,8 +40,7 @@ void TileSmoothingSystem::initialize()
 void TileSmoothingSystem::update(float dt)
 {
     // Handle partial updates from events (from a tile ID)
-    // Only updates the 3x3 grid around this particular tile
-    // Update the 6x6 area of quadrants around this 1 large tile
+    // Update the 4x4 area of quadrants around this 1 large tile
     for (auto& event: es::Events::get<PlatformTileUpdatedEvent>())
     {
         if (tileMapData.inBounds(event.tileId))
@@ -50,13 +49,13 @@ void TileSmoothingSystem::update(float dt)
             const int layer = tileMapData.getLayer(event.tileId);
             const sf::Vector2i largeTile{static_cast<int>(tileMapData.getX(event.tileId)),
                                          static_cast<int>(tileMapData.getY(event.tileId))};
-            const sf::Vector2i smallStart{(largeTile.x - 1) * 2, (largeTile.y - 1) * 2};
-            const sf::Vector2i smallEnd{(largeTile.x + 1) * 2 + 1, (largeTile.y + 1) * 2 + 1};
+            const sf::Vector2i smallStart{(largeTile.x * 2) - 1, (largeTile.y * 2) - 1};
+            const sf::Vector2i smallEnd{(largeTile.x + 1) * 2, (largeTile.y + 1) * 2};
 
             // Update all tiles in the surrounding area
-            for (int y = smallStart.y; y < smallEnd.y; ++y)
+            for (int y = smallStart.y; y <= smallEnd.y; ++y)
             {
-                for (int x = smallStart.x; x < smallEnd.x; ++x)
+                for (int x = smallStart.x; x <= smallEnd.x; ++x)
                     updateTile(layer, x, y);
             }
         }

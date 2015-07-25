@@ -70,7 +70,7 @@ class SelectionGUI: public sf::Drawable
         TabState state{TabState::Tiles};
         TabState selState{TabState::Tiles};
         bool showHover{false};
-        int currentVisualId{0};
+        int currentVisualId{1};
 
         // Render texture for tiles/world
         sf::RenderTexture texture;
