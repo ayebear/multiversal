@@ -7,6 +7,7 @@
 #include "es/system.h"
 #include "configfile.h"
 
+class TileMapData;
 namespace ng { class TileMap; }
 namespace es { class World; }
 
@@ -17,18 +18,17 @@ Handles events for partial tile updates (for use with the level editor).
 class TileSmoothingSystem: public es::System
 {
     public:
-        TileSmoothingSystem(es::World& world, ng::TileMap& tileMap, ng::TileMap& smoothTileMap);
+        TileSmoothingSystem(es::World& world, TileMapData& tileMapData, ng::TileMap& smoothTileMap);
         void initialize();
         void update(float dt);
 
     private:
         void updateTile(int layer, int x, int y);
-        bool isPlatformTile(unsigned id) const;
         char getKey(int layer, int x, int y) const;
 
         cfg::File mappings;
         es::World& world;
-        ng::TileMap& tileMap;
+        TileMapData& tileMapData;
         ng::TileMap& smoothTileMap;
 };
 

@@ -41,6 +41,8 @@ class TileMapData
         void resize(unsigned width, unsigned height, bool preserve = true);
         unsigned width() const;
         unsigned height() const;
+        sf::Vector2u size() const;
+        bool inBounds(int x, int y) const;
         void useLayer(int layer);
 
         // Compute tile IDs

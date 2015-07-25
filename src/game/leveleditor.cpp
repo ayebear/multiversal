@@ -17,6 +17,7 @@
 #include "nage/misc/utils.h"
 #include "lasersystem.h"
 #include "spritesystem.h"
+#include "tilesmoothingsystem.h"
 #include <iostream>
 
 const sf::Color LevelEditor::borderColors[] = {sf::Color::Blue, sf::Color::Green};
@@ -134,6 +135,7 @@ void LevelEditor::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     target.setView(view);
     gameInstance.tileMap.drawLayer(target, currentLayer);
+    gameInstance.smoothTileMap.drawLayer(target, currentLayer);
 
     for (auto sprite: sprites)
         target.draw(*sprite);
@@ -337,6 +339,12 @@ void LevelEditor::paintTile(int tileId, int visualId)
     // Set the tile and update the graphical tile map
     auto& tile = gameInstance.tileMapData(tileId);
     tile = visualTiles[visualId];
+    if (tile.visualId >= 0 || tile.visualId <= 2)
+    {
+        tile.visualId = 0;
+        // TODO: Send event to tile smoothing system
+        gameInstance.systems.initialize<TileSmoothingSystem>();
+    }
     gameInstance.tileMapChanger.updateVisualTile(tileId);
 
     // Add/remove tile ID to tile group component

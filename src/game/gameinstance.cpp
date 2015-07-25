@@ -45,7 +45,7 @@ GameInstance::GameInstance(sf::RenderWindow& window, GameSaveHandler& gameSave):
     systems.add<TileGroupSystem>(tileMapChanger, world);
     systems.add<LaserSystem>(world, tileMapData, tileMap, magicWindow);
     systems.add<RenderSystem>(world, tileMap, smoothTileMap, window, camera, magicWindow);
-    systems.add<TileSmoothingSystem>(world, tileMap, smoothTileMap);
+    systems.add<TileSmoothingSystem>(world, tileMapData, smoothTileMap);
 
     // Load the tiles
     tileMap.loadFromConfig("data/config/tilemap.cfg");

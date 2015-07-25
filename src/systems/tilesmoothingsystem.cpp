@@ -4,13 +4,15 @@
 #include "tilesmoothingsystem.h"
 #include "nage/graphics/tilemap.h"
 #include "es/world.h"
+#include "logicaltiles.h"
+#include "tilemapdata.h"
 #include <iostream>
 #include <algorithm>
 
-TileSmoothingSystem::TileSmoothingSystem(es::World& world, ng::TileMap& tileMap, ng::TileMap& smoothTileMap):
+TileSmoothingSystem::TileSmoothingSystem(es::World& world, TileMapData& tileMapData, ng::TileMap& smoothTileMap):
     mappings("data/config/smooth_mappings.cfg"),
     world(world),
-    tileMap(tileMap),
+    tileMapData(tileMapData),
     smoothTileMap(smoothTileMap)
 {
 }
@@ -18,7 +20,7 @@ TileSmoothingSystem::TileSmoothingSystem(es::World& world, ng::TileMap& tileMap,
 void TileSmoothingSystem::initialize()
 {
     // Setup smooth tilemap layer
-    const auto size = tileMap.getMapSize();
+    const auto size = tileMapData.size();
     smoothTileMap.resize(size.x * 2, size.y * 2);
 
     // Update all tiles
@@ -42,7 +44,7 @@ void TileSmoothingSystem::update(float dt)
 void TileSmoothingSystem::updateTile(int layer, int x, int y)
 {
     // Only generate tiles for platform tiles
-    if (!isPlatformTile(tileMap(layer, x / 2, y / 2)))
+    if (tileMapData(layer, x / 2, y / 2).logicalId != Tiles::Normal)
     {
         // Make it blank and skip
         smoothTileMap.set(layer, x, y, 14 + (layer * 18));
@@ -50,18 +52,8 @@ void TileSmoothingSystem::updateTile(int layer, int x, int y)
     }
 
     // Compute starting point of large tile
-    const sf::Vector2i start{(x - 1) / 2, (y - 1) / 2};
-
-    // Skip for now, will need to handle these cases though
-    // Will just need to simulate empty platform tiles
-    if (!tileMap.inBounds(start.x, start.y) || !tileMap.inBounds(start.x + 1, start.y + 1))
-    {
-        smoothTileMap.set(layer, x, y, 14 + (layer * 18));
-        return;
-    }
-
-    // Note: Small tile is always an inner corner to 4 large tiles
-    const unsigned smallTile = (x % 2) + ((y % 2) * 2);
+    const sf::Vector2i start{static_cast<int>(floor((x - 1) / 2.0)),
+                             static_cast<int>(floor((y - 1) / 2.0))};
 
     // Build up a key from the surrounding 2x2 area of large tiles
     std::string key;
@@ -69,6 +61,9 @@ void TileSmoothingSystem::updateTile(int layer, int x, int y)
     key += getKey(layer, start.x + 1, start.y);
     key += getKey(layer, start.x, start.y + 1);
     key += getKey(layer, start.x + 1, start.y + 1);
+
+    // Note: Small tile is always an inner corner to 4 large tiles
+    const unsigned smallTile = (x % 2) + ((y % 2) * 2);
 
     // Get the id from the mappings file
     int id = mappings(key, std::to_string(smallTile)).toInt();
@@ -79,13 +74,8 @@ void TileSmoothingSystem::updateTile(int layer, int x, int y)
     smoothTileMap.set(layer, x, y, id);
 }
 
-bool TileSmoothingSystem::isPlatformTile(unsigned id) const
-{
-    return (id == 32 || id == 33);
-}
-
 char TileSmoothingSystem::getKey(int layer, int x, int y) const
 {
-    unsigned platformTile = isPlatformTile(tileMap(layer, x, y));
+    unsigned platformTile = (tileMapData.inBounds(x, y) && tileMapData(layer, x, y).logicalId == Tiles::Normal);
     return (platformTile + '0');
 }

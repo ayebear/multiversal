@@ -51,6 +51,16 @@ unsigned TileMapData::height() const
     return tiles[0].height();
 }
 
+sf::Vector2u TileMapData::size() const
+{
+    return {width(), height()};
+}
+
+bool TileMapData::inBounds(int x, int y) const
+{
+    return (x >= 0 && y >= 0 && x < static_cast<int>(width()) && y < static_cast<int>(height()));
+}
+
 void TileMapData::useLayer(int layer)
 {
     currentLayer = layer;
