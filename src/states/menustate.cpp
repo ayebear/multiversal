@@ -20,7 +20,7 @@ MenuState::MenuState(GameResources& resources):
 void MenuState::onStart()
 {
     resources.window.setView(resources.window.getDefaultView());
-    resources.music.play("menu");
+    // resources.music.play("menu");
     updateContinueButton();
 }
 

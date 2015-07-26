@@ -35,7 +35,7 @@ void GameState::onStart()
     gameInstance.systems.initializeAll();
 
     // Start the game music
-    resources.music.play("game");
+    // resources.music.play("game");
 }
 
 void GameState::handleEvents()

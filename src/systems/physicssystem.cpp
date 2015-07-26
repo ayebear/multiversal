@@ -38,14 +38,14 @@ void PhysicsSystem::update(float dt)
     checkTileCollisions();
 
     // Print tile locations for debugging
-    for (auto& event: es::Events::get<MouseClickedEvent>())
+    /*for (auto& event: es::Events::get<MouseClickedEvent>())
     {
         const auto& tileSize = tileMap.getTileSize();
         sf::Vector2i location(event.mousePos.x / tileSize.x, event.mousePos.y / tileSize.y);
         int tileId1 = tileMapData.getId(0, location.x, location.y);
         int tileId2 = tileMapData.getId(1, location.x, location.y);
         std::cout << "Location: (" << location.x << ", " << location.y << "), ID: " << tileId1 << ", AltID: " << tileId2 << "\n";
-    }
+    }*/
 }
 
 void PhysicsSystem::stepPositions(float dt)

@@ -5,7 +5,6 @@
 #include "es/events.h"
 #include "gameevents.h"
 #include "level.h"
-#include <iostream>
 
 PlayerSystem::PlayerSystem(es::World& world, ng::ActionHandler& actions, Level& level):
     world(world),
@@ -97,11 +96,5 @@ void PlayerSystem::handleAction()
     auto position = player.get<Position>();
     auto aabb = player.get<AABB>();
     if (position && aabb)
-    {
-        std::cout << "Action key pressed: (" << position->x << ", " << position->y << "), Locations: ";
-        for (int location: aabb->tileCollisions)
-            std::cout << location << ' ';
-        std::cout << '\n';
         es::Events::send(ActionKeyEvent{playerId});
-    }
 }

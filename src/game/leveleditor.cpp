@@ -196,6 +196,7 @@ void LevelEditor::clear()
     changeSwitchMode();
     gameInstance.level.clear();
     initialize();
+    gameInstance.systems.initialize<TileSmoothingSystem>();
 }
 
 void LevelEditor::escape()
@@ -567,6 +568,7 @@ void LevelEditor::resize(int deltaX, int deltaY)
     auto mapSize = ng::vec::cast<int>(gameInstance.tileMap.getMapSize());
     gameInstance.tileMapChanger.resize(mapSize.x + deltaX, mapSize.y + deltaY);
     updateBorder();
+    gameInstance.systems.initialize<TileSmoothingSystem>();
 }
 
 void LevelEditor::initialize()
