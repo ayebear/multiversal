@@ -24,6 +24,6 @@ include_directories(
 )
 
 # Build binary files
-add_definitions("-Wall -std=c++14 -O3")
+add_definitions("-Wpedantic -Wall -std=c++14 -O3")
 add_executable(Multiversal ${M_SOURCE})
 target_link_libraries(Multiversal LINK_PUBLIC es_s cfgfile_s nage_s ${SFML_LIBRARIES})

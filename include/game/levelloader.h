@@ -49,7 +49,6 @@ class LevelLoader
         Level& level;
         GameSaveHandler& gameSave;
         std::string levelDir;
-        int currentLevel;
         std::string levelData;
 };
 

@@ -44,7 +44,7 @@ GameInstance::GameInstance(sf::RenderWindow& window, GameSaveHandler& gameSave):
     systems.add<ObjectSwitchSystem>(level, world);
     systems.add<TileGroupSystem>(tileMapChanger, world);
     systems.add<LaserSystem>(world, tileMapData, tileMap, magicWindow);
-    systems.add<RenderSystem>(world, tileMap, smoothTileMap, window, camera, magicWindow);
+    systems.add<RenderSystem>(world, tileMap, smoothTileMap, window, camera, magicWindow, level, gameSave);
     systems.add<TileSmoothingSystem>(world, tileMapData, smoothTileMap);
 
     // Load the tiles

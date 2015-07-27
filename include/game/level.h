@@ -25,12 +25,13 @@ The current level file format looks like this:
     height = 12
     width = 32
     version = 1
+    name = "Some level"
 
-    [Real]
+    [0: Real]
     visual = { ... }
     logical = { ... }
 
-    [Alternate]
+    [1: Alternate]
     visual = { ... }
     logical = { ... }
 
@@ -56,6 +57,9 @@ class Level
         // Resets tilemaps and world
         void clear();
 
+        // Returns the name of the level
+        const std::string& getName() const;
+
         // Loads world from a section in a config file
         static void loadEntities(cfg::File::Section& section, es::World& world);
 
@@ -80,6 +84,8 @@ class Level
         TileMapChanger& tileMapChanger;
         es::World& world;
         MagicWindow& magicWindow;
+
+        std::string name;
 };
 
 #endif

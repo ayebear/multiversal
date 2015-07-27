@@ -7,17 +7,37 @@
 #include "magicwindow.h"
 #include "nage/graphics/views.h"
 #include "lasercomponent.h"
+#include "level.h"
+#include "gamesavehandler.h"
+#include <iostream>
 
-RenderSystem::RenderSystem(es::World& world, ng::TileMap& tileMap, ng::TileMap& smoothTileMap, sf::RenderWindow& window, ng::Camera& camera, MagicWindow& magicWindow):
+RenderSystem::RenderSystem(es::World& world, ng::TileMap& tileMap, ng::TileMap& smoothTileMap,
+        sf::RenderWindow& window, ng::Camera& camera, MagicWindow& magicWindow, const Level& level,
+        const GameSaveHandler& gameSave):
     world(world),
     tileMap(tileMap),
     smoothTileMap(smoothTileMap),
     window(window),
     camera(camera),
-    magicWindow(magicWindow)
+    magicWindow(magicWindow),
+    level(level),
+    gameSave(gameSave)
 {
     // Load the background images
     sprites.loadFromConfig("data/config/sprites.cfg");
+
+    // Setup sf::Text objects
+    if (!font.loadFromFile("data/fonts/Ubuntu-B.ttf"))
+    {
+        std::cerr << "Error loading font file: 'data/fonts/Ubuntu-B.ttf'\n";
+        exit(1);
+    }
+    levelNumberText.setFont(font);
+    levelNumberText.setCharacterSize(32);
+    levelNumberText.setColor(sf::Color::Black);
+    levelNameText.setFont(font);
+    levelNameText.setCharacterSize(32);
+    levelNameText.setColor(sf::Color::Black);
 }
 
 void RenderSystem::initialize()
@@ -32,6 +52,19 @@ void RenderSystem::initialize()
         float scale = targetHeight / bounds.height;
         sprite.setScale(scale, scale);
     }
+
+    // Update positions based on window view
+    uiView = window.getDefaultView();
+    auto uiViewSize = uiView.getSize();
+    levelNumberText.setPosition(uiViewSize.x - 100, uiViewSize.y - 48);
+    levelNameText.setPosition(8, uiViewSize.y - 48);
+
+    // Update current level number
+    levelNumberText.setString(std::to_string(gameSave.getCurrentLevel()) +
+            '/' + std::to_string(GameSaveHandler::TOTAL_LEVELS));
+
+    // Update current level name
+    levelNameText.setString(level.getName());
 }
 
 void RenderSystem::update(float dt)
@@ -86,6 +119,11 @@ void RenderSystem::update(float dt)
 
     // Draw laser beams
     drawLasers(0);
+
+    // Draw level name/number text
+    window.setView(uiView);
+    window.draw(levelNumberText);
+    window.draw(levelNameText);
 
     window.display();
 }

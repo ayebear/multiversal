@@ -3,7 +3,7 @@
 
 #include "gamesavehandler.h"
 
-const int GameSaveHandler::TOTAL_LEVELS = 30;
+const int GameSaveHandler::TOTAL_LEVELS = 25;
 
 const cfg::File::ConfigMap GameSaveHandler::defaultOptions = {
     {"", {

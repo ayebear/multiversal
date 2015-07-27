@@ -17,7 +17,8 @@ const cfg::File::ConfigMap Level::defaultOptions = {
     {"", {
         {"width", cfg::makeOption(32, 0)},
         {"height", cfg::makeOption(12, 0)},
-        {"version", cfg::makeOption(1, 0)}
+        {"version", cfg::makeOption(1, 0)},
+        {"name", cfg::makeOption("Untitled")}
         }
     }
 };
@@ -79,6 +80,7 @@ void Level::saveToString(std::string& data) const
 void Level::load(cfg::File& config)
 {
     // Load everything from the config file
+    name = config("name");
     loadTileMap(config);
     loadEntities(config);
 
@@ -98,6 +100,11 @@ void Level::clear()
 {
     tileMapChanger.clear();
     world.clear();
+}
+
+const std::string& Level::getName() const
+{
+    return name;
 }
 
 void Level::loadEntities(cfg::File::Section& section, es::World& world)

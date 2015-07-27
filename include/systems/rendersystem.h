@@ -18,6 +18,8 @@ namespace ng
 }
 
 class MagicWindow;
+class Level;
+class GameSaveHandler;
 
 /*
 This class will handle all of the drawing to the window, so that the game state doesn't need to mess with any of that...
@@ -26,7 +28,7 @@ It will render all of the drawable world like the tile map, and drawable compone
 class RenderSystem: public es::System
 {
     public:
-        RenderSystem(es::World& world, ng::TileMap& tileMap, ng::TileMap& smoothTileMap, sf::RenderWindow& window, ng::Camera& camera, MagicWindow& magicWindow);
+        RenderSystem(es::World& world, ng::TileMap& tileMap, ng::TileMap& smoothTileMap, sf::RenderWindow& window, ng::Camera& camera, MagicWindow& magicWindow, const Level& level, const GameSaveHandler& gameSave);
         void initialize();
         void update(float dt);
 
@@ -44,9 +46,16 @@ class RenderSystem: public es::System
         sf::RenderWindow& window;
         ng::Camera& camera;
         MagicWindow& magicWindow;
-        sf::RenderTexture* texture;
+        const Level& level;
+        const GameSaveHandler& gameSave;
 
+        sf::RenderTexture* texture;
         ng::SpriteLoader sprites;
+
+        sf::Font font;
+        sf::View uiView;
+        sf::Text levelNumberText;
+        sf::Text levelNameText;
 };
 
 // Draws either an animated sprite or regular sprite component
